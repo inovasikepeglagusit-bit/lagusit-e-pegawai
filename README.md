@@ -1,0 +1,11 @@
+# LAGUSIT e-PEGAWAI (Frontend)
+Sistem Elektronik Kepegawaian Lapas Gunungsitoli. Frontend statis (HTML, CSS, JavaScript) untuk GitHub Pages. Backend: Google Apps Script (REST API JSON).
+
+## Struktur
+- `index.html`: halaman tunggal aplikasi
+- `css/style.css`: gaya tampilan
+- `js/config.js`: **alamat Web App Apps Script (wajib diisi)**
+- `js/app.js`: inti aplikasi dan komunikasi ke server (`api()`)
+- `js/inti.js`, `apel.js`, `master.js`, `nilai.js`, `kgb.js`, `lapor.js`: modul menu
+
+Panduan pemasangan lengkap: `PANDUAN-INSTALASI.md`.

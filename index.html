@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LAGUSIT e-PEGAWAI</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z' fill='%23D97706'/%3E%3C/svg%3E">
+<script>
+/* Penanda galat: bila ada skrip yang gagal dimuat, pesan tampil di layar agar mudah dilacak. */
+(function () {
+  var galat = [];
+  function tampil() {
+    var b = document.getElementById('diag');
+    if (!b) { b = document.createElement('div'); b.id = 'diag'; b.setAttribute('role', 'alert'); b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:5000;background:#7f1d1d;color:#fff;padding:10px 14px;font:13px/1.4 system-ui,sans-serif;max-height:40vh;overflow:auto'; (document.body || document.documentElement).appendChild(b); }
+    b.innerHTML = '<b>Aplikasi belum termuat sempurna.</b> Kirim foto layar pesan ini ke pengembang.<br>' + galat.map(function (x) { return '&bull; ' + String(x).replace(/</g, '&lt;'); }).join('<br>');
+  }
+  window.addEventListener('error', function (e) { galat.push((e.message || 'Galat skrip') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '')); tampil(); });
+  window.addEventListener('load', function () {
+    if (typeof GAS_URL === 'undefined' || /GANTI/.test(GAS_URL)) { galat.push('Alamat server belum diisi: buka js/config.js lalu isi GAS_URL dengan URL /exec dari Apps Script.'); tampil(); }
+    var h = ['start', 'navigateTo', 'call', 'muatNotif', 'bangunNav', 'renderLogin'].filter(function (n) { return typeof window[n] !== 'function'; });
+    var ada = window.MOD || [], hilang = ['Inti', 'Apel', 'Master', 'Nilai', 'Kgb', 'Lapor'].filter(function (n) { return ada.indexOf(n) < 0; });
+    if (hilang.length) { galat.push('Berkas belum termuat: ' + hilang.map(function (n) { return 'js/' + n.toLowerCase() + '.js'; }).join(', ') + '. Tempel ulang isi berkas tersebut secara utuh lalu simpan.'); tampil(); }
+    if (h.length) { galat.push('Fungsi tidak ditemukan: ' + h.join(', ') + '. Periksa folder js/: semua berkas harus ada dan utuh.'); tampil(); }
+  });
+})();
+</script>
+</head>
+<body class="guest">
+<div id="boot" class="boot"><div class="spinner-border" role="status"></div><p>Memuat aplikasi...</p></div>
+<aside id="sidebar" class="sidebar" aria-label="Menu utama">
+  <div class="brand"><strong>LAGUSIT e-PEGAWAI</strong><small>Sistem Elektronik Kepegawaian</small></div>
+  <nav id="nav"></nav>
+  <button class="nav-item logout" onclick="doLogoutUI()"><i class="bi bi-box-arrow-left"></i><span>Keluar</span></button>
+</aside>
+<div id="scrim" class="scrim" onclick="toggleSidebar()"></div>
+<div class="main">
+  <header class="topbar">
+    <div class="m-brand"><span class="lg">LG</span><span>LAGUSIT<br>e-Pegawai</span></div>
+    <h1 id="pageTitle" class="visually-hidden">Dashboard</h1>
+    <input id="gs" class="search" placeholder="Cari pegawai, NIP, atau jabatan..." aria-label="Cari pegawai" onkeydown="if(event.key==='Enter')cariGlobal(this.value)">
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <button class="icon-btn position-relative" onclick="bukaNotif()" aria-label="Pengingat"><i class="bi bi-bell"></i><span id="nb" class="nbadge" hidden></span></button>
+      <button class="icon-btn" onclick="toggleTheme()" aria-label="Ganti mode gelap atau terang"><i class="bi bi-moon-stars"></i></button>
+      <div class="user-chip"><span class="av"><i class="bi bi-person-fill"></i></span><span class="uc"><b id="userName"></b><small id="userRole"></small></span></div>
+    </div>
+  </header>
+  <main id="app-container" class="content"></main>
+</div>
+<nav id="bnav" class="bnav" aria-label="Menu bawah"></nav>
+<div class="modal fade" id="mdl" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable modal-fullscreen-sm-down"><div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title h5" id="mdlT"></h2><button class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+    <div class="modal-body" id="mdlB"></div>
+  </div></div>
+</div>
+<div id="toasts" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/inti.js"></script>
+<script src="js/apel.js"></script>
+<script src="js/master.js"></script>
+<script src="js/nilai.js"></script>
+<script src="js/kgb.js"></script>
+<script src="js/lapor.js"></script>
+</body>
+</html>
