@@ -77,3 +77,34 @@ body.guest .sidebar,body.guest .topbar,body.guest .bnav{display:none}body.guest 
 .print-only{display:none}.kop{text-align:center;border-bottom:3px double #000;padding-bottom:8px;margin-bottom:12px}
 @media print{.print-only{display:block}.table{font-size:11px}}
 @media(max-width:575.98px){.toolbar>*{flex:1 1 100%}.toolbar .form-control,.toolbar .form-select{max-width:100%}.hero{padding:16px}.card-x{padding:14px}.stat-v{font-size:28px}}
+
+/* Daftar kehadiran apel: kartu per pegawai dengan tombol status besar (nyaman di HP) */
+.ug{margin-bottom:14px}.uh{display:flex;align-items:center;gap:10px;padding:8px 2px;position:sticky;top:60px;background:var(--card);z-index:5;border-bottom:1px solid var(--line)}.uh b{flex:1}
+.btn-o.sm{min-height:36px;padding:0 12px;font-size:13px}
+.rr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line)}
+.rn{display:grid;min-width:0}.rn b{overflow:hidden;text-overflow:ellipsis}.rn small{color:var(--muted)}
+.chs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.ch{min-height:40px;min-width:48px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit;font-size:13px;font-weight:500;cursor:pointer;touch-action:manipulation}
+.ch.on.c-h{background:#166534;color:#fff;border-color:#166534}.ch.on.c-t{background:#B45309;color:#fff;border-color:#B45309}.ch.on.c-i,.ch.on.c-s{background:#1D4ED8;color:#fff;border-color:#1D4ED8}.ch.on.c-d{background:#6D28D9;color:#fff;border-color:#6D28D9}.ch.on.c-x{background:#B91C1C;color:#fff;border-color:#B91C1C}
+.ch:disabled{opacity:.75;cursor:default}
+.ket{grid-column:1/-1;min-height:40px}
+.rsum{display:flex;flex-wrap:wrap;gap:6px}.rsum span{padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--bg);border:1px solid var(--line)}
+.aksi-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(--card);padding:10px 0;margin-top:12px;border-top:1px solid var(--line);z-index:6}
+button,a,.ch{-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+@media(max-width:991.98px){.aksi-bar{bottom:calc(64px + env(safe-area-inset-bottom))}.uh{top:52px}}
+/* Penyempurnaan tampilan HP */
+@media(max-width:575.98px){
+ .content{padding:12px 12px 96px}.card-x{padding:14px;border-radius:14px}.hero{padding:14px}.hero h2{font-size:18px}
+ .stat-v{font-size:26px;line-height:32px}.stat-ic{width:36px;height:36px;font-size:18px;top:12px;right:12px}
+ .form-control,.form-select{font-size:16px;min-height:46px}.btn-x,.btn-o{min-height:46px}.modal-body{padding:14px}
+ .rr{grid-template-columns:1fr}.chs{display:grid;grid-template-columns:repeat(3,1fr);justify-content:stretch}.ch{min-height:46px}
+ .aksi-bar .btn-x,.aksi-bar .btn-o{flex:1 1 100%}.todo{flex-wrap:wrap}.todo>button{flex:1 1 100%}
+ .bnav button{font-size:10.5px}.bnav button i{font-size:22px}.sub{font-size:1.1em}
+ table.tc{display:block}table.tc thead{display:none}table.tc tbody{display:grid;gap:10px}
+ table.tc tr{display:block;border:1px solid var(--line);border-radius:12px;padding:6px 12px;background:var(--card)}
+ table.tc td{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border:0;text-align:right;white-space:normal}
+ table.tc td::before{content:attr(data-l);flex:0 0 38%;text-align:left;font-weight:600;color:var(--muted);font-size:12px}
+ table.tc td[data-l=""]::before,table.tc td:not([data-l])::before{content:none}
+ table.tc td[data-l=""],table.tc td:not([data-l]){justify-content:flex-end;flex-wrap:wrap}
+}

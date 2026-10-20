@@ -7,30 +7,53 @@ RENDER.apel = () => apelPage('staf');
 RENDER.regu = () => apelPage('regu');
 async function apelPage(j) {
   S.aj = j; const r = await call('daftarApel', j); if (!r) return; const w = canWrite(), g = j === 'regu';
-  $('app-container').innerHTML = `${w ? `<div class="card-x mb-3"><form class="toolbar mb-0" onsubmit="bukaUI(event)"><div><label class="lbl" for="at">Tanggal</label><input id="at" type="date" class="form-control" value="${today()}" required></div><div><label class="lbl" for="as">Sesi</label><select id="as" class="form-select">${AP[j].sesi.map(s => `<option>${s}</option>`).join('')}</select></div>${g ? `<div><label class="lbl" for="ar">Regu</label><select id="ar" class="form-select">${REGU.map(s => `<option>${s}</option>`).join('')}</select></div>` : ''}<button class="btn-x align-self-end" type="submit"><i class="bi bi-clipboard-check"></i> Buka / lanjutkan</button></form></div>` : ''}<div id="apelEd"></div>
+  $('app-container').innerHTML = `${w ? `<div class="card-x mb-3"><form class="toolbar mb-0" onsubmit="bukaUI(event)"><div><label class="lbl" for="at">Tanggal</label><input id="at" type="date" class="form-control" value="${today()}" required></div><div><label class="lbl" for="as">Sesi</label><select id="as" class="form-select">${AP[j].sesi.map(s => `<option>${s}</option>`).join('')}</select></div>${g ? `<div><label class="lbl" for="ar">Regu</label><select id="ar" class="form-select">${REGU.map(s => `<option>${s}</option>`).join('')}</select></div>` : ''}<button class="btn-x align-self-end" type="submit"><i class="bi bi-clipboard-check"></i> Buka / lanjutkan</button></form>${j === 'staf' ? '<p class="muted small mt-2 mb-0">Daftar hanya memuat pegawai yang tidak sedang ditempatkan di regu, tersusun per unit kerja. Penempatan diatur Super Admin di Master Data.</p>' : ''}</div>` : ''}<div id="apelEd"></div>
   <div class="card-x"><h3 class="h6">Riwayat apel ${g ? 'serah terima regu' : 'staf'}</h3>${r.data.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Tanggal</th><th>Sesi</th>${g ? '<th>Regu</th>' : '<th>Pembina</th>'}<th>Hadir</th><th>Status</th><th></th></tr></thead><tbody>${r.data.map(a => `<tr><td class="nw">${esc(a.Tanggal)}</td><td>${esc(a.Sesi)}</td><td>${esc(g ? a.Regu : a.Pembina) || '–'}</td><td>${a.Hadir + a.Terlambat}/${a.Wajib} (${a.Wajib ? Math.round((a.Hadir + a.Terlambat) * 100 / a.Wajib) : 0}%)</td><td><span class="badge-x ${a.Status === 'Selesai' ? 'ok' : 'wait'}">${esc(a.Status)}</span></td><td><button class="btn-o" onclick="muatApel('${a.ID}')">${w ? 'Buka' : 'Lihat'}</button></td></tr>`).join('')}</tbody></table></div>` : kosong('belum ada apel dicatat.')}</div>`;
 }
 async function bukaUI(e) { e.preventDefault(); const b = e.target.querySelector('[type=submit]'); busy(b, true); const r = await call('bukaApel', S.aj, $('at').value, $('as').value, S.aj === 'regu' ? $('ar').value : ''); busy(b, false); if (r) editor(r); }
 async function muatApel(id) { const r = await call('ambilApel', S.aj, id); if (r) editor(r); }
+const TANPA = '(Tanpa unit kerja)', urutUnit = (a, b) => (a === TANPA) - (b === TANPA) || a.localeCompare(b);
+const SC = [['Hadir', 'Hadir', 'h'], ['Terlambat', 'Telat', 't'], ['Izin', 'Izin', 'i'], ['Sakit', 'Sakit', 's'], ['Dinas Luar', 'DL', 'd'], ['Tidak Hadir', 'Alpa', 'x']];
 function editor(r) {
-  const a = r.data.apel, H = r.data.hadir, w = r.data.ubah === true, dis = w ? '' : 'disabled'; S.ed = { a, H };
+  const a = r.data.apel, H = r.data.hadir, w = r.data.ubah === true, dis = w ? '' : 'disabled';
+  S.ed = { a, H, w, unit: '', q: '', grup: [] };
   const fld = ([k, l, t]) => t === 'i' ? `<div class="col-md-6"><label class="lbl" for="f_${k}">${l}</label><input id="f_${k}" class="form-control" value="${esc(a[k])}" ${dis}></div>` : `<div class="col-12"><label class="lbl" for="f_${k}">${l}</label><textarea id="f_${k}" rows="3" class="form-control" ${dis}>${esc(a[k])}</textarea></div>`;
+  const units = [...new Set(H.map(h => h.Unit || TANPA))].sort(urutUnit);
   $('apelEd').innerHTML = `<div class="card-x mb-3"><div class="d-flex flex-wrap align-items-center gap-2 mb-3"><h3 class="h6 mb-0">Apel ${esc(a.Sesi)} · ${esc(a.Tanggal)}${a.Regu ? ' · ' + esc(a.Regu) : ''}</h3><span class="badge-x ${a.Status === 'Selesai' ? 'ok' : 'wait'}">${esc(a.Status)}</span></div>
   ${w ? '' : '<p class="muted small">Hanya lihat: Anda bukan operator yang ditugaskan untuk apel ini pada tanggal tersebut.</p>'}<div class="row g-3 mb-3">${AP[S.aj].f.map(fld).join('')}</div>
-  <div class="table-wrap"><table class="table"><thead><tr><th>Nama</th><th>Jabatan</th><th>Status</th><th>Keterangan</th></tr></thead><tbody>${H.map((h, i) => `<tr><td>${esc(h.Nama)}</td><td>${esc(h.Jabatan)}</td><td><select class="form-select" data-i="${i}" aria-label="Status ${esc(h.Nama)}" ${dis}>${SH.map(s => `<option ${h.Status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></td><td><input class="form-control" data-k="${i}" aria-label="Keterangan ${esc(h.Nama)}" value="${esc(h.Keterangan)}" ${dis}></td></tr>`).join('')}</tbody></table></div>
+  <h4 class="h6">Daftar kehadiran <span class="muted">(${H.length} orang)</span></h4>
+  <div class="toolbar"><select id="ru" class="form-select" aria-label="Pilih unit kerja" onchange="S.ed.unit=this.value;gambarRoster()"><option value="">Semua unit kerja</option>${units.map(u => `<option value="${esc(u)}">${esc(u)} (${H.filter(h => (h.Unit || TANPA) === u).length})</option>`).join('')}</select><input id="rq" class="form-control" placeholder="Cari nama" aria-label="Cari nama" oninput="S.ed.q=this.value;gambarRoster()">${w ? '<button type="button" class="btn-o" onclick="semuaHadir()">Semua hadir</button>' : ''}${w && a.Status === 'Draf' ? '<button type="button" class="btn-o" onclick="sinkronUI()" title="Samakan daftar dengan penempatan regu terbaru">Sinkronkan daftar</button>' : ''}</div>
+  <div class="rsum mb-2" id="rsum" aria-live="polite"></div><div id="rost"></div>
   <div class="mt-4"><h4 class="h6">Dokumentasi foto <span class="muted">(${r.data.foto.length}/6)</span></h4><div id="fg" class="fgrid">${r.data.foto.length ? r.data.foto.map(f => `<div class="ft"><img id="im_${f.ID}" alt="${esc(f.Keterangan || f.Nama)}" onclick="lihatFoto('${f.ID}')"><small class="muted">${esc(f.Keterangan)}</small>${w ? `<a href="javascript:void(0)" onclick="hapusFotoUI('${f.ID}')">hapus</a>` : ''}</div>`).join('') : '<span class="muted">Belum ada foto.</span>'}</div>${w && r.data.foto.length < 6 ? '<div class="d-flex flex-wrap gap-2 align-items-end mt-3"><div class="flex-grow-1"><label class="lbl" for="fk">Keterangan foto (opsional)</label><input id="fk" class="form-control"></div><label class="btn-o" for="ff" style="cursor:pointer"><i class="bi bi-image"></i> Pilih foto</label><input id="ff" type="file" accept="image/*" hidden onchange="unggahUI(this)"><label class="btn-x" for="fc" style="cursor:pointer"><i class="bi bi-camera"></i> Ambil foto</label><input id="fc" type="file" accept="image/*" capture="environment" hidden onchange="unggahUI(this)"></div>' : ''}</div>
-  ${w ? '<div class="d-flex flex-wrap gap-2 justify-content-end mt-3"><button class="btn-o" onclick="semuaHadir()">Semua hadir</button><button class="btn-o" onclick="simpanUI(false)">Simpan draf</button><button class="btn-x" onclick="simpanUI(true)">Simpan dan selesaikan</button></div>' : ''}</div>`;
-  $('apelEd').scrollIntoView({ behavior: 'smooth' }); muatFoto(r.data.foto);
+  ${w ? '<div class="aksi-bar"><button class="btn-o" onclick="simpanUI(false)">Simpan draf</button><button class="btn-x" onclick="simpanUI(true)">Simpan dan selesaikan</button></div>' : ''}</div>`;
+  gambarRoster(); $('apelEd').scrollIntoView({ behavior: 'smooth' }); muatFoto(r.data.foto);
 }
-const semuaHadir = () => document.querySelectorAll('[data-i]').forEach(s => s.value = 'Hadir');
+function barisRoster(i) {
+  const h = S.ed.H[i], w = S.ed.w;
+  return `<div class="rr" id="rr_${i}"><div class="rn"><b>${esc(h.Nama)}</b><small>${esc(h.Jabatan) || '–'}</small></div><div class="chs" role="group" aria-label="Status ${esc(h.Nama)}">${SC.map(([s, l, c]) => `<button type="button" class="ch c-${c} ${h.Status === s ? 'on' : ''}" aria-pressed="${h.Status === s}" title="${s}" ${w ? '' : 'disabled'} onclick="pilihStatus(${i},'${s}')">${l}</button>`).join('')}</div>${h.Status !== 'Hadir' ? `<input class="form-control ket" placeholder="Keterangan (opsional)" aria-label="Keterangan ${esc(h.Nama)}" value="${esc(h.Keterangan)}" ${w ? '' : 'disabled'} oninput="S.ed.H[${i}].Keterangan=this.value">` : ''}</div>`;
+}
+function ringkasApel() { const c = {}; S.ed.H.forEach(h => c[h.Status] = (c[h.Status] || 0) + 1); $('rsum').innerHTML = SC.map(([s]) => c[s] ? `<span>${s} ${c[s]}</span>` : '').join(''); }
+function gambarRoster() { // daftar tersusun per unit kerja; saring menurut unit dan nama
+  const e = S.ed, q = e.q.trim().toLowerCase(), G = {};
+  e.H.forEach((h, i) => { const u = h.Unit || TANPA; if ((!e.unit || u === e.unit) && (!q || (h.Nama + ' ' + (h.Jabatan || '')).toLowerCase().includes(q))) (G[u] = G[u] || []).push(i); });
+  e.grup = Object.keys(G).sort(urutUnit);
+  $('rost').innerHTML = e.grup.length ? e.grup.map((u, gi) => `<div class="ug"><div class="uh"><b>${esc(u)}</b><span class="muted">${G[u].length} orang</span>${e.w ? `<button type="button" class="btn-o sm" onclick="semuaHadirUnit(${gi})">Semua hadir</button>` : ''}</div>${G[u].map(barisRoster).join('')}</div>`).join('') : '<p class="muted py-3">Tidak ada nama yang cocok.</p>';
+  ringkasApel();
+}
+function pilihStatus(i, s) { if (!S.ed.w) return; S.ed.H[i].Status = s; const el = $('rr_' + i); if (el) el.outerHTML = barisRoster(i); ringkasApel(); }
+function semuaHadir() { const e = S.ed; e.H.forEach(h => { if (!e.unit || (h.Unit || TANPA) === e.unit) h.Status = 'Hadir'; }); gambarRoster(); }
+function semuaHadirUnit(gi) { const u = S.ed.grup[gi]; S.ed.H.forEach(h => { if ((h.Unit || TANPA) === u) h.Status = 'Hadir'; }); gambarRoster(); }
+function kumpulApel(selesai, al) {
+  const d = { rows: S.ed.H.map(h => ({ PegawaiID: h.PegawaiID, Status: h.Status, Keterangan: h.Keterangan || '' })), selesai, alasan: al || '', UpdatedAt: S.ed.a.UpdatedAt };
+  AP[S.aj].f.forEach(([k]) => d[k] = $('f_' + k).value); return d;
+}
 function simpanUI(selesai) {
-  const a = S.ed.a, j = S.aj, go = async al => {
-    const d = { rows: S.ed.H.map((h, i) => ({ PegawaiID: h.PegawaiID, Status: document.querySelector(`[data-i="${i}"]`).value, Keterangan: document.querySelector(`[data-k="${i}"]`).value })), selesai, alasan: al || '', UpdatedAt: a.UpdatedAt };
-    AP[j].f.forEach(([k]) => d[k] = $('f_' + k).value);
-    const r = await call('simpanApel', j, a.ID, d);
-    if (r) { toast(r.message); await apelPage(j); muatApel(a.ID); }
-  };
+  const a = S.ed.a, j = S.aj, go = async al => { const r = await call('simpanApel', j, a.ID, kumpulApel(selesai, al)); if (r) { toast(r.message); await apelPage(j); muatApel(a.ID); } };
   a.Status === 'Selesai' ? askReason('Alasan koreksi apel', go) : go();
+}
+async function sinkronUI() { // simpan isian terakhir sebagai draf, lalu samakan daftar dengan penempatan terbaru
+  const a = S.ed.a, s1 = await call('simpanApel', S.aj, a.ID, kumpulApel(false, '')); if (!s1) return;
+  const r = await call('sinkronApel', S.aj, a.ID); if (r) { toast(r.message); muatApel(a.ID); }
 }
 
 // ── Dokumentasi foto apel ──

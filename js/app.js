@@ -173,3 +173,14 @@ function rakitPG(ig, ip, status, g0, p0) {
   P.disabled = pppk;
 }
 function pgBerubah(ig, ip, status) { const x = S.opsi.pns.find(y => y.gol === $(ig).value); if (x && status !== 'PPPK') $(ip).value = x.pangkat; }
+
+// ── Tabel menjadi kartu di layar HP: setiap sel diberi label kolom (CSS memakai atribut data-l) ──
+function labelTables() {
+  document.querySelectorAll('#app-container table.table, #mdlB table.table').forEach(t => {
+    if (t.dataset.tc || t.closest('#lh') || t.closest('.mx')) return;
+    const h = [...t.querySelectorAll('thead th')].map(x => x.textContent.trim()); if (h.length < 2 || h.length > 8) return;
+    t.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => { td.dataset.l = h[i] || ''; }));
+    t.classList.add('tc'); t.dataset.tc = '1';
+  });
+}
+['app-container', 'mdlB'].forEach(id => { const el = document.getElementById(id); if (el && window.MutationObserver) new MutationObserver(labelTables).observe(el, { childList: true, subtree: true }); });

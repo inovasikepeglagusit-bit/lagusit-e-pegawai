@@ -34,11 +34,13 @@ Buka `js/config.js` dengan Notepad. Ganti `GANTI_DENGAN_URL_EXEC_ANDA` dengan al
 ### B3. Pasang Git dan akun GitHub
 1. Unduh dan pasang Git dari https://git-scm.com (terima pilihan bawaan).
 2. Buat akun di https://github.com bila belum punya.
-3. Buka Command Prompt, lalu ketik (ganti nama dan email Anda):
+3. Buka **Command Prompt**: tekan tombol Windows, ketik `cmd`, lalu tekan Enter (jendela hitam terbuka; ini bukan aplikasi "Git GUI"). Cek Git sudah terpasang dengan mengetik `git --version` lalu Enter. Harus muncul tulisan seperti `git version 2.xx`. Kalau muncul `'git' is not recognized`, tutup jendela itu, selesaikan langkah 1, lalu buka Command Prompt lagi.
+4. Di jendela hitam yang sama, ketik dua baris berikut **satu per satu, tekan Enter setelah tiap baris**. Ganti `Nama Anda` dan `email@anda.com` (tanda kutip tetap ada), dan sebaiknya pakai email yang sama dengan akun GitHub Anda:
    ```
    git config --global user.name "Nama Anda"
    git config --global user.email "email@anda.com"
    ```
+   Tidak ada tulisan yang muncul berarti berhasil. Untuk memeriksa, ketik `git config --global --list`; nama dan email Anda harus tampil. Langkah ini cukup dilakukan sekali di komputer ini. Anda bisa menempel perintah dengan klik kanan di jendela hitam.
 
 ### B4. Buat repository di GitHub
 GitHub → tombol **New** → Repository name: `lagusit-e-pegawai` → pilih **Public** → **jangan** centang README/.gitignore/license → **Create repository**.
