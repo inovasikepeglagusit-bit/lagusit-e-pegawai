@@ -122,22 +122,67 @@ function bukaNotif() {
   if (baru.length) { L.forEach(n => n.Baru = false); tampilBadge(); api('tandaiNotifDibaca', S.token, baru).catch(() => {}); }
 }
 
-// ── Navigasi cepat: halaman tersimpan tampil dulu lalu disegarkan; hasil halaman lama tidak menimpa halaman baru ──
 const PC = {};
+// Cache data: bacaan yang aman diulang disimpan di memori. Bila masih segar (<3 dtk) langsung dipakai; bila agak lama dipakai dulu
+// sambil disegarkan di latar belakang, dan halaman digambar ulang hanya bila datanya benar-benar berubah dan pengguna tidak sedang mengisi.
+const DC = {}, DI = {}, PETA = (() => { try { return JSON.parse(localStorage.getItem('lg_peta') || '{}'); } catch (e) { return {}; } })();
+const BACA_AMAN = new Set(['listUnit', 'listAkun', 'listPegawai', 'getAntrian', 'getProfilLengkap', 'getRegu', 'getSkorHadir', 'getPenugasan', 'getParamKgb', 'getOpsiKepegawaian', 'getNilaiMeta', 'getMonitoring', 'getLaporanMeta', 'getKolom', 'getKgb', 'getKeterangan', 'getKalender', 'getDashboard', 'getAudit', 'getAbsenMeta', 'daftarSurat', 'daftarPengajuan', 'daftarNilai', 'daftarApel', 'ranking', 'nilaiSaya']);
+const SEGAR = 3000, BASI = 600000, SEGAR0 = new Set(['getAntrian', 'daftarSurat', 'daftarPengajuan', 'getMonitoring', 'getDashboard', 'getAudit', 'listAkun']); // SEGAR0: selalu disegarkan di latar belakang (antrian persetujuan harus mutakhir)
+const segarMs = fn => SEGAR0.has(fn) ? 0 : SEGAR;
+const dcKunci = (fn, a) => fn + '|' + JSON.stringify(a);
+const dcBersih = () => { Object.keys(DC).forEach(k => delete DC[k]); };
+function petaCatat(fn, a) { const m = S.page; if (!m || !S.menu || !S.menu.includes(m)) return; const L = PETA[m] = PETA[m] || [], k = dcKunci(fn, a); if (!L.some(x => dcKunci(x[0], x[1]) === k)) { L.push([fn, a]); if (L.length > 6) L.shift(); try { localStorage.setItem('lg_peta', JSON.stringify(PETA)); } catch (e) {} } }
+function dcSimpan(k, r) { const js = JSON.stringify(r), ada = DC[k]; DC[k] = { t: Date.now(), js: js }; return !ada || ada.js !== js; }
+async function ambilData(fn, a, k) { // satu permintaan per kunci pada satu waktu
+  if (DI[k]) return DI[k];
+  return DI[k] = api(fn, S.token, ...a).then(r => { if (r && r.success) dcSimpan(k, r); return r; }).finally(() => { delete DI[k]; });
+}
+let segarT = 0;
+function segarkanHalaman(p) {
+  clearTimeout(segarT); segarT = setTimeout(async () => {
+    const f = document.activeElement, mengisi = f && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName) && $('app-container').contains(f);
+    if (S.page !== p || !S.token || mengisi || S.sentuh || document.body.classList.contains('modal-open') || !RENDER[p]) return;
+    const y = window.scrollY; await RENDER[p](); if (S.page === p) { if (p !== 'dashboard') PC[p] = $('app-container').innerHTML; window.scrollTo(0, y); }
+  }, 250);
+}
 async function call(fn, ...a) {
-  const my = S.cur, senyap = /^(getNotif|fotoProfil|tandaiNotif)/.test(fn); if (!senyap) progMulai();
+  const my = S.cur, senyap = /^(getNotif|fotoProfil|tandaiNotif)/.test(fn), cache = BACA_AMAN.has(fn), k = cache ? dcKunci(fn, a) : '';
+  if (cache) {
+    petaCatat(fn, a); const e = DC[k], p = S.page;
+    if (e && Date.now() - e.t < BASI) {
+      if (Date.now() - e.t > segarMs(fn)) ambilData(fn, a, k).then(r => { if (r && r.success && JSON.stringify(r) !== e.js) segarkanHalaman(p); else if (r && !r.success && r.message === 'SESI_HABIS') expire(); }).catch(() => {});
+      S.sentuh = false; // tampilan dibuat dari data tersimpan: interaksi sesudah titik ini membatalkan penggambaran ulang otomatis
+      return JSON.parse(e.js);
+    }
+  }
+  if (!senyap) progMulai();
   try {
-    const r = await api(fn, S.token, ...a);
+    const r = await (cache ? ambilData(fn, a, k) : api(fn, S.token, ...a));
+    if (!S.token) return null; // sudah keluar selagi menunggu jawaban
     if (my !== S.cur && /^(get(?!Notif)|list|daftar|ambil)/.test(fn)) return null; // halaman sudah berganti
     if (!r.success) { if (r.message === 'SESI_HABIS') expire(); else toast(r.message, 'danger'); return null; }
-    return r;
+    if (!cache && !senyap && !/^(get|list|daftar|ambil|lihat|ranking|nilaiSaya)/.test(fn)) dcBersih(); // setelah penulisan, bacaan lama tidak dipakai lagi
+    return cache ? JSON.parse(JSON.stringify(r)) : r;
   } catch (e) { toast('Gagal menghubungi server: ' + e.message, 'danger'); return null; }
   finally { if (!senyap) progSelesai(); }
 }
+/** Pemanasan: ambil data menu di latar belakang sebelum dibuka (saat kursor/jari menyentuh menu, dan menu yang biasa dipakai setelah masuk). */
+function hangatkan(m) {
+  if (!S.token || !PETA[m]) return;
+  PETA[m].forEach(([fn, a]) => { const k = dcKunci(fn, a), e = DC[k]; if ((!e || Date.now() - e.t > segarMs(fn)) && !DI[k] && BACA_AMAN.has(fn)) ambilData(fn, a, k).catch(() => {}); });
+}
+function hangatkanAwal() {
+  const c = navigator.connection || {}; if (c.saveData || /(^|-)2g$/.test(c.effectiveType || '')) return;
+  const L = (S.menu || []).filter(m => m !== S.page && PETA[m]).slice(0, 5); L.forEach((m, i) => setTimeout(() => hangatkan(m), 2500 + i * 900));
+}
+(function () { ['pointerdown', 'keydown', 'input'].forEach(t => document.addEventListener(t, e => { if (e.target.closest && e.target.closest('#app-container')) S.sentuh = true; }, { passive: true, capture: true })); })(); // pengguna sudah berinteraksi: jangan gambar ulang halaman di bawah tangannya
+(function () { const h = e => { const b = e.target.closest && e.target.closest('[data-p]'); if (b) hangatkan(b.dataset.p); }; ['mouseover', 'touchstart', 'pointerdown'].forEach(t => document.addEventListener(t, h, { passive: true })); })();
+
+// ── Navigasi cepat: halaman tersimpan tampil dulu lalu disegarkan; hasil halaman lama tidak menimpa halaman baru ──
 async function navigateTo(p) {
   if (!S.menu.includes(p)) return;
   if (chart) { chart.destroy(); chart = null; } clearInterval(S.jam); tutupCari();
-  const baru = S.page !== p; S.page = p; const id = S.cur = (S.cur || 0) + 1;
+  const baru = S.page !== p; S.page = p; S.sentuh = false; const id = S.cur = (S.cur || 0) + 1;
   setHead(p); document.querySelectorAll('[data-p]').forEach(n => n.classList.toggle('active', n.dataset.p === p)); closeSidebar();
   const ada = !!PC[p]; ada ? $('app-container').innerHTML = PC[p] : loading(); if (baru) animasiHalaman();
   const lo = !ada; if (lo) LOAD.mulai(p);
@@ -164,7 +209,7 @@ function start(d) {
   $('userName').textContent = d.user.nama; $('userRole').textContent = d.user.roles.filter(r => r !== 'Pegawai')[0] || 'Pegawai'; setHead('dashboard');
   $('userAv').innerHTML = '<i class="bi bi-person-fill"></i>'; muatAvatar();
   bangunNav(); clearInterval(S.iv);
-  if (d.user.wajibGanti) renderGanti(); else { navigateTo('dashboard'); muatNotif(); S.iv = setInterval(muatNotif, 300000); }
+  if (d.user.wajibGanti) renderGanti(); else { navigateTo('dashboard'); muatNotif(); hangatkanAwal(); S.iv = setInterval(muatNotif, 300000); }
 }
 async function muatAvatar() { // pasfoto terpasang tampil di header; jika belum ada, ikon bawaan
   const r = await call('fotoProfil', ''); if (r && r.data.data && S.user && $('userAv')) $('userAv').innerHTML = `<img alt="" src="${esc(r.data.data)}">`;

@@ -138,7 +138,7 @@ function askReason(title, cb) {
 function submitReason(e) { e.preventDefault(); const a = $('alasan').value.trim(); if (!a) return; closeModal(); window.reasonCb(a); }
 
 // ── Sesi & navigasi SPA ──
-function logoutLocal(gerbang) { S.token = null; S.user = null; clearInterval(S.iv); clearInterval(S.jam); Object.keys(PC).forEach(k => delete PC[k]); if (chart) { chart.destroy(); chart = null; } closeModal(); closeSidebar(); document.body.classList.add('guest'); renderLogin(); if (gerbang === true) tampilGerbang(); }
+function logoutLocal(gerbang) { S.token = null; S.user = null; clearInterval(S.iv); clearInterval(S.jam); Object.keys(PC).forEach(k => delete PC[k]); if (typeof dcBersih === 'function') { dcBersih(); Object.keys(PETA).forEach(k => delete PETA[k]); try { localStorage.removeItem('lg_peta'); } catch (e) {} } if (chart) { chart.destroy(); chart = null; } closeModal(); closeSidebar(); document.body.classList.add('guest'); renderLogin(); if (gerbang === true) tampilGerbang(); }
 function expire() { toast('Sesi berakhir. Silakan masuk kembali.', 'warning'); logoutLocal(); }
 function doLogoutUI() { api('doLogout', S.token).catch(() => {}); logoutLocal(true); }
 

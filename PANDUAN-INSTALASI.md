@@ -128,3 +128,15 @@ Pita muncul bila ada bagian aplikasi yang tidak termuat. Contoh isi dan artinya:
 - Animasi hanya muncul bila memuat menu lebih dari ±0,45 detik; menu yang cepat atau sudah tersimpan di cache tidak menampilkannya.
 - Super Admin dapat mematikannya di **Master Data ▸ Tampilan** (kotak "Animasi loading maskot"), dan mencobanya lewat tombol "Lihat contoh animasi".
 - Otomatis nonaktif bila perangkat memilih "kurangi gerakan". Warna, nama aplikasi, dan font mengikuti pengaturan tampilan.
+
+
+## Tahap 17 — Web lebih cepat dan responsif
+**Backend (tempel ulang `Kode.gs`, `Modul_Apel.gs`, `Modul_Master.gs`, lalu buat versi baru deployment):**
+- Pembacaan sheet kini disimpan di cache Apps Script lintas-permintaan (bertanda versi). Menu yang dibuka berulang tidak lagi membaca seluruh sheet.
+- Setiap penulisan menaikkan versi sehingga data lama tidak pernah dipakai. Bila Anda mengubah data **langsung di Google Sheets**, perubahan terbaca paling lama 5 menit kemudian.
+- Pemeriksaan sesi tidak lagi menulis ke cache pada setiap permintaan.
+
+**Frontend (unggah `index.html`, `css/style.css`, `js/inti.js`, `js/app.js` ke GitHub, lalu Ctrl+F5):**
+- Data menu yang sudah pernah dibuka tampil seketika, lalu disegarkan diam-diam; halaman digambar ulang hanya bila datanya berubah dan Anda belum mulai mengetik atau mengklik.
+- Menyentuh/menunjuk menu di sidebar memanaskan datanya lebih dulu; menu yang biasa Anda pakai dimuat di latar belakang setelah masuk.
+- Koneksi ke server disiapkan lebih awal, ketukan di HP tanpa jeda, animasi pindah halaman dipersingkat.

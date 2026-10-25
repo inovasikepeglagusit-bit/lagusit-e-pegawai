@@ -191,7 +191,7 @@ html{-webkit-text-size-adjust:100%}
 #prog{position:fixed;left:0;top:0;height:3px;width:100%;z-index:3100;pointer-events:none;opacity:0;transition:opacity .3s}
 #prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--prim-s),var(--amber));border-radius:0 3px 3px 0;box-shadow:0 0 10px color-mix(in srgb,var(--prim-s) 70%,transparent);transition:width .35s ease-out}
 #prog.on{opacity:1}
-.pg-in{animation:pgin .3s cubic-bezier(.2,.7,.2,1) both}
+.pg-in{animation:pgin .2s cubic-bezier(.2,.7,.2,1) both}
 @keyframes pgin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 html.lite .pg-in{animation:pgfade .18s both}@keyframes pgfade{from{opacity:0}to{opacity:1}}
 
@@ -378,3 +378,7 @@ h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6{color:var(--text)}.hero2 h2,.hero h2,.
 @media(max-width:480px){#lo{padding:14px}#lo .lo-scene{height:225px;border-radius:19px}#lo .lo-tw.left{left:4%}#lo .lo-tw.right{right:4%}#lo .lo-bld{scale:.88}#lo .lo-mascot{scale:.88;transform-origin:bottom left}#lo .lo-orbit{width:115vw}#lo .lo-bubble{top:7%;font-size:.65rem}#lo .lo-foot{font-size:.58rem}}
 html.lite #lo .lo-cloud,html.lite #lo .lo-orbit{animation:none}html.lite #lo{transition:none}
 @media(prefers-reduced-motion:reduce){#lo{transition:none}}
+
+/* Responsif sentuh: tanpa jeda 300 md, tanpa kilatan sorot ketuk; kartu di luar layar tidak dihitung ulang */
+button,a,[onclick],.nav-item,.tile,label,select,input{touch-action:manipulation}
+button,a,.tile{-webkit-tap-highlight-color:transparent}
