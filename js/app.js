@@ -66,16 +66,48 @@ function renderLogin() {
     <label class="lbl" for="em">Email</label><input id="em" name="email" type="email" class="form-control mb-3" required autocomplete="username">
     <label class="lbl" for="pw">Kata sandi</label><input id="pw" name="password" type="password" class="form-control mb-3" required autocomplete="current-password">
     <button class="btn-x w-100" type="submit">Masuk</button></form>
-    <p class="mt-3 mb-0 text-center">Belum punya akun? <a href="javascript:void(0)" onclick="renderDaftar()">Daftar</a></p>`);
+    <p class="mt-3 mb-1 text-center"><a href="javascript:void(0)" onclick="renderLupa()">Lupa kata sandi?</a></p>
+    <p class="mb-0 text-center">Belum punya akun? <a href="javascript:void(0)" onclick="renderDaftar()">Daftar</a></p>`);
 }
 function renderDaftar() {
   $('app-container').innerHTML = authCard('Daftar akun', 'Akun baru dapat dipakai setelah disetujui Super Admin.', `<form onsubmit="doDaftarUI(event)">
-    <label class="lbl" for="dn">Nama lengkap</label><input id="dn" name="nama" class="form-control mb-3" required>
-    <label class="lbl" for="de">Email aktif</label><input id="de" name="email" type="email" class="form-control mb-3" required autocomplete="username">
+    <label class="lbl" for="dn">Nama lengkap *</label><input id="dn" name="nama" class="form-control mb-3" minlength="3" maxlength="100" required autocomplete="name">
+    <label class="lbl" for="dnip">NIP * <span class="muted">(angka saja, 8–20 digit)</span></label><input id="dnip" name="nip" class="form-control mb-3" inputmode="numeric" pattern="[0-9]{8,20}" title="NIP berupa 8 sampai 20 digit angka" required>
+    <label class="lbl" for="de">Email aktif *</label><input id="de" name="email" type="email" class="form-control mb-3" required autocomplete="username">
     <label class="lbl" for="dp">Kata sandi (min. 8 karakter)</label><input id="dp" name="password" type="password" minlength="8" class="form-control mb-3" required autocomplete="new-password">
     <label class="lbl" for="dq">Ulangi kata sandi</label><input id="dq" name="ulang" type="password" class="form-control mb-3" required autocomplete="new-password">
     <button class="btn-x w-100" type="submit">Kirim pendaftaran</button></form>
     <p class="mt-3 mb-0 text-center"><a href="javascript:void(0)" onclick="renderLogin()">Kembali ke halaman masuk</a></p>`);
+}
+function renderLupa() {
+  $('app-container').innerHTML = authCard('Lupa kata sandi', 'Masukkan email akun Anda. Kode atur ulang dikirim ke email tersebut.', `<form onsubmit="lupaMintaUI(event)">
+    <label class="lbl" for="le">Email akun</label><input id="le" name="email" type="email" class="form-control mb-3" required autocomplete="username">
+    <button class="btn-x w-100" type="submit">Kirim kode</button></form>
+    <p class="mt-3 mb-1 text-center"><a href="javascript:void(0)" onclick="renderReset('')">Saya sudah punya kode</a></p>
+    <p class="mb-0 text-center"><a href="javascript:void(0)" onclick="renderLogin()">Kembali ke halaman masuk</a></p>`);
+}
+function renderReset(em) {
+  $('app-container').innerHTML = authCard('Atur kata sandi baru', 'Masukkan kode dari email (berlaku 30 menit, sekali pakai).', `<form onsubmit="lupaResetUI(event)">
+    <label class="lbl" for="re">Email akun</label><input id="re" name="email" type="email" class="form-control mb-3" value="${esc(em)}" required autocomplete="username">
+    <label class="lbl" for="rk">Kode</label><input id="rk" name="kode" class="form-control mb-3" required autocomplete="one-time-code" style="text-transform:uppercase">
+    <label class="lbl" for="rb">Kata sandi baru (min. 8 karakter)</label><input id="rb" name="baru" type="password" minlength="8" class="form-control mb-3" required autocomplete="new-password">
+    <label class="lbl" for="ru">Ulangi kata sandi baru</label><input id="ru" name="ulang" type="password" class="form-control mb-3" required autocomplete="new-password">
+    <button class="btn-x w-100" type="submit">Simpan kata sandi</button></form>
+    <p class="mt-3 mb-0 text-center"><a href="javascript:void(0)" onclick="renderLogin()">Kembali ke halaman masuk</a></p>`);
+}
+async function lupaMintaUI(e) {
+  e.preventDefault(); const f = e.target, b = f.querySelector('[type=submit]'); busy(b, true);
+  try { const r = await api('mintaKodeReset', f.email.value.trim()); toast(r.message, r.success ? 'success' : 'danger'); if (r.success) renderReset(f.email.value.trim()); }
+  catch (x) { toast('Gagal menghubungi server: ' + x.message, 'danger'); }
+  busy(b, false);
+}
+async function lupaResetUI(e) {
+  e.preventDefault(); const f = e.target;
+  if (f.baru.value !== f.ulang.value) return toast('Pengulangan kata sandi tidak sama.', 'danger');
+  const b = f.querySelector('[type=submit]'); busy(b, true);
+  try { const r = await api('resetDenganKode', f.email.value.trim(), f.kode.value.trim(), f.baru.value); toast(r.message, r.success ? 'success' : 'danger'); if (r.success) renderLogin(); }
+  catch (x) { toast('Gagal menghubungi server: ' + x.message, 'danger'); }
+  busy(b, false);
 }
 function renderGanti() {
   $('pageTitle').textContent = 'Ganti kata sandi';
@@ -95,7 +127,7 @@ async function doDaftarUI(e) {
   e.preventDefault(); const f = e.target;
   if (f.password.value !== f.ulang.value) return toast('Pengulangan kata sandi tidak sama.', 'danger');
   const b = f.querySelector('[type=submit]'); busy(b, true);
-  try { const r = await api('doDaftar', { nama: f.nama.value, email: f.email.value, password: f.password.value }); toast(r.message, r.success ? 'success' : 'danger'); if (r.success) renderLogin(); }
+  try { const r = await api('doDaftar', { nama: f.nama.value.trim(), nip: f.nip.value.trim(), email: f.email.value.trim(), password: f.password.value }); toast(r.message, r.success ? 'success' : 'danger'); if (r.success) renderLogin(); }
   catch (x) { toast('Gagal menghubungi server: ' + x.message, 'danger'); }
   busy(b, false);
 }
