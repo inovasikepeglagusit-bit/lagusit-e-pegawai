@@ -121,3 +121,10 @@ Pita muncul bila ada bagian aplikasi yang tidak termuat. Contoh isi dan artinya:
 - Alamat server berada di `config.js` yang publik. Itu wajar: semua data dilindungi login dan hak akses di server.
 - Server hanya menerima daftar fungsi tertentu (daftar putih). Fungsi internal dan `setupAppEnvironment` tidak bisa dipanggil dari luar.
 - Jangan pernah memasukkan token GitHub atau kata sandi ke dalam berkas proyek.
+
+
+## Tahap 16b — Animasi loading antar menu (maskot)
+- Berkas baru: `js/loading.js`; `css/style.css` dan `index.html` ikut diperbarui. Unggah ketiganya (plus `js/inti.js`, `js/app.js`, `js/master.js`), lalu ganti `Modul_Tampilan.gs` di Apps Script dan buat **versi baru** deployment.
+- Animasi hanya muncul bila memuat menu lebih dari ±0,45 detik; menu yang cepat atau sudah tersimpan di cache tidak menampilkannya.
+- Super Admin dapat mematikannya di **Master Data ▸ Tampilan** (kotak "Animasi loading maskot"), dan mencobanya lewat tombol "Lihat contoh animasi".
+- Otomatis nonaktif bila perangkat memilih "kurangi gerakan". Warna, nama aplikasi, dan font mengikuti pengaturan tampilan.

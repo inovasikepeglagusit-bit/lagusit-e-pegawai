@@ -12,3 +12,10 @@ Sistem Elektronik Kepegawaian Lapas Gunungsitoli. Frontend statis (HTML, CSS, Ja
 - Pengaturan tampilan (nama, logo, warna) diatur Super Admin di Master Data ▸ Tampilan; tidak perlu mengubah berkas.
 
 Panduan pemasangan lengkap: `PANDUAN-INSTALASI.md`.
+
+
+## Tahap 16b — Animasi loading antar menu (maskot)
+- Berkas baru: `js/loading.js`; `css/style.css` dan `index.html` ikut diperbarui. Unggah ketiganya (plus `js/inti.js`, `js/app.js`, `js/master.js`), lalu ganti `Modul_Tampilan.gs` di Apps Script dan buat **versi baru** deployment.
+- Animasi hanya muncul bila memuat menu lebih dari ±0,45 detik; menu yang cepat atau sudah tersimpan di cache tidak menampilkannya.
+- Super Admin dapat mematikannya di **Master Data ▸ Tampilan** (kotak "Animasi loading maskot"), dan mencobanya lewat tombol "Lihat contoh animasi".
+- Otomatis nonaktif bila perangkat memilih "kurangi gerakan". Warna, nama aplikasi, dan font mengikuti pengaturan tampilan.

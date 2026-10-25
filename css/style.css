@@ -299,3 +299,82 @@ html.lite .sidebar,html.lite .topbar{-webkit-backdrop-filter:none;backdrop-filte
 h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6{color:var(--text)}.hero2 h2,.hero h2,.hero2 .tag{color:#fff}
 .grid2s{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}@media(max-width:575.98px){.grid2s{gap:10px}}
 .donat{flex-direction:row}.donat .dsv{width:136px;height:136px}@media(max-width:400px){.donat .dsv{margin:0 auto}}
+
+/* ═══ Animasi pemuatan antar menu: maskot petugas mengejar map (warna, font, dan nama mengikuti pengaturan tampilan) ═══ */
+#lo{--lo-sky:color-mix(in srgb,var(--prim-s) 42%,#fff);--lo-or:var(--amber);--lo-or2:var(--amber-l);--lo-beige:#d9c5a6;--lo-s1:color-mix(in srgb,var(--navy) 58%,var(--prim-s));--lo-s2:color-mix(in srgb,var(--navy) 80%,var(--prim-s));--lo-gr:color-mix(in srgb,var(--navy) 78%,#000);
+ position:fixed;inset:0;z-index:3050;display:grid;place-items:center;overflow:hidden;padding:18px;font-family:var(--font);color:#fff;background:radial-gradient(ellipse at 50% 35%,color-mix(in srgb,var(--prim-s) 32%,transparent),transparent 52%),linear-gradient(160deg,color-mix(in srgb,var(--navy) 78%,#000),var(--navy) 58%,color-mix(in srgb,var(--navy) 66%,#000));opacity:0;visibility:hidden;transition:opacity .28s ease,visibility .28s ease}
+#lo.on{opacity:1;visibility:visible}
+#lo *{box-sizing:border-box}
+#lo .lo-grid{position:absolute;inset:0;opacity:.11;background-image:linear-gradient(var(--lo-sky) 1px,transparent 1px),linear-gradient(90deg,var(--lo-sky) 1px,transparent 1px);background-size:42px 42px;-webkit-mask-image:radial-gradient(ellipse,#000,transparent 80%);mask-image:radial-gradient(ellipse,#000,transparent 80%)}
+#lo .lo-orbit{position:absolute;width:min(82vw,650px);aspect-ratio:1;border:1px solid color-mix(in srgb,var(--lo-sky) 18%,transparent);border-radius:50%;animation:lo-pulse 5s ease-in-out infinite;pointer-events:none}
+#lo .lo-orbit:before,#lo .lo-orbit:after{content:"";position:absolute;inset:13%;border:1px dashed color-mix(in srgb,var(--lo-sky) 16%,transparent);border-radius:50%}#lo .lo-orbit:after{inset:27%;border-style:solid;border-color:color-mix(in srgb,var(--lo-or) 14%,transparent)}
+#lo .lo-content{position:relative;z-index:1;width:min(100%,550px);display:flex;flex-direction:column;align-items:center;text-align:center}
+#lo .lo-brand{font-size:clamp(2rem,7vw,3.1rem);font-weight:800;letter-spacing:-.05em;line-height:1;color:#fff}.lo-brand i{font-style:normal;color:var(--lo-or)}
+#lo .lo-sub{font-size:clamp(1rem,3.5vw,1.3rem);font-weight:700;color:var(--lo-sky);margin-top:5px;min-height:1.3em}
+#lo .lo-kicker{font-size:.66rem;letter-spacing:.19em;text-transform:uppercase;color:color-mix(in srgb,var(--lo-sky) 70%,#fff);opacity:.8;margin-top:10px}
+#lo .lo-scene{position:relative;width:min(100%,450px);height:clamp(220px,42vw,260px);margin-top:22px;border:1px solid color-mix(in srgb,var(--lo-sky) 26%,transparent);border-radius:24px;overflow:hidden;background:linear-gradient(var(--lo-s1) 0%,var(--lo-s2) 65%,var(--lo-gr) 65%,color-mix(in srgb,var(--navy) 90%,#000) 100%);box-shadow:0 22px 60px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.1)}
+#lo .lo-moon{position:absolute;right:12%;top:12%;width:34px;height:34px;border-radius:50%;background:#d6f1ff;box-shadow:0 0 25px rgba(141,216,255,.4)}
+#lo .lo-star{position:absolute;width:3px;height:3px;border-radius:50%;background:#e7f7ff;box-shadow:0 0 7px #9fe1ff}
+#lo .lo-cloud{position:absolute;top:27%;left:-75px;width:65px;height:17px;border-radius:30px;background:rgba(216,237,255,.16);animation:lo-cloud 12s linear infinite}
+#lo .lo-cloud:before,#lo .lo-cloud:after{content:"";position:absolute;bottom:2px;background:inherit;border-radius:50%;width:26px;height:26px}#lo .lo-cloud:before{left:9px}#lo .lo-cloud:after{left:30px;width:19px;height:19px}
+#lo .lo-cloud.two{top:43%;animation-delay:-6s;transform:scale(.7)}
+#lo .lo-hill{position:absolute;bottom:35%;left:-5%;width:110%;height:65px;background:color-mix(in srgb,var(--navy) 50%,var(--prim-s));clip-path:polygon(0 70%,20% 25%,38% 65%,58% 15%,77% 57%,100% 30%,100% 100%,0 100%);opacity:.8}
+#lo .lo-bld{position:absolute;bottom:35%;left:50%;transform:translateX(-50%);width:145px;height:72px}
+#lo .lo-bld .base{position:absolute;bottom:0;left:8%;right:8%;height:51px;background:#d5e9f8;border:2px solid #7db3d9}
+#lo .lo-bld .roof{position:absolute;bottom:48px;left:0;right:0;height:7px;background:var(--lo-or)}
+#lo .lo-bld .door{position:absolute;bottom:0;left:42%;width:17%;height:28px;background:var(--navy);border:2px solid var(--lo-or2)}
+#lo .lo-win{position:absolute;bottom:25px;width:18px;height:13px;background:#3d8dbb;border:1px solid #f3fbff}#lo .lo-win.one{left:18%}#lo .lo-win.two{right:18%}
+#lo .lo-tw{position:absolute;bottom:35%;width:35px;height:75px}#lo .lo-tw.left{left:8%}#lo .lo-tw.right{right:8%}
+#lo .lo-hut{position:absolute;top:0;left:0;right:0;height:22px;border:2px solid #7eb6de;background:#d8eafb;border-radius:5px 5px 1px 1px}
+#lo .lo-hut:after{content:"";position:absolute;left:8px;right:8px;top:6px;height:8px;background:var(--navy)}
+#lo .lo-legs{position:absolute;top:20px;left:7px;right:7px;height:55px;border-left:3px solid #8bbfe5;border-right:3px solid #8bbfe5}
+#lo .lo-fence{position:absolute;bottom:22%;left:0;right:0;height:35px;border-top:2px solid #8dc4e8;border-bottom:2px solid #8dc4e8;background:repeating-linear-gradient(90deg,transparent 0 16px,#7cb2d5 17px 19px,transparent 20px 29px);opacity:.52}
+#lo .lo-ground{position:absolute;bottom:0;left:0;right:0;height:23%;background:linear-gradient(color-mix(in srgb,var(--navy) 70%,var(--prim-s)),color-mix(in srgb,var(--navy) 90%,#000));border-top:2px solid color-mix(in srgb,var(--prim-s) 70%,var(--navy))}
+#lo .lo-path{position:absolute;bottom:10%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--lo-sky),var(--lo-or),var(--lo-sky),transparent);box-shadow:0 0 12px var(--lo-sky)}
+#lo .lo-mascot{position:absolute;z-index:5;left:8%;bottom:8%;width:74px;height:112px;animation:lo-walk 5.8s ease-in-out infinite;transform-origin:50% 100%}
+#lo .lo-head{position:absolute;z-index:3;top:2px;left:15px;width:45px;height:42px;border-radius:47% 47% 43% 43%;background:#f0bd91;border:2px solid #ffdbb7}
+#lo .lo-hair{position:absolute;top:-2px;left:10px;width:43px;height:15px;background:#1b2638;border-radius:14px 15px 6px 6px}
+#lo .lo-cap{position:absolute;z-index:4;top:-7px;left:7px;width:52px;height:12px;border-radius:7px 7px 3px 3px;background:var(--navy);border-bottom:3px solid var(--lo-or);transform:rotate(-3deg)}
+#lo .lo-cap:after{content:"";position:absolute;bottom:-4px;left:19px;width:14px;height:4px;border-radius:3px;background:#e8f3ff}
+#lo .lo-ear{position:absolute;top:17px;width:9px;height:12px;border-radius:50%;background:#e9ad80;border:1px solid #ffdbb7}#lo .lo-ear.left{left:9px}#lo .lo-ear.right{right:9px}
+#lo .lo-eye{position:absolute;z-index:2;top:16px;width:5px;height:7px;border-radius:50%;background:#18283e;animation:lo-blink 4.5s infinite}#lo .lo-eye.left{left:12px}#lo .lo-eye.right{right:12px}
+#lo .lo-cheek{position:absolute;top:24px;width:8px;height:4px;border-radius:50%;background:#f38c7c;opacity:.8}#lo .lo-cheek.left{left:5px}#lo .lo-cheek.right{right:5px}
+#lo .lo-smile{position:absolute;left:17px;top:24px;width:11px;height:6px;border-bottom:2px solid #9b4b42;border-radius:0 0 12px 12px}
+#lo .lo-torso{position:absolute;top:35px;left:12px;width:50px;height:47px;border-radius:15px 15px 12px 12px;background:var(--lo-beige);border:2px solid #f2dfc3;box-shadow:inset -5px -2px #bba382}
+#lo .lo-badge{position:absolute;top:10px;left:8px;width:8px;height:10px;border-radius:2px;background:var(--navy);border:1px solid #f7dfb5}
+#lo .lo-pocket{position:absolute;top:10px;right:6px;width:11px;height:9px;border:1px solid #9c835f;border-radius:2px}
+#lo .lo-arm{position:absolute;z-index:2;top:42px;width:12px;height:27px;border-radius:9px;background:var(--lo-beige);border:1px solid #f2dfc3;transform-origin:50% 8%;animation:lo-arm .36s ease-in-out infinite alternate}
+#lo .lo-arm.left{left:5px}#lo .lo-arm.right{right:1px;animation-delay:-.36s}
+#lo .lo-hand{position:absolute;bottom:-3px;left:0;width:10px;height:10px;border-radius:50%;background:#f0bd91}
+#lo .lo-leg{position:absolute;top:77px;left:20px;width:14px;height:23px;border-radius:5px 5px 7px 7px;background:#263a54;transform-origin:50% 8%;animation:lo-leg .3s ease-in-out infinite alternate}
+#lo .lo-leg.right{left:41px;background:#344c68;animation-delay:-.3s}
+#lo .lo-boot{position:absolute;bottom:-2px;left:-3px;width:20px;height:8px;border-radius:6px 7px 3px 3px;background:#0a1729}
+#lo .lo-folder{position:absolute;z-index:4;right:-10px;top:51px;width:21px;height:27px;background:var(--lo-or);border:2px solid var(--lo-or2);border-radius:3px;transform:rotate(7deg);animation:lo-fold .45s ease-in-out infinite alternate}
+#lo .lo-folder:before{content:"";position:absolute;top:-5px;left:2px;width:10px;height:5px;background:var(--lo-or2);border:1px solid var(--lo-or2);border-bottom:0;border-radius:3px 3px 0 0}
+#lo .lo-folder:after,#lo .lo-run:after,#lo .lo-stack:after{content:"";position:absolute;left:4px;right:4px;top:8px;height:1px;background:#fff2d7;box-shadow:0 5px #fff2d7,0 10px #fff2d7}
+#lo .lo-stack{position:absolute;z-index:2;bottom:17%;width:37px;height:21px;border-radius:3px;background:var(--lo-or);border:2px solid #ffe0ae;box-shadow:0 -6px 0 -2px #f7faff,0 -12px 0 -4px #78b9e8}
+#lo .lo-stack:after{top:5px;left:5px;right:auto;width:17px;background:#b45309;box-shadow:0 5px #b45309}
+#lo .lo-stack.one{left:31%;animation:lo-hop 1.5s ease-in-out infinite}#lo .lo-stack.two{left:61%;animation:lo-hop 1.5s ease-in-out .6s infinite}
+#lo .lo-run{position:absolute;z-index:3;right:10%;bottom:17%;width:25px;height:31px;background:var(--lo-or);border:2px solid var(--lo-or2);border-radius:4px;animation:lo-runaway 3.2s ease-in-out infinite}
+#lo .lo-run:before{content:"";position:absolute;top:-6px;left:3px;width:11px;height:6px;background:var(--lo-or2);border:1px solid var(--lo-or2);border-bottom:0}
+#lo .lo-bubble{position:absolute;z-index:7;top:8%;left:50%;transform:translateX(-50%);white-space:nowrap;max-width:92%;background:#f8fbff;color:var(--navy);font-weight:800;font-size:clamp(.65rem,2.5vw,.78rem);padding:9px 13px;border-radius:15px;box-shadow:0 6px 20px rgba(0,0,0,.2);animation:lo-bob 2s ease-in-out infinite;overflow:hidden;text-overflow:ellipsis}
+#lo .lo-bubble:after{content:"";position:absolute;bottom:-5px;left:35%;width:10px;height:10px;background:#f8fbff;transform:rotate(45deg)}
+#lo .lo-status{margin-top:20px;color:#f8fbff;font-weight:800;font-size:clamp(1rem,3.5vw,1.2rem);letter-spacing:-.01em}
+#lo .lo-substatus{margin-top:5px;color:color-mix(in srgb,var(--lo-sky) 60%,#fff);opacity:.85;font-size:.84rem;line-height:1.5;min-height:2.6em}
+#lo .lo-prog{width:min(100%,340px);margin-top:14px}
+#lo .lo-track{height:8px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(192,224,255,.16);overflow:hidden}
+#lo .lo-fill{height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--prim-s),var(--lo-sky) 65%,var(--lo-or));box-shadow:0 0 12px color-mix(in srgb,var(--lo-sky) 55%,transparent);transition:width .18s linear}
+#lo .lo-meta{display:flex;justify-content:space-between;margin-top:8px;font-size:.72rem;color:color-mix(in srgb,var(--lo-sky) 60%,#fff);opacity:.8;font-variant-numeric:tabular-nums}
+#lo .lo-foot{margin-top:20px;color:color-mix(in srgb,var(--lo-sky) 55%,#fff);opacity:.65;font-size:.66rem;letter-spacing:.09em;text-transform:uppercase}#lo .lo-foot b{color:var(--lo-or2)}
+#lo .lo-skip{position:absolute;right:14px;bottom:12px;padding:8px 14px;min-height:40px;border-radius:999px;font:inherit;font-weight:700;font-size:.74rem;color:#e3f1ff;background:rgba(255,255,255,.1);border:1px solid rgba(139,202,255,.28);cursor:pointer}
+#lo .lo-skip:hover{background:rgba(255,255,255,.2)}#lo .lo-skip:focus-visible{outline:3px solid var(--lo-or);outline-offset:2px}
+/* hormat saat selesai */
+#lo .lo-mascot.hormat{animation:none;left:77%}#lo .lo-mascot.hormat .lo-arm,#lo .lo-mascot.hormat .lo-leg,#lo .lo-mascot.hormat .lo-folder{animation:none}#lo .lo-mascot.hormat .lo-arm.right{transform:rotate(145deg)}#lo .lo-mascot.hormat .lo-folder{display:none}
+@keyframes lo-walk{0%{left:5%;transform:translateY(0)}10%{transform:translateY(-5px)}20%{transform:translateY(0)}32%{left:28%;transform:translateY(0)}40%{left:35%;transform:translateY(-25px)}48%{left:42%;transform:translateY(0)}61%{left:59%;transform:translateY(0)}68%{left:66%;transform:translateY(-20px)}76%{left:73%;transform:translateY(0)}88%,100%{left:77%;transform:translateY(0)}}
+@keyframes lo-arm{to{transform:rotate(24deg)}}@keyframes lo-leg{to{transform:rotate(27deg) translateY(-1px)}}
+@keyframes lo-fold{to{transform:rotate(-8deg) translateY(-2px)}}@keyframes lo-runaway{0%,12%{right:10%;transform:rotate(8deg)}38%{right:24%;transform:rotate(-10deg) translateY(-7px)}65%{right:40%;transform:rotate(12deg)}88%,100%{right:56%;transform:rotate(-5deg) translateY(-3px)}}
+@keyframes lo-hop{0%,100%{translate:0 0}50%{translate:0 -3px}}@keyframes lo-blink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.12)}}
+@keyframes lo-bob{0%,100%{translate:0 0}50%{translate:0 -4px}}@keyframes lo-cloud{to{left:110%}}@keyframes lo-pulse{0%,100%{transform:scale(.96);opacity:.55}50%{transform:scale(1.03);opacity:1}}
+@media(max-width:480px){#lo{padding:14px}#lo .lo-scene{height:225px;border-radius:19px}#lo .lo-tw.left{left:4%}#lo .lo-tw.right{right:4%}#lo .lo-bld{scale:.88}#lo .lo-mascot{scale:.88;transform-origin:bottom left}#lo .lo-orbit{width:115vw}#lo .lo-bubble{top:7%;font-size:.65rem}#lo .lo-foot{font-size:.58rem}}
+html.lite #lo .lo-cloud,html.lite #lo .lo-orbit{animation:none}html.lite #lo{transition:none}
+@media(prefers-reduced-motion:reduce){#lo{transition:none}}

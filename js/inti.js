@@ -140,7 +140,8 @@ async function navigateTo(p) {
   const baru = S.page !== p; S.page = p; const id = S.cur = (S.cur || 0) + 1;
   setHead(p); document.querySelectorAll('[data-p]').forEach(n => n.classList.toggle('active', n.dataset.p === p)); closeSidebar();
   const ada = !!PC[p]; ada ? $('app-container').innerHTML = PC[p] : loading(); if (baru) animasiHalaman();
-  await RENDER[p]();
+  const lo = !ada; if (lo) LOAD.mulai(p);
+  try { await RENDER[p](); } finally { if (lo) LOAD.selesai(); }
   if (id === S.cur && !ada && baru) animasiHalaman();
   if (id === S.cur && p !== 'dashboard') PC[p] = $('app-container').innerHTML;
 }
