@@ -16,7 +16,7 @@ const TANPA = '(Tanpa unit kerja)', urutUnit = (a, b) => (a === TANPA) - (b === 
 const SC = [['Hadir', 'Hadir', 'h'], ['Terlambat', 'Telat', 't'], ['Izin', 'Izin', 'i'], ['Sakit', 'Sakit', 's'], ['Dinas Luar', 'DL', 'd'], ['Tidak Hadir', 'Alpa', 'x']];
 function editor(r) {
   const a = r.data.apel, H = r.data.hadir, w = r.data.ubah === true, dis = w ? '' : 'disabled';
-  S.ed = { a, H, w, unit: '', q: '', grup: [] };
+  S.ed = { a, H, w, unit: '', q: '', grup: [], ket: r.data.ket || [] };
   const fld = ([k, l, t]) => t === 'i' ? `<div class="col-md-6"><label class="lbl" for="f_${k}">${l}</label><input id="f_${k}" class="form-control" value="${esc(a[k])}" ${dis}></div>` : `<div class="col-12"><label class="lbl" for="f_${k}">${l}</label><textarea id="f_${k}" rows="3" class="form-control" ${dis}>${esc(a[k])}</textarea></div>`;
   const units = [...new Set(H.map(h => h.Unit || TANPA))].sort(urutUnit);
   $('apelEd').innerHTML = `<div class="card-x mb-3"><div class="d-flex flex-wrap align-items-center gap-2 mb-3"><h3 class="h6 mb-0">Apel ${esc(a.Sesi)} · ${esc(a.Tanggal)}${a.Regu ? ' · ' + esc(a.Regu) : ''}</h3><span class="badge-x ${a.Status === 'Selesai' ? 'ok' : 'wait'}">${esc(a.Status)}</span>${isAdmin() ? `<button class="btn-o danger ms-auto" onclick="hapusApelRow('${a.ID}')"><i class="bi bi-trash"></i> Hapus apel</button>` : ''}</div>
@@ -29,9 +29,12 @@ function editor(r) {
   ${w ? '<div class="aksi-bar"><button class="btn-o" onclick="simpanUI(false)">Simpan draf</button><button class="btn-x" onclick="simpanUI(true)">Simpan dan selesaikan</button></div>' : ''}</div>`;
   gambarRoster(); $('apelEd').scrollIntoView({ behavior: 'smooth' }); muatFoto(r.data.foto);
 }
+const kunci = h => h.Sumber === 'Surat' && !isAdmin(); // terisi dari surat yang disetujui: hanya Super Admin yang dapat mengubah
+const opsiKet = st => (S.ed.ket || []).filter(k => k.Kategori === st);
 function barisRoster(i) {
-  const h = S.ed.H[i], w = S.ed.w;
-  return `<div class="rr" id="rr_${i}"><div class="rn"><b>${esc(h.Nama)}</b><small>${esc(h.Jabatan) || '–'}</small></div><div class="chs" role="group" aria-label="Status ${esc(h.Nama)}">${SC.map(([s, l, c]) => `<button type="button" class="ch c-${c} ${h.Status === s ? 'on' : ''}" aria-pressed="${h.Status === s}" title="${s}" ${w ? '' : 'disabled'} onclick="pilihStatus(${i},'${s}')">${l}</button>`).join('')}</div>${h.Status !== 'Hadir' ? `<input class="form-control ket" placeholder="Keterangan (opsional)" aria-label="Keterangan ${esc(h.Nama)}" value="${esc(h.Keterangan)}" ${w ? '' : 'disabled'} oninput="S.ed.H[${i}].Keterangan=this.value">` : ''}</div>`;
+  const h = S.ed.H[i], w = S.ed.w, kc = kunci(h), off = w && !kc ? '' : 'disabled', st = h.Status, tanpa = st === 'Hadir', O = opsiKet(st), ada = O.some(k => k.Nama === h.Keterangan);
+  const ket = tanpa ? '' : `<div class="ketbar">${st === 'Terlambat' ? '<span class="muted small align-self-center">Terlambat tidak memerlukan keterangan.</span>' : `<select class="form-select" aria-label="Keterangan ${esc(h.Nama)}" ${off} onchange="S.ed.H[${i}].Keterangan=this.value">${O.length ? '<option value="">Pilih keterangan...</option>' : ''}${O.map(k => `<option ${k.Nama === h.Keterangan ? 'selected' : ''}>${esc(k.Nama)}</option>`).join('')}${h.Keterangan && !ada ? `<option selected>${esc(h.Keterangan)}</option>` : ''}</select>`}<input class="form-control" placeholder="Catatan (opsional)" maxlength="200" aria-label="Catatan ${esc(h.Nama)}" value="${esc(h.Catatan || '')}" ${w ? '' : 'disabled'} oninput="S.ed.H[${i}].Catatan=this.value"></div>`;
+  return `<div class="rr ${h.Sumber === 'Surat' ? 'terkunci' : ''}" id="rr_${i}"><div class="rn"><b>${esc(h.Nama)}</b>${h.Sumber === 'Surat' ? `<span class="sbadge" title="${kc ? 'Terisi otomatis dari surat yang disetujui. Hanya Super Admin yang dapat mengubah.' : 'Terisi dari surat. Bila diubah, tautan ke surat dilepas.'}"><i class="bi bi-envelope-check"></i>Surat${kc ? ' · terkunci' : ''}</span>` : ''}<small>${esc(h.Jabatan) || '–'}</small></div><div class="chs" role="group" aria-label="Status ${esc(h.Nama)}">${SC.map(([s, l, c]) => `<button type="button" class="ch c-${c} ${h.Status === s ? 'on' : ''}" aria-pressed="${h.Status === s}" title="${s}" ${off} onclick="pilihStatus(${i},'${s}')">${l}</button>`).join('')}</div>${ket}</div>`;
 }
 function ringkasApel() { const c = {}; S.ed.H.forEach(h => c[h.Status] = (c[h.Status] || 0) + 1); $('rsum').innerHTML = SC.map(([s]) => c[s] ? `<span>${s} ${c[s]}</span>` : '').join(''); }
 function gambarRoster() { // daftar tersusun per unit kerja; saring menurut unit dan nama
@@ -41,11 +44,14 @@ function gambarRoster() { // daftar tersusun per unit kerja; saring menurut unit
   $('rost').innerHTML = e.grup.length ? e.grup.map((u, gi) => `<div class="ug"><div class="uh"><b>${esc(u)}</b><span class="muted">${G[u].length} orang</span>${e.w ? `<button type="button" class="btn-o sm" onclick="semuaHadirUnit(${gi})">Semua hadir</button>` : ''}</div>${G[u].map(barisRoster).join('')}</div>`).join('') : '<p class="muted py-3">Tidak ada nama yang cocok.</p>';
   ringkasApel();
 }
-function pilihStatus(i, s) { if (!S.ed.w) return; S.ed.H[i].Status = s; const el = $('rr_' + i); if (el) el.outerHTML = barisRoster(i); ringkasApel(); }
-function semuaHadir() { const e = S.ed; e.H.forEach(h => { if (!e.unit || (h.Unit || TANPA) === e.unit) h.Status = 'Hadir'; }); gambarRoster(); }
-function semuaHadirUnit(gi) { const u = S.ed.grup[gi]; S.ed.H.forEach(h => { if ((h.Unit || TANPA) === u) h.Status = 'Hadir'; }); gambarRoster(); }
+function pilihStatus(i, s) {
+  const h = S.ed.H[i]; if (!S.ed.w || kunci(h)) return; h.Status = s;
+  if (s === 'Hadir' || s === 'Terlambat') h.Keterangan = ''; else { const O = opsiKet(s); if (!O.some(k => k.Nama === h.Keterangan)) h.Keterangan = O.length === 1 ? O[0].Nama : ''; } const el = $('rr_' + i); if (el) el.outerHTML = barisRoster(i); ringkasApel(); }
+const jadiHadir = h => { if (kunci(h)) return; h.Status = 'Hadir'; h.Keterangan = ''; h.Catatan = ''; };
+function semuaHadir() { const e = S.ed; e.H.forEach(h => { if (!e.unit || (h.Unit || TANPA) === e.unit) jadiHadir(h); }); gambarRoster(); }
+function semuaHadirUnit(gi) { const u = S.ed.grup[gi]; S.ed.H.forEach(h => { if ((h.Unit || TANPA) === u) jadiHadir(h); }); gambarRoster(); }
 function kumpulApel(selesai, al) {
-  const d = { rows: S.ed.H.map(h => ({ PegawaiID: h.PegawaiID, Status: h.Status, Keterangan: h.Keterangan || '' })), selesai, alasan: al || '', UpdatedAt: S.ed.a.UpdatedAt };
+  const d = { rows: S.ed.H.map(h => ({ PegawaiID: h.PegawaiID, Status: h.Status, Keterangan: h.Keterangan || '', Catatan: h.Catatan || '' })), selesai, alasan: al || '', UpdatedAt: S.ed.a.UpdatedAt };
   AP[S.aj].f.forEach(([k]) => d[k] = $('f_' + k).value); return d;
 }
 function simpanUI(selesai) {

@@ -5,7 +5,7 @@ RENDER.nilai = async () => {
   const m = await call('getNilaiMeta'); if (!m) return; S.nm = m.data;
   if (!lihatSemua() && !S.user.roles.includes('Atasan')) return nilaiSaya();
   const ak = S.nm.komponen.filter(k => k.Aktif === true), P = S.nm.periode, ad = isAdmin();
-  $('app-container').innerHTML = `<div class="card-x mb-3"><div class="toolbar mb-0"><div><label class="lbl" for="pp">Periode penilaian</label><select id="pp" class="form-select" onchange="loadNilai()">${P.map(x => `<option value="${x.ID}">${esc(x.Nama)} (${esc(x.Mulai)} s.d. ${esc(x.Sampai)}) · ${esc(x.Status)}</option>`).join('')}</select></div>${ad ? '<button class="btn-o align-self-end" onclick="formPeriode()">Periode baru</button><button class="btn-o align-self-end" onclick="tutupPeriode()">Buka/tutup periode</button><button class="btn-o align-self-end" onclick="formKomponen()">Atur komponen</button><button class="btn-o align-self-end" onclick="formSkor()">Skor kehadiran</button><button class="btn-o align-self-end" onclick="formPenilai()">Atur penilai</button>' : ''}</div>
+  $('app-container').innerHTML = `<div class="card-x mb-3"><div class="toolbar mb-0"><div><label class="lbl" for="pp">Periode penilaian</label><select id="pp" class="form-select" onchange="loadNilai()">${P.map(x => `<option value="${x.ID}">${esc(x.Nama)} (${esc(x.Mulai)} s.d. ${esc(x.Sampai)}) · ${esc(x.Status)}</option>`).join('')}</select></div>${ad ? '<button class="btn-o align-self-end" onclick="formPeriode()">Periode baru</button><button class="btn-o align-self-end" onclick="tutupPeriode()">Buka/tutup periode</button><button class="btn-o align-self-end" onclick="formKomponen()">Atur komponen</button><button class="btn-o align-self-end" onclick="formPenilai()">Atur penilai</button>' : ''}</div>
   <div class="mt-3">${ak.length ? ak.map(k => `<span class="badge-x ${k.Jenis === 'Kehadiran' ? 'wait' : 'ok'} me-1">${esc(k.Nama)} ${k.Bobot}%${k.Jenis === 'Kehadiran' ? ' (otomatis dari apel)' : ''}</span>`).join('') : '<span class="muted">Belum ada komponen aktif' + (ad ? ': klik "Atur komponen".' : '. Hubungi Super Admin.') + '</span>'}</div></div><div id="nl"></div><div id="rk"></div>`;
   P.length ? loadNilai() : $('nl').innerHTML = `<div class="card-x">${kosong('belum ada periode penilaian.')}</div>`;
 };
@@ -39,7 +39,7 @@ const rowK = k => `<tr><td><input class="form-control" value="${esc(k.Nama)}" da
 const addK = () => { $('kb').insertAdjacentHTML('beforeend', rowK({})); totalK(); };
 function totalK() { let t = 0; $('kb').querySelectorAll('tr').forEach(r => { const c = r.querySelectorAll('input'); if (c[2].checked) t += parseFloat(c[1].value) || 0; }); $('kt2').textContent = Math.round(t * 100) / 100; }
 function formKomponen() {
-  openModal('Komponen dan bobot penilaian', `<form onsubmit="simpanKomp(event)"><p class="muted">Jenis "Kehadiran" dihitung otomatis dari apel (staf dan penjagaan) yang selesai pada rentang periode, memakai skor status dari tombol "Skor kehadiran". Total bobot komponen aktif harus 100.</p><div class="table-wrap"><table class="table"><thead><tr><th>Nama komponen</th><th>Bobot (%)</th><th>Jenis</th><th>Aktif</th></tr></thead><tbody id="kb">${S.nm.komponen.map(rowK).join('')}</tbody></table></div><div class="d-flex justify-content-between align-items-center mt-3"><button type="button" class="btn-o" onclick="addK()">+ Tambah komponen</button><b>Total aktif: <span id="kt2">0</span>%</b></div><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
+  openModal('Komponen dan bobot penilaian', `<form onsubmit="simpanKomp(event)"><p class="muted">Jenis "Kehadiran" dihitung otomatis dari apel (staf dan penjagaan) yang selesai pada rentang periode, memakai skor status yang diatur Super Admin di Master Data ▸ Kehadiran. Total bobot komponen aktif harus 100.</p><div class="table-wrap"><table class="table"><thead><tr><th>Nama komponen</th><th>Bobot (%)</th><th>Jenis</th><th>Aktif</th></tr></thead><tbody id="kb">${S.nm.komponen.map(rowK).join('')}</tbody></table></div><div class="d-flex justify-content-between align-items-center mt-3"><button type="button" class="btn-o" onclick="addK()">+ Tambah komponen</button><b>Total aktif: <span id="kt2">0</span>%</b></div><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
   totalK();
 }
 async function simpanKomp(e) {
@@ -54,7 +54,7 @@ async function simpanPer(e) { e.preventDefault(); const r = await call('simpanPe
 async function tutupPeriode() { const p = S.nm.periode.find(x => x.ID === $('pp').value); if (!p) return toast('Pilih periode terlebih dahulu.', 'warning'); const r = await call('simpanPeriode', { ID: p.ID, Status: p.Status === 'Terbuka' ? 'Ditutup' : 'Terbuka' }); if (r) { toast('Status periode diubah.'); RENDER.nilai(); } }
 function formPenilai() {
   const pid = $('pp').value; if (!pid) return toast('Buat periode terlebih dahulu.', 'warning');
-  if (!S.nm.atasan.length) return toast('Belum ada akun aktif berperan Atasan. Atur peran di Akun & Persetujuan.', 'warning');
+  if (!S.nm.atasan.length) return toast('Belum ada akun aktif berperan Atasan. Atur peran di Master Data ▸ Akun & Peran.', 'warning');
   openModal('Atur penilai', `<form onsubmit="simpanPenilai(event,'${pid}')"><label class="lbl" for="pe">Atasan / pejabat penilai</label><select id="pe" class="form-select mb-3" onchange="isiPenilai('${pid}')">${S.nm.atasan.map(a => `<option value="${esc(a.Email)}">${esc(a.Nama)} (${esc(a.Email)})</option>`).join('')}</select><label class="lbl" for="pg">Pegawai yang dinilai (tahan Ctrl untuk memilih banyak)</label><select id="pg" multiple size="10" class="form-select">${S.nm.pegawai.map(p => `<option value="${p.ID}">${esc(p.Nama)}</option>`).join('')}</select><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
   isiPenilai(pid);
 }
@@ -63,16 +63,6 @@ async function simpanPenilai(e, pid) { e.preventDefault(); const r = await call(
 async function nilaiSaya() {
   const r = await call('nilaiSaya'); if (!r) return;
   $('app-container').innerHTML = `<div class="card-x"><h3 class="h6">Hasil penilaian kinerja saya</h3>${r.data.length ? r.data.map(x => `<div class="mb-3"><b>${esc(x.Periode)}</b> · Skor <b>${x.Skor}</b><div class="table-wrap"><table class="table table-sm"><tbody>${x.Rincian.map(c => `<tr><td>${esc(c.nama)}</td><td>${c.bobot}%</td><td>${c.nilai}</td></tr>`).join('')}</tbody></table></div>${x.Catatan ? `<p class="muted mb-0">Catatan: ${esc(x.Catatan)}</p>` : ''}</div>`).join('') : kosong('belum ada hasil penilaian yang disahkan.')}</div>`;
-}
-
-async function formSkor() {
-  const r = await call('getSkorHadir'); if (!r) return; const d = S.sk = r.data;
-  openModal('Skor status kehadiran', `<form onsubmit="simpanSkorUI(event)"><p class="muted small">Berlaku sama untuk apel staf dan apel penjagaan agar penilaian kehadiran seimbang. Isi skor 0 sampai 100, atau centang "Dikecualikan" agar status itu tidak dihitung sebagai apel yang wajib diikuti (misalnya cuti resmi atau dinas luar). Skor kehadiran = rata-rata skor semua apel yang wajib diikuti pegawai.</p><div class="table-wrap"><table class="table"><thead><tr><th>Status</th><th>Skor</th><th>Dikecualikan</th></tr></thead><tbody>${d.status.map((s, i) => `<tr><td>${s}</td><td style="width:120px"><input type="number" min="0" max="100" step="1" class="form-control" data-s="${i}" value="${d.skor[s] === null ? '' : d.skor[s]}" ${d.skor[s] === null ? 'disabled' : ''} aria-label="Skor ${s}"></td><td><input type="checkbox" data-x="${i}" ${d.skor[s] === null ? 'checked' : ''} ${s === 'Hadir' ? 'disabled' : ''} aria-label="Dikecualikan ${s}" onchange="this.closest('tr').querySelector('[data-s]').disabled=this.checked"></td></tr>`).join('')}</tbody></table></div><p class="muted small">Bawaan: Hadir 100, Terlambat 100, lainnya 0. Perubahan berlaku untuk penilaian yang disimpan sesudahnya; penilaian yang sudah disahkan tidak berubah.</p><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
-}
-async function simpanSkorUI(e) {
-  e.preventDefault(); const o = {};
-  S.sk.status.forEach((s, i) => { const x = document.querySelector(`[data-x="${i}"]`), v = document.querySelector(`[data-s="${i}"]`); o[s] = x.checked ? null : v.value; });
-  const r = await call('simpanSkorHadir', o); if (r) { closeModal(); toast(r.message); }
 }
 
 (window.MOD = window.MOD || []).push('Nilai');

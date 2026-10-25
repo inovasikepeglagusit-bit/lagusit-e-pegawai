@@ -1,13 +1,44 @@
 /** LAGUSIT e-PEGAWAI — Frontend SPA. Token hanya di memori (bukan URL); URL tidak pernah berubah. */
 const S = { token: null, user: null, menu: [], pegawai: [], akun: [] };
 const STATUS = ['PNS', 'PPPK', 'CPNS'], ROLES = ['Super Admin', 'Operator', 'Atasan', 'Pimpinan'];
-const TITLES = { dashboard: 'Dashboard', pegawai: 'Pegawai', akun: 'Akun & Persetujuan', audit: 'Riwayat Aktivitas', profil: 'Profil Saya' };
-const ICONS = { dashboard: 'bi-grid-1x2', pegawai: 'bi-person-vcard', akun: 'bi-person-check', audit: 'bi-clock-history', profil: 'bi-person-circle' };
+const TITLES = { dashboard: 'Dashboard', pegawai: 'Pegawai', audit: 'Riwayat Aktivitas', profil: 'Profil Saya' };
+const ICONS = { dashboard: 'bi-grid-1x2', pegawai: 'bi-person-vcard', audit: 'bi-clock-history', profil: 'bi-person-circle' };
 const RENDER = {};
 let chart = null, lastChart = null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const isAdmin = () => S.user && S.user.roles.includes('Super Admin');
+
+// ── Tampilan yang dapat diatur Super Admin (nama, logo, warna): data dari server, disimpan di peramban agar halaman masuk langsung bermerek ──
+const TAMPIL0 = { nama: 'LAGUSIT e-PEGAWAI', sub: 'Sistem Elektronik Kepegawaian', instansi: 'Lapas Gunungsitoli', utama: '#0F172A', aksen: '#D97706', latar: '#F1F5F9', logo: '' };
+let TP = Object.assign({}, TAMPIL0);
+const FAV0 = document.getElementById('favicon') ? document.getElementById('favicon').href : '';
+const hexRgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const rgbHex = a => '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+const campur = (a, b, t) => { const x = hexRgb(a), y = hexRgb(b); return rgbHex(x.map((v, i) => v + (y[i] - v) * t)); };
+const lumHex = h => { const c = hexRgb(h).map(v => v / 255).map(v => v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4)); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; };
+const kontrasHex = (a, b) => { const x = lumHex(a), y = lumHex(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+function gelapkan(h, k) { let c = h; for (let i = 0; i < 40 && kontrasHex(c, '#FFFFFF') < k; i++) c = campur(c, '#000000', .08); return c; }
+const inisial = n => n === TAMPIL0.nama ? 'LG' : String(n).split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+const brandHtml = () => (TP.logo ? `<img class="auth-logo" src="${esc(TP.logo)}" alt="">` : '') + esc(TP.nama);
+function terapkanTampilan(t) {
+  TP = Object.assign({}, TAMPIL0, t || {});
+  ['utama', 'aksen', 'latar'].forEach(k => { if (!/^#[0-9A-Fa-f]{6}$/.test(TP[k])) TP[k] = TAMPIL0[k]; });
+  const std = TP.utama === TAMPIL0.utama && TP.aksen === TAMPIL0.aksen && TP.latar === TAMPIL0.latar, akBawaan = TP.aksen === TAMPIL0.aksen;
+  const goldd = akBawaan ? '#B45309' : gelapkan(TP.aksen, 4.5), amber = akBawaan ? '#F59E0B' : campur(TP.aksen, '#FFFFFF', .15), amberL = akBawaan ? '#FBBF24' : campur(TP.aksen, '#FFFFFF', .38);
+  $('tema').textContent = std ? '' : `:root{--navy:${TP.utama};--navy2:${campur(TP.utama, '#FFFFFF', .12)};--gold:${TP.aksen};--goldd:${goldd};--amber:${amber};--amber-l:${amberL}}:root:not([data-theme=dark]){--bg:${TP.latar}}`;
+  const lg = TP.logo, bl = $('brandLogo');
+  if (bl) { bl.hidden = !lg; if (lg) bl.src = lg; else bl.removeAttribute('src'); }
+  if ($('brandName')) { $('brandName').textContent = TP.nama; $('brandSub').textContent = TP.sub; }
+  if ($('mLogo')) { $('mLogo').innerHTML = lg ? `<img src="${esc(lg)}" alt="">` : esc(inisial(TP.nama)); $('mName').textContent = TP.nama; }
+  document.title = TP.nama; const fv = $('favicon'); if (fv && FAV0) fv.href = lg || FAV0;
+  document.querySelectorAll('.auth-brand').forEach(e => e.innerHTML = brandHtml());
+}
+function simpanCacheTampilan(t) { try { localStorage.setItem('tampilan', JSON.stringify(t)); } catch (e) {} }
+async function muatTampilan() {
+  try { const c = JSON.parse(localStorage.getItem('tampilan') || 'null'); if (c) terapkanTampilan(c); } catch (e) {}
+  try { const r = await api('getTampilan'); if (r && r.success) { terapkanTampilan(r.data); simpanCacheTampilan(r.data); } } catch (e) {}
+}
 
 // ── Komunikasi server ──
 async function api(fn, ...args) { // satu-satunya pintu komunikasi ke server Apps Script
@@ -38,6 +69,30 @@ function busy(b, on) {
   else { b.disabled = false; b.innerHTML = b.dataset.t; }
 }
 const loading = () => $('app-container').innerHTML = '<div aria-busy="true"><div class="sk" style="height:110px"></div><div class="row g-3 mt-1"><div class="col-6 col-xl-3"><div class="sk"></div></div><div class="col-6 col-xl-3"><div class="sk"></div></div><div class="col-6 col-xl-3"><div class="sk"></div></div><div class="col-6 col-xl-3"><div class="sk"></div></div></div><div class="sk mt-3" style="height:240px"></div></div>';
+// Berkas hasil unduhan server ({mime,nama,data}): PDF diunduh, gambar ditampilkan
+function tampilBerkas(x) {
+  if (x.mime === 'application/pdf') { const bin = atob(x.data), a = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); const l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([a], { type: x.mime })); l.download = /\.pdf$/i.test(x.nama) ? x.nama : x.nama + '.pdf'; document.body.appendChild(l); l.click(); l.remove(); toast('Berkas PDF diunduh.'); }
+  else openModal('Berkas: ' + x.nama, `<img class="w-100" alt="Berkas" src="data:${x.mime};base64,${x.data}">`);
+}
+function bacaB64(f) { return new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = () => no(new Error('Gagal membaca berkas.')); r.readAsDataURL(f); }); }
+/** Mengolah gambar di peramban. mode 'fit': sisi terpanjang <= w. mode 'cover': dipotong tengah menjadi tepat w x h. Mengembalikan data URL. */
+function olahGambar(file, w, h, mode, tipe, mutu) {
+  return new Promise((ok, no) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const c = document.createElement('canvas'), g = c.getContext('2d');
+      if (mode === 'cover') {
+        c.width = w; c.height = h; const k = Math.max(w / img.width, h / img.height), dw = img.width * k, dh = img.height * k;
+        if (tipe === 'image/jpeg') { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); } g.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      } else {
+        const k = Math.min(1, w / Math.max(img.width, img.height)); c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+        if (tipe === 'image/jpeg') { g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); } g.drawImage(img, 0, 0, c.width, c.height);
+      }
+      URL.revokeObjectURL(u); ok(c.toDataURL(tipe || 'image/png', mutu || 0.85));
+    };
+    img.onerror = () => { URL.revokeObjectURL(u); no(new Error('Berkas bukan gambar yang valid.')); }; img.src = u;
+  });
+}
 function openModal(t, h) { $('mdlT').textContent = t; $('mdlB').innerHTML = h; bootstrap.Modal.getOrCreateInstance($('mdl')).show(); }
 function closeModal() { const m = bootstrap.Modal.getInstance($('mdl')); if (m) m.hide(); }
 function setTheme(t) {
@@ -60,7 +115,7 @@ function expire() { toast('Sesi berakhir. Silakan masuk kembali.', 'warning'); l
 function doLogoutUI() { api('doLogout', S.token).catch(() => {}); logoutLocal(); }
 
 // ── Halaman akun ──
-const authCard = (t, s, b) => `<div class="auth"><div class="card-x auth-card"><div class="auth-brand">LAGUSIT e-PEGAWAI</div><h2 class="h4">${t}</h2><p class="muted">${s}</p>${b}</div></div>`;
+const authCard = (t, s, b) => `<div class="auth"><div class="card-x auth-card"><div class="auth-brand">${brandHtml()}</div><h2 class="h4">${t}</h2><p class="muted">${s}</p>${b}</div></div>`;
 function renderLogin() {
   $('app-container').innerHTML = authCard('Masuk', 'Gunakan email aktif sebagai ID pengguna.', `<form onsubmit="doLoginUI(event)">
     <label class="lbl" for="em">Email</label><input id="em" name="email" type="email" class="form-control mb-3" required autocomplete="username">
@@ -149,16 +204,21 @@ RENDER.pegawai = async () => {
     ${isAdmin() ? '<button class="btn-x ms-auto" onclick="formPegawai()"><i class="bi bi-plus-lg"></i> Tambah pegawai</button>' : ''}</div><div id="pl"></div></div>`;
   drawPegawai();
 };
+const akunBadge = p => p.Akun ? `<span class="badge-x ${p.Akun === 'Aktif' ? 'ok' : p.Akun === 'Menunggu' ? 'wait' : 'off'}">${esc(p.Akun)}</span>` : '<span class="badge-x off">Belum ada</span>';
+function unitOpsi(cur) { // sumber tunggal: unit kerja yang diatur Super Admin di Master Data
+  const A = (S.units || []).filter(x => x.Aktif === true).map(x => x.Nama).sort((a, b) => a.localeCompare(b));
+  return '<option value="">Pilih unit kerja...</option>' + A.map(n => `<option value="${esc(n)}" ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('') + (cur && !A.includes(cur) ? `<option value="${esc(cur)}" selected>${esc(cur)} (tidak terdaftar)</option>` : '');
+}
 function drawPegawai() {
   const q = $('q').value.toLowerCase(), fs = $('fs').value, fa = $('fa').checked;
   const L = S.pegawai.filter(p => (fa || p.Aktif === true) && (!fs || p.StatusKepegawaian === fs) && [p.Nama, p.NIP, p.Jabatan, p.Unit].join(' ').toLowerCase().includes(q));
-  $('pl').innerHTML = L.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Nama</th><th>NIP</th><th>Pangkat/Gol.</th><th>Jabatan</th><th>Unit</th><th>Status</th>${isAdmin() ? '<th>Aksi</th>' : ''}</tr></thead><tbody>${L.map(p => `<tr><td>${esc(p.Nama)}</td><td class="nw">${esc(p.NIP)}</td><td>${esc(p.Pangkat)} ${esc(p.Golongan)}</td><td>${esc(p.Jabatan)}</td><td>${esc(p.Unit)}</td><td><span class="badge-x ${p.Aktif === true ? 'ok' : 'off'}">${p.Aktif === true ? esc(p.StatusKepegawaian || 'Aktif') : 'Nonaktif'}</span></td>${isAdmin() ? `<td class="nw"><button class="btn-o" onclick="formPegawai('${p.ID}')">Ubah</button> <button class="btn-o" onclick="profilPeg('${p.ID}')">Profil</button>${p.Aktif === true ? ` <button class="btn-o danger" onclick="formNonaktif('${p.ID}')">Nonaktifkan</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>` : '<p class="muted mb-0 py-3">Belum tersedia: tidak ada data yang cocok.</p>';
+  $('pl').innerHTML = L.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Nama</th><th>NIP</th><th>Pangkat/Gol.</th><th>Jabatan</th><th>Unit</th><th>Status</th><th>Akun</th>${isAdmin() ? '<th>Aksi</th>' : ''}</tr></thead><tbody>${L.map(p => `<tr><td>${esc(p.Nama)}</td><td class="nw">${esc(p.NIP)}</td><td>${esc(p.Pangkat)} ${esc(p.Golongan)}</td><td>${esc(p.Jabatan)}</td><td>${esc(p.Unit)}</td><td><span class="badge-x ${p.Aktif === true ? 'ok' : 'off'}">${p.Aktif === true ? esc(p.StatusKepegawaian || 'Aktif') : 'Nonaktif'}</span></td><td>${akunBadge(p)}</td>${isAdmin() ? `<td class="nw"><button class="btn-o" onclick="formPegawai('${p.ID}')">Ubah</button> <button class="btn-o" onclick="profilPeg('${p.ID}')">Profil</button>${p.Aktif === true ? ` <button class="btn-o danger" onclick="formNonaktif('${p.ID}')">Nonaktifkan</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>` : '<p class="muted mb-0 py-3">Belum tersedia: tidak ada data yang cocok.</p>';
 }
 function formPegawai(id) {
   const p = S.pegawai.find(x => x.ID === id) || {};
   const f = (k, l, t = 'text', req) => `<div class="col-md-6"><label class="lbl" for="f${k}">${l}${req ? ' *' : ''}</label><input id="f${k}" name="${k}" type="${t}" class="form-control" value="${esc(p[k])}" ${req ? 'required' : ''}></div>`;
   openModal(id ? 'Ubah pegawai' : 'Tambah pegawai', `<form onsubmit="savePegawai(event)"><input type="hidden" name="ID" value="${esc(p.ID)}"><input type="hidden" name="UpdatedAt" value="${esc(p.UpdatedAt)}">
-    <div class="row g-3">${f('Nama', 'Nama lengkap', 'text', 1)}${f('NIP', 'NIP', 'text', 1)}<div class="col-md-6"><label class="lbl" for="fGol">Golongan</label><select id="fGol" name="Golongan" class="form-select" onchange="pgBerubah('fGol','fPangkat',$('fSt').value)"></select></div><div class="col-md-6"><label class="lbl" for="fPangkat">Pangkat</label><select id="fPangkat" name="Pangkat" class="form-select"></select></div>${f('Jabatan', 'Jabatan')}<div class="col-md-6"><label class="lbl" for="fUnit">Unit kerja</label><input id="fUnit" name="Unit" list="ul" class="form-control" value="${esc(p.Unit)}"><datalist id="ul">${(S.units || []).filter(x => x.Aktif === true).map(x => `<option value="${esc(x.Nama)}">`).join('')}</datalist></div>
+    <div class="row g-3">${f('Nama', 'Nama lengkap', 'text', 1)}${f('NIP', 'NIP', 'text', 1)}<div class="col-md-6"><label class="lbl" for="fGol">Golongan</label><select id="fGol" name="Golongan" class="form-select" onchange="pgBerubah('fGol','fPangkat',$('fSt').value)"></select></div><div class="col-md-6"><label class="lbl" for="fPangkat">Pangkat</label><select id="fPangkat" name="Pangkat" class="form-select"></select></div>${f('Jabatan', 'Jabatan')}<div class="col-md-6"><label class="lbl" for="fUnit">Unit kerja</label><select id="fUnit" name="Unit" class="form-select">${unitOpsi(p.Unit)}</select>${(S.units || []).some(x => x.Aktif === true) ? '<div class="small muted mt-1">Pilihan mengikuti Master Data ▸ Unit &amp; Regu.</div>' : '<div class="small text-danger mt-1">Belum ada unit kerja aktif. Tambahkan dulu di Master Data ▸ Unit &amp; Regu.</div>'}</div>
     <div class="col-md-6"><label class="lbl" for="fSt">Status kepegawaian</label><select id="fSt" name="StatusKepegawaian" class="form-select" onchange="rakitPG('fGol','fPangkat',this.value)"><option value="">Pilih...</option>${STATUS.map(s => `<option ${p.StatusKepegawaian === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
     ${f('TMT', 'TMT', 'date')}${f('Email', 'Email aktif', 'email')}</div>
     <div class="text-end mt-4"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
@@ -172,22 +232,12 @@ async function savePegawai(e) {
 }
 function formNonaktif(id) { askReason('Nonaktifkan pegawai', async a => { const r = await call('nonaktifkanPegawai', id, a); if (r) { toast(r.message); RENDER.pegawai(); } }); }
 
-// ── Akun & persetujuan (Super Admin) ──
-async function aksiAkun(id, aksi, roles, alasan) { const r = await call('ubahAkun', id, aksi, roles || [], alasan || ''); if (r) { toast(r.message); RENDER.akun(); } }
-function tolakAkun(id) { askReason('Tolak pendaftaran akun', a => aksiAkun(id, 'tolak', [], a)); }
-function resetPw(id) { askReason('Reset kata sandi (dikirim ke email pengguna)', async a => { const r = await call('resetPassword', id, a); if (r) toast(r.message); }); }
-function formPeran(id) {
-  const a = S.akun.find(x => x.ID === id), cur = String(a.Roles).split(',');
-  openModal('Peran: ' + a.Nama, `<form onsubmit="savePeran(event,'${id}')"><p class="muted">Semua akun otomatis berperan Pegawai.</p>${ROLES.map(r => `<label class="chk d-block"><input type="checkbox" name="r" value="${r}" ${cur.includes(r) ? 'checked' : ''}> ${r}</label>`).join('')}<div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
-}
-function savePeran(e, id) { e.preventDefault(); const r = [...e.target.querySelectorAll('[name=r]:checked')].map(x => x.value); closeModal(); aksiAkun(id, 'peran', r); }
-
 // ── Riwayat aktivitas & profil ──
 RENDER.audit = async () => { const r = await call('getAudit'); if (r) $('app-container').innerHTML = `<div class="card-x">${auditTable(r.data)}</div>`; };
 
 document.addEventListener('DOMContentLoaded', () => {
   let t = 'light'; try { t = localStorage.getItem('theme') || 'light'; } catch (e) {}
-  setTheme(t); $('boot').remove(); renderLogin();
+  muatTampilan(); setTheme(t); $('boot').remove(); renderLogin();
 });
 
 // ── Pilihan pangkat dan golongan: golongan dibatasi menurut status; memilih golongan PNS mengisi pangkat yang sesuai ──
