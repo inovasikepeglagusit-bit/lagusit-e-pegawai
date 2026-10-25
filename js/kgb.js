@@ -58,6 +58,5 @@ async function simpanEntriUI(e, id, ua) {
 }
 function batalEntri(id) { askReason('Batalkan entri', async a => { const r = await call('batalkanEntri', id, a); if (r) { toast(r.message); muatKal(S.kb, S.kp); muatNotif(); } }); }
 
-const kartuAgenda = a => `<div class="row g-3 mb-3">${stat('Agenda hari ini', a.hariIni, 'Dari kalender', 'bi-calendar3', 't-navy')}<div class="col-12 col-xl-9"><div class="card-x"><h3 class="h6">Agenda mendatang</h3>${a.daftar.length ? a.daftar.map(x => `<div class="todo"><i class="bi bi-calendar-event"></i><div><b>${esc(x.Judul)}</b><small>${esc(x.Tanggal)}${x.Waktu ? ' · ' + esc(x.Waktu) : ''}${x.Lokasi ? ' · ' + esc(x.Lokasi) : ''}</small></div></div>`).join('') : '<p class="muted mb-0">Belum tersedia: belum ada agenda mendatang.</p>'}</div></div></div>`;
 
 (window.MOD = window.MOD || []).push('Kgb');

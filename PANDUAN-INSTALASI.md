@@ -5,9 +5,18 @@ Data pegawai, foto, dan berkas tetap di Google Spreadsheet dan Google Drive Anda
 
 ## Isi paket
 - **Backend (disajikan terpisah):** semua berkas `.gs`: `Kode.gs`, `Modul_Apel.gs`, `Modul_Master.gs`, `Modul_Profil.gs`, `Modul_Kgb.gs`, `Modul_Laporan.gs`, serta dua berkas **baru** `Modul_Absen.gs` dan `Modul_Tampilan.gs`. Berkas `Modul_Foto.gs`, `Modul_Kalender.gs`, `Modul_Monitoring.gs`, `Modul_Nilai.gs` tidak berubah. `appsscript.json` opsional.
-- **Frontend (ZIP):** folder `lagusit-e-pegawai` berisi `index.html`, `css/style.css`, `js/config.js`, `js/app.js`, `js/inti.js`, `js/apel.js`, `js/master.js`, `js/absen.js` (baru), folder `img/` (baru: gambar halaman depan), `js/nilai.js`, `js/kgb.js`, `js/lapor.js`, `README.md`, dan panduan ini.
+- **Frontend (ZIP):** folder `lagusit-e-pegawai` berisi `index.html`, `css/style.css`, `js/config.js`, `js/app.js`, `js/grafik.js` (baru), `js/inti.js`, `js/apel.js`, `js/master.js`, `js/absen.js` (baru), folder `img/` (baru: gambar halaman depan), `js/nilai.js`, `js/kgb.js`, `js/lapor.js`, `README.md`, dan panduan ini.
 
 ---
+## PERBARUI KE TAMPILAN BARU (Tahap 16)
+Untuk yang sudah memasang Tahap 15. Data tidak hilang.
+1. **Cadangan** proyek Apps Script dan spreadsheet seperti biasa.
+2. **Backend:** ganti isi **empat** berkas dengan yang baru: `Kode`, `Modul_Apel`, `Modul_Tampilan` (tidak ada berkas baru yang perlu dibuat). Simpan (Ctrl+S), lalu **Deploy → Manage deployments → pensil → New version → Deploy**. Tahap ini menambah fungsi gambar dashboard; folder Drive `Aset Tampilan` dibuat otomatis saat gambar pertama diganti.
+3. **Frontend:** timpa `index.html`, `css/style.css`, seluruh `js/*.js` (ada berkas baru `js/grafik.js`), dan salin folder `img` (kini ada tambahan `hero-gedung.jpg` dan `info-gedung.jpg`). **Jangan menimpa `js/config.js`.** Lalu `git add -A`, `git commit -m "Tahap 16"`, `git push`, tunggu 1-2 menit, Ctrl+F5.
+4. **Atur tampilan:** Master Data ▸ **Tampilan**: ubah judul banner, kata kunci, kutipan, warna (kini ada "Warna sorotan"), dan di bagian **Gambar dashboard** ganti gambar banner serta kartu Informasi. Gambar diperkecil otomatis di peramban dan langsung berlaku untuk semua pengguna.
+5. **Warna bawaan berubah** (biru tua dan biru sorotan). Jika Anda sudah pernah menyimpan warna sendiri, warna itu tetap dipakai.
+6. Grafik dibuat sendiri tanpa pustaka luar (Chart.js dilepas), jadi dashboard lebih ringan di HP. Perangkat hemat memori atau mode hemat data otomatis memakai animasi lebih sedikit.
+
 ## SUDAH PERNAH MEMASANG? Cukup perbarui (Tahap 15)
 Bagian ini untuk Anda yang aplikasinya sudah berjalan. Data tidak hilang; kolom dan sheet baru dibuat otomatis saat aplikasi pertama kali dipakai.
 1. **Cadangan:** salin proyek Apps Script dan spreadsheet database (lihat "Persiapan" di bawah).

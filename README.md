@@ -4,9 +4,10 @@ Sistem Elektronik Kepegawaian Lapas Gunungsitoli. Frontend statis (HTML, CSS, Ja
 ## Struktur
 - `index.html`: halaman tunggal aplikasi
 - `css/style.css`: gaya tampilan
-- `img/`: gambar halaman depan (`gerbang-desktop.jpg`, `gerbang-mobile.jpg`)
+- `img/`: gambar halaman depan (`gerbang-*.jpg`) dan gambar bawaan dashboard (`hero-gedung.jpg`, `info-gedung.jpg`); keduanya terakhir dapat diganti Super Admin tanpa mengubah berkas
 - `js/config.js`: **alamat Web App Apps Script (wajib diisi)**
 - `js/app.js`: inti aplikasi dan komunikasi ke server (`api()`)
+- `js/grafik.js`: grafik SVG ringan (garis, batang, donat, cincin)
 - `js/inti.js`, `apel.js`, `master.js`, `absen.js`, `nilai.js`, `kgb.js`, `lapor.js`: modul menu
 - Pengaturan tampilan (nama, logo, warna) diatur Super Admin di Master Data ▸ Tampilan; tidak perlu mengubah berkas.
 

@@ -163,29 +163,54 @@ async function simpanParamUI(e) { e.preventDefault(); const d = {}; ['kgb_bulan'
 MT.tampilan = async () => {
   const r = await call('getTampilan'); if (!r) return; S.tp = Object.assign({}, r.data); S.tpLogo = undefined;
   const t = S.tp, w = (k, l) => `<div><label class="lbl" for="t_${k}">${l}</label><div class="color-in"><input type="color" id="t_${k}" value="${t[k]}" oninput="pratinjauTema()" aria-label="${l}"><code id="h_${k}">${t[k]}</code></div></div>`;
-  mb(`<div class="card-x"><h3 class="h6">Tampilan aplikasi</h3><p class="muted small">Nama, logo, dan warna berlaku untuk semua pengguna, termasuk halaman masuk. Warna yang membuat tulisan sulit dibaca akan ditolak.</p>
+  mb(`<div class="card-x"><h3 class="h6">Tampilan aplikasi</h3><p class="muted small">Nama, logo, teks banner, dan warna berlaku untuk semua pengguna, termasuk halaman masuk. Warna yang membuat tulisan sulit dibaca akan ditolak.</p>
   <form onsubmit="simpanTemaUI(event)"><div class="row g-3"><div class="col-md-6"><label class="lbl" for="t_nama">Nama aplikasi</label><input id="t_nama" class="form-control" maxlength="40" value="${esc(t.nama)}" oninput="pratinjauTema()" required></div><div class="col-md-6"><label class="lbl" for="t_sub">Subjudul</label><input id="t_sub" class="form-control" maxlength="60" value="${esc(t.sub)}" oninput="pratinjauTema()"></div><div class="col-md-6"><label class="lbl" for="t_instansi">Nama instansi</label><input id="t_instansi" class="form-control" maxlength="60" value="${esc(t.instansi)}" oninput="pratinjauTema()"></div>
+  <div class="col-md-6"><label class="lbl" for="t_slogan">Judul banner dashboard</label><input id="t_slogan" class="form-control" maxlength="70" value="${esc(t.slogan)}" oninput="pratinjauTema()" required></div><div class="col-md-6"><label class="lbl" for="t_heroPoin">Kata kunci banner (pisahkan dengan koma)</label><input id="t_heroPoin" class="form-control" maxlength="80" value="${esc(t.heroPoin)}" oninput="pratinjauTema()" required></div><div class="col-12"><label class="lbl" for="t_motto">Kutipan di kartu jam dan menu samping</label><input id="t_motto" class="form-control" maxlength="140" value="${esc(t.motto)}" oninput="pratinjauTema()" required></div>
   <div class="col-md-6"><span class="lbl">Logo</span><div class="rowb"><div class="logo-box" id="t_logobox"></div><div class="grow"><input id="t_logo" type="file" accept="image/png,image/jpeg" class="form-control" onchange="pilihLogo(this)" aria-label="Pilih logo"><div class="small muted mt-1">PNG atau JPEG, otomatis diperkecil. <a href="javascript:void(0)" onclick="hapusLogoUI()">Hapus logo</a></div></div></div></div></div>
   <div class="col-12 mt-3"><h4 class="h6 mb-1">Informasi di halaman depan</h4><p class="muted small mb-2">Muncul saat pengguna menekan tombol Informasi di halaman depan. Tulisan biasa menjadi paragraf, awali baris dengan <code># </code> untuk judul bagian dan <code>- </code> untuk butir daftar.</p>
   <label class="lbl" for="t_infoJudul">Judul informasi</label><input id="t_infoJudul" class="form-control mb-2" maxlength="60" value="${esc(t.infoJudul)}" required>
   <label class="lbl" for="t_info">Isi informasi</label><textarea id="t_info" class="form-control" rows="12" oninput="pratinjauTema()" maxlength="4000" required>${esc(t.info)}</textarea>
   <div class="rowb mt-2"><span class="small muted grow"><span id="t_infoN">0</span>/4000 karakter</span><button type="button" class="btn-o" onclick="pratinjauInfo()"><i class="bi bi-eye"></i> Lihat pratinjau</button></div></div>
-  <div class="tema-grid mt-3">${w('utama', 'Warna utama (menu, judul)')}${w('aksen', 'Warna aksen (tombol, penanda)')}${w('latar', 'Warna latar halaman')}</div>
+  <div class="tema-grid mt-3">${w('utama', 'Warna utama (menu samping, banner)')}${w('primer', 'Warna sorotan (menu aktif, tombol, grafik)')}${w('aksen', 'Warna aksen (kilau, penanda)')}${w('latar', 'Warna latar halaman')}</div>
   <div class="prev mt-3" aria-label="Pratinjau"><div class="pv-top" id="pv_top"><span id="pv_logo"></span><div><b id="pv_nama"></b><small id="pv_sub"></small></div></div><div class="pv-body" id="pv_body"><span class="pv-btn" id="pv_btn">Tombol contoh</span> <span class="small" id="pv_ins"></span></div></div>
   <div id="t_pesan" class="small text-danger mt-2" role="alert"></div>
-  <div class="d-flex flex-wrap gap-2 justify-content-end mt-3"><button type="button" class="btn-o" onclick="resetTemaUI()">Kembalikan bawaan</button><button class="btn-x" type="submit" id="t_simpan">Simpan tampilan</button></div></form></div>`);
-  pratinjauTema();
+  <div class="d-flex flex-wrap gap-2 justify-content-end mt-3"><button type="button" class="btn-o" onclick="resetTemaUI()">Kembalikan bawaan</button><button class="btn-x" type="submit" id="t_simpan">Simpan tampilan</button></div></form></div>
+  <div class="card-x mt-3"><h3 class="h6">Gambar dashboard</h3><p class="muted small">Gambar yang tampil di banner dan kartu Informasi pada dashboard. Gambar diperkecil otomatis agar ringan dibuka di HP, dan langsung berlaku untuk semua pengguna setelah disimpan.</p>
+  <div class="gbr">${gbrKartu('hero', 'Banner dashboard', 'Gambar lanjut (landscape), perbandingan sekitar 2:1. Bagian kiri tertutup tulisan, jadi letakkan objek utama (mis. gedung) di sisi kanan.')}${gbrKartu('info', 'Kartu Informasi', 'Perbandingan sekitar 16:9. Judul informasi tampil di bagian bawah gambar.')}</div></div>`);
+  pratinjauTema(); S.gbrBaru = {}; ['hero', 'info'].forEach(gbrIsi);
 };
+const gbrKartu = (k, judul, petunjuk) => `<div class="gbr-k"><h4>${judul}</h4><div class="gbr-pv ${k === 'info' ? 'info' : ''}"><img alt="Pratinjau ${judul}" id="gi_${k}"><span class="bd" id="gb_${k}"></span></div><div class="small muted">${petunjuk}</div><input id="gf_${k}" type="file" accept="image/png,image/jpeg" class="form-control" onchange="pilihGambar('${k}',this)" aria-label="Pilih gambar untuk ${judul}"><div class="gbr-ac"><button type="button" class="btn-x" id="gs_${k}" onclick="simpanGambar('${k}')" disabled>Simpan gambar</button><button type="button" class="btn-o" id="gh_${k}" onclick="hapusGambarUI('${k}')">Kembalikan bawaan</button></div></div>`;
+async function gbrIsi(k) { // pratinjau gambar yang sedang dipakai dan status tombolnya
+  const im = $('gi_' + k); if (!im) return; const kustom = !!TP[GBR[k].kv];
+  $('gb_' + k).textContent = kustom ? 'Gambar kustom' : 'Gambar bawaan'; $('gh_' + k).disabled = !kustom; $('gs_' + k).disabled = true; if ($('gf_' + k)) $('gf_' + k).value = '';
+  im.src = gbrCache(k) || await gbrMuat(k);
+}
+async function pilihGambar(k, inp) {
+  const f = inp.files[0]; if (!f) return;
+  try {
+    if (!/^image\/(png|jpeg)$/.test(f.type)) throw new Error('Gambar harus berformat PNG atau JPEG.');
+    const dim = k === 'hero' ? [[1100, 480], [960, 419], [800, 349]] : [[640, 360], [512, 288], [400, 225]]; let u = '';
+    for (const [w, h] of dim) { for (const q of [.82, .72, .62, .5]) { u = await olahGambar(f, w, h, 'cover', 'image/jpeg', q); if ((u.length - 23) * .75 <= 580 * 1024) break; } if ((u.length - 23) * .75 <= 580 * 1024) break; }
+    if ((u.length - 23) * .75 > 580 * 1024) throw new Error('Gambar terlalu rumit untuk diperkecil. Gunakan gambar lain.');
+    S.gbrBaru[k] = u; $('gi_' + k).src = u; $('gb_' + k).textContent = 'Belum disimpan · ' + Math.round((u.length - 23) * .75 / 1024) + ' KB'; $('gs_' + k).disabled = false;
+  } catch (e) { toast(e.message, 'danger'); inp.value = ''; }
+}
+async function simpanGambar(k) {
+  const u = S.gbrBaru && S.gbrBaru[k]; if (!u) return; const b = $('gs_' + k); busy(b, true); const r = await call('simpanAset', k, u); busy(b, false);
+  if (r) { terapkanTampilan(r.data); simpanCacheTampilan(r.data); const o = { v: r.data[GBR[k].kv], url: u }; GBRM[k] = o; try { localStorage.setItem('gbr_' + k, JSON.stringify(o)); } catch (e) {} delete S.gbrBaru[k]; Object.keys(PC).forEach(x => delete PC[x]); toast(r.message); gbrIsi(k); }
+}
+function hapusGambarUI(k) { openModal('Kembalikan gambar bawaan', `<p>Gambar kustom dihapus dan dashboard memakai gambar bawaan lagi untuk semua pengguna.</p><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" onclick="hapusGambarGo('${k}')">Kembalikan</button></div>`); }
+async function hapusGambarGo(k) { const r = await call('hapusAset', k); if (r) { closeModal(); terapkanTampilan(r.data); simpanCacheTampilan(r.data); delete GBRM[k]; try { localStorage.removeItem('gbr_' + k); } catch (e) {} Object.keys(PC).forEach(x => delete PC[x]); toast(r.message); gbrIsi(k); } }
 function pratinjauInfo() { openModal($('t_infoJudul').value || 'Informasi', `<div class="info-isi">${infoHtml($('t_info').value)}</div>`); }
-function nilaiTema() { const t = { nama: $('t_nama').value.trim(), sub: $('t_sub').value.trim(), instansi: $('t_instansi').value.trim(), infoJudul: $('t_infoJudul').value.trim(), info: $('t_info').value, utama: $('t_utama').value.toUpperCase(), aksen: $('t_aksen').value.toUpperCase(), latar: $('t_latar').value.toUpperCase() }; return t; }
+function nilaiTema() { const t = { nama: $('t_nama').value.trim(), sub: $('t_sub').value.trim(), instansi: $('t_instansi').value.trim(), infoJudul: $('t_infoJudul').value.trim(), info: $('t_info').value, slogan: $('t_slogan').value.trim(), heroPoin: $('t_heroPoin').value.trim(), motto: $('t_motto').value.trim(), utama: $('t_utama').value.toUpperCase(), primer: $('t_primer').value.toUpperCase(), aksen: $('t_aksen').value.toUpperCase(), latar: $('t_latar').value.toUpperCase() }; return t; }
 function pratinjauTema() {
   if (!$('t_nama')) return; $('t_infoN').textContent = $('t_info').value.length; const t = nilaiTema(), lg = S.tpLogo !== undefined ? S.tpLogo : S.tp.logo;
-  ['utama', 'aksen', 'latar'].forEach(k => $('h_' + k).textContent = t[k]);
-  $('pv_top').style.background = t.utama; $('pv_body').style.background = t.latar; $('pv_btn').style.background = t.aksen; $('pv_body').style.color = lumHex(t.latar) > .5 ? '#0F172A' : '#fff';
+  ['utama', 'primer', 'aksen', 'latar'].forEach(k => $('h_' + k).textContent = t[k]);
+  $('pv_top').style.background = t.utama; $('pv_body').style.background = t.latar; $('pv_btn').style.background = t.primer; $('pv_body').style.color = lumHex(t.latar) > .5 ? '#0F172A' : '#fff';
   $('pv_nama').textContent = t.nama || '(nama)'; $('pv_sub').textContent = t.sub; $('pv_ins').textContent = t.instansi;
   $('pv_logo').innerHTML = lg ? `<img src="${esc(lg)}" alt="">` : ''; $('t_logobox').innerHTML = lg ? `<img src="${esc(lg)}" alt="Logo">` : '<i class="bi bi-image muted fs-3"></i>';
-  const p = []; if (kontrasHex(t.utama, '#FFFFFF') < 7) p.push('Warna utama terlalu terang untuk tulisan putih.'); if (kontrasHex(t.aksen, '#FFFFFF') < 3) p.push('Warna aksen terlalu terang untuk tulisan putih.'); if (lumHex(t.latar) < .8) p.push('Warna latar harus terang agar tulisan gelap terbaca.');
-  $('t_pesan').textContent = p.join(' '); $('t_simpan').disabled = p.length > 0 || t.nama.length < 2;
+  const p = []; if (kontrasHex(t.utama, '#FFFFFF') < 7) p.push('Warna utama terlalu terang untuk tulisan putih.'); if (kontrasHex(t.primer, '#FFFFFF') < 4.5) p.push('Warna sorotan terlalu terang untuk tulisan putih.'); if (kontrasHex(t.aksen, '#FFFFFF') < 3) p.push('Warna aksen terlalu terang untuk tulisan putih.'); if (lumHex(t.latar) < .8) p.push('Warna latar harus terang agar tulisan gelap terbaca.');
+  $('t_pesan').textContent = p.join(' '); $('t_simpan').disabled = p.length > 0 || t.nama.length < 2 || t.slogan.length < 2 || t.heroPoin.length < 2 || t.motto.length < 2;
 }
 async function pilihLogo(inp) {
   const f = inp.files[0]; if (!f) return;
@@ -205,9 +230,9 @@ async function simpanTemaUI(e) {
   if (r) { terapkanTampilan(r.data); simpanCacheTampilan(r.data); Object.keys(PC).forEach(k => delete PC[k]); toast(r.message); MT.tampilan(); }
 }
 function resetTemaUI() {
-  openModal('Kembalikan tampilan bawaan', `<p>Nama, logo, dan warna aplikasi dikembalikan ke bawaan untuk semua pengguna.</p><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" onclick="resetTemaGo()">Kembalikan</button></div>`);
+  openModal('Kembalikan tampilan bawaan', `<p>Nama, logo, warna, teks banner, informasi, dan gambar dashboard dikembalikan ke bawaan untuk semua pengguna.</p><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" onclick="resetTemaGo()">Kembalikan</button></div>`);
 }
-async function resetTemaGo() { const r = await call('resetTampilan'); if (r) { closeModal(); terapkanTampilan(r.data); simpanCacheTampilan(r.data); Object.keys(PC).forEach(k => delete PC[k]); toast(r.message); MT.tampilan(); } }
+async function resetTemaGo() { const r = await call('resetTampilan'); if (r) { closeModal(); Object.keys(GBRM).forEach(x => delete GBRM[x]); terapkanTampilan(r.data); simpanCacheTampilan(r.data); Object.keys(PC).forEach(k => delete PC[k]); toast(r.message); MT.tampilan(); } }
 
 // ── Penugasan operator (Master Data) ──
 function panelOperator() {

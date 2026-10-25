@@ -10,7 +10,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 const isAdmin = () => S.user && S.user.roles.includes('Super Admin');
 
 // ── Tampilan yang dapat diatur Super Admin (nama, logo, warna): data dari server, disimpan di peramban agar halaman masuk langsung bermerek ──
-const TAMPIL0 = { nama: 'LAGUSIT e-PEGAWAI', sub: 'Sistem Elektronik Kepegawaian', instansi: 'Lapas Gunungsitoli', utama: '#0F172A', aksen: '#D97706', latar: '#F1F5F9', logo: '', infoJudul: 'Tentang LAGUSIT e-PEGAWAI', info: '# Apa itu LAGUSIT e-PEGAWAI\nSistem Elektronik Kepegawaian Lapas Gunungsitoli: aplikasi web untuk mengelola data dan administrasi kepegawaian secara digital, terpusat, dan transparan.\n\n# Tujuan\n- Satu sumber data pegawai yang rapi dan selalu diperbarui\n- Mempermudah pencatatan apel staf dan apel serah terima regu penjagaan beserta foto dokumentasi\n- Memantau jadwal KGB dan kenaikan pangkat agar tidak terlewat\n- Mendukung penilaian kinerja yang objektif dan pemilihan pegawai teladan\n- Memudahkan pengajuan cuti, izin, dan sakit beserta verifikasinya\n- Menyediakan laporan dan rekap yang siap dicetak atau diunduh\n\n# Siapa yang memakai\nSeluruh pegawai dengan hak akses sesuai perannya: Super Admin, Operator, Atasan, Pimpinan, dan Pegawai. Setiap orang hanya melihat data yang menjadi haknya.\n\n# Keamanan dan privasi\n- Masuk memakai email dan kata sandi pribadi; pendaftaran akun disetujui Super Admin\n- Perubahan data profil diverifikasi Super Admin sebelum berlaku\n- Setiap aktivitas penting tercatat di riwayat aktivitas\n\n# Bantuan\nHubungi Super Admin Bidang Kepegawaian Lapas Gunungsitoli bila mengalami kendala.' };
+const TAMPIL0 = { nama: 'LAGUSIT e-PEGAWAI', sub: 'Sistem Elektronik Kepegawaian', instansi: 'Lapas Gunungsitoli', utama: '#0B2A6B', primer: '#2563EB', aksen: '#D97706', latar: '#F3F6FC', logo: '', slogan: 'Satu Sistem, Semua Layanan Kepegawaian', heroPoin: 'Mudah, Cepat, Transparan, Terintegrasi', motto: 'Disiplin hari ini, untuk masa depan yang lebih baik.', gbrHeroV: '', gbrInfoV: '', infoJudul: 'Tentang LAGUSIT e-PEGAWAI', info: '# Apa itu LAGUSIT e-PEGAWAI\nSistem Elektronik Kepegawaian Lapas Gunungsitoli: aplikasi web untuk mengelola data dan administrasi kepegawaian secara digital, terpusat, dan transparan.\n\n# Tujuan\n- Satu sumber data pegawai yang rapi dan selalu diperbarui\n- Mempermudah pencatatan apel staf dan apel serah terima regu penjagaan beserta foto dokumentasi\n- Memantau jadwal KGB dan kenaikan pangkat agar tidak terlewat\n- Mendukung penilaian kinerja yang objektif dan pemilihan pegawai teladan\n- Memudahkan pengajuan cuti, izin, dan sakit beserta verifikasinya\n- Menyediakan laporan dan rekap yang siap dicetak atau diunduh\n\n# Siapa yang memakai\nSeluruh pegawai dengan hak akses sesuai perannya: Super Admin, Operator, Atasan, Pimpinan, dan Pegawai. Setiap orang hanya melihat data yang menjadi haknya.\n\n# Keamanan dan privasi\n- Masuk memakai email dan kata sandi pribadi; pendaftaran akun disetujui Super Admin\n- Perubahan data profil diverifikasi Super Admin sebelum berlaku\n- Setiap aktivitas penting tercatat di riwayat aktivitas\n\n# Bantuan\nHubungi Super Admin Bidang Kepegawaian Lapas Gunungsitoli bila mengalami kendala.' };
 let TP = Object.assign({}, TAMPIL0);
 const FAV0 = document.getElementById('favicon') ? document.getElementById('favicon').href : '';
 const hexRgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
@@ -23,16 +23,36 @@ const inisial = n => n === TAMPIL0.nama ? 'LG' : String(n).split(/\s+/).filter(B
 const brandHtml = () => (TP.logo ? `<img class="auth-logo" src="${esc(TP.logo)}" alt="">` : '') + esc(TP.nama);
 function terapkanTampilan(t) {
   TP = Object.assign({}, TAMPIL0, t || {});
-  ['utama', 'aksen', 'latar'].forEach(k => { if (!/^#[0-9A-Fa-f]{6}$/.test(TP[k])) TP[k] = TAMPIL0[k]; });
-  const std = TP.utama === TAMPIL0.utama && TP.aksen === TAMPIL0.aksen && TP.latar === TAMPIL0.latar, akBawaan = TP.aksen === TAMPIL0.aksen;
+  const WARNA = ['utama', 'primer', 'aksen', 'latar']; WARNA.forEach(k => { if (!/^#[0-9A-Fa-f]{6}$/.test(TP[k])) TP[k] = TAMPIL0[k]; });
+  const std = WARNA.every(k => TP[k] === TAMPIL0[k]), akBawaan = TP.aksen === TAMPIL0.aksen;
   const goldd = akBawaan ? '#B45309' : gelapkan(TP.aksen, 4.5), amber = akBawaan ? '#F59E0B' : campur(TP.aksen, '#FFFFFF', .15), amberL = akBawaan ? '#FBBF24' : campur(TP.aksen, '#FFFFFF', .38);
-  $('tema').textContent = std ? '' : `:root{--navy:${TP.utama};--navy2:${campur(TP.utama, '#FFFFFF', .12)};--gold:${TP.aksen};--goldd:${goldd};--amber:${amber};--amber-l:${amberL}}:root:not([data-theme=dark]){--bg:${TP.latar}}`;
-  const lg = TP.logo, bl = $('brandLogo');
+  $('tema').textContent = std ? '' : `:root{--navy:${TP.utama};--navy2:${campur(TP.utama, '#FFFFFF', .12)};--primer:${TP.primer};--prim-s:${TP.primer};--gold:${TP.aksen};--goldd:${goldd};--amber:${amber};--amber-l:${amberL}}[data-theme=dark]{--primer:${campur(TP.primer, '#FFFFFF', .32)}}:root:not([data-theme=dark]){--bg:${TP.latar}}`;
+  const lg = TP.logo, bl = $('brandLogo'), bm = $('brandMark');
   if (bl) { bl.hidden = !lg; if (lg) bl.src = lg; else bl.removeAttribute('src'); }
+  if (bm) { bm.hidden = !!lg; bm.textContent = inisial(TP.nama); }
   if ($('brandName')) { $('brandName').textContent = TP.nama; $('brandSub').textContent = TP.sub; }
-  if ($('mLogo')) { $('mLogo').innerHTML = lg ? `<img src="${esc(lg)}" alt="">` : esc(inisial(TP.nama)); $('mName').textContent = TP.nama; }
+  if ($('sideIns')) { $('sideIns').textContent = TP.instansi; $('sideMotto').textContent = TP.motto; }
+  if ($('mLogo')) $('mLogo').innerHTML = lg ? `<img src="${esc(lg)}" alt="">` : esc(inisial(TP.nama));
+  if (typeof setHead === 'function' && S.user) setHead(S.page); else { if ($('mName')) $('mName').textContent = TP.nama; if ($('mIns')) $('mIns').textContent = TP.instansi; }
   document.title = TP.nama; const fv = $('favicon'); if (fv && FAV0) fv.href = lg || FAV0;
   document.querySelectorAll('.auth-brand').forEach(e => e.innerHTML = brandHtml());
+}
+// ── Gambar dashboard (banner gedung, kartu informasi): bawaan di folder img, atau gambar kustom Super Admin dari server (disimpan di perangkat per versi) ──
+const GBR = { hero: { def: 'img/hero-gedung.jpg', kv: 'gbrHeroV' }, info: { def: 'img/info-gedung.jpg', kv: 'gbrInfoV' } }, GBRM = {};
+function gbrCache(k) { // alamat gambar bila sudah tersedia di perangkat; '' bila gambar kustom belum diunduh
+  const v = TP[GBR[k].kv]; if (!v) return GBR[k].def; if (GBRM[k] && GBRM[k].v === v) return GBRM[k].url;
+  try { const c = JSON.parse(localStorage.getItem('gbr_' + k) || 'null'); if (c && c.v === v) { GBRM[k] = c; return c.url; } } catch (e) {} return '';
+}
+async function gbrMuat(k) {
+  const u = gbrCache(k); if (u) return u;
+  try { const r = await api('getAset', k); if (r && r.success && r.data) { GBRM[k] = { v: r.data.v, url: r.data.data }; try { localStorage.setItem('gbr_' + k, JSON.stringify(GBRM[k])); } catch (e) {} return r.data.data; } } catch (e) {}
+  return GBR[k].def;
+}
+function gbrPasang(root) { // isi <img> di dalam setiap [data-gbr]; tampil halus setelah gambar siap
+  (root || document).querySelectorAll('[data-gbr]').forEach(async w => {
+    const k = w.dataset.gbr, im = w.querySelector('img'); if (!im || !GBR[k]) return; const u = gbrCache(k) || await gbrMuat(k); if (!w.isConnected) return;
+    im.onload = () => w.classList.add('ok'); im.src = u; if (im.complete && im.naturalWidth) w.classList.add('ok');
+  });
 }
 function simpanCacheTampilan(t) { try { localStorage.setItem('tampilan', JSON.stringify(t)); } catch (e) {} }
 async function muatTampilan() {
@@ -68,7 +88,15 @@ function busy(b, on) {
   if (on) { b.dataset.t = b.innerHTML; b.disabled = true; b.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...'; }
   else { b.disabled = false; b.innerHTML = b.dataset.t; }
 }
-const loading = () => $('app-container').innerHTML = '<div aria-busy="true"><div class="sk" style="height:110px"></div><div class="row g-3 mt-1"><div class="col-6 col-xl-3"><div class="sk"></div></div><div class="col-6 col-xl-3"><div class="sk"></div></div><div class="col-6 col-xl-3"><div class="sk"></div></div><div class="col-6 col-xl-3"><div class="sk"></div></div></div><div class="sk mt-3" style="height:240px"></div></div>';
+const loading = () => $('app-container').innerHTML = S.page === 'dashboard'
+  ? `<div class="dash" aria-busy="true"><div class="col"><div class="sk" style="height:236px;border-radius:24px"></div><div class="tiles">${'<div class="sk" style="height:104px"></div>'.repeat(6)}</div><div class="grid4">${'<div class="sk" style="height:104px"></div>'.repeat(4)}</div><div class="sk" style="height:300px"></div></div><div class="col"><div class="sk" style="height:140px"></div><div class="sk" style="height:250px"></div></div></div>`
+  : '<div aria-busy="true"><div class="sk" style="height:84px"></div><div class="sk mt-3" style="height:320px"></div></div>';
+// Bilah kemajuan di tepi atas: tampil selama ada permintaan ke server (pengingat latar belakang tidak dihitung)
+const PROG = { n: 0, t: 0 };
+function progMulai() { const p = $('prog'); if (!p || PROG.n++) return; const i = p.firstElementChild; clearTimeout(PROG.t); i.style.transition = 'none'; i.style.width = '0'; p.classList.add('on'); void i.offsetWidth; i.style.transition = 'width 9s cubic-bezier(.1,.7,.2,1)'; i.style.width = '86%'; }
+function progSelesai() { const p = $('prog'); if (!p) return; PROG.n = Math.max(0, PROG.n - 1); if (PROG.n) return; const i = p.firstElementChild; i.style.transition = 'width .2s ease-out'; i.style.width = '100%'; PROG.t = setTimeout(() => p.classList.remove('on'), 260); }
+// Perangkat sederhana atau hemat data: kurangi animasi agar tetap ringan
+(function () { try { const c = navigator.connection || {}; if ((navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) || c.saveData || /(^|-)2g$/.test(c.effectiveType || '')) document.documentElement.classList.add('lite'); } catch (e) {} })();
 // Berkas hasil unduhan server ({mime,nama,data}): PDF diunduh, gambar ditampilkan
 function tampilBerkas(x) {
   if (x.mime === 'application/pdf') { const bin = atob(x.data), a = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); const l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([a], { type: x.mime })); l.download = /\.pdf$/i.test(x.nama) ? x.nama : x.nama + '.pdf'; document.body.appendChild(l); l.click(); l.remove(); toast('Berkas PDF diunduh.'); }
@@ -110,7 +138,7 @@ function askReason(title, cb) {
 function submitReason(e) { e.preventDefault(); const a = $('alasan').value.trim(); if (!a) return; closeModal(); window.reasonCb(a); }
 
 // ── Sesi & navigasi SPA ──
-function logoutLocal(gerbang) { S.token = null; S.user = null; clearInterval(S.iv); Object.keys(PC).forEach(k => delete PC[k]); if (chart) { chart.destroy(); chart = null; } closeModal(); closeSidebar(); document.body.classList.add('guest'); renderLogin(); if (gerbang === true) tampilGerbang(); }
+function logoutLocal(gerbang) { S.token = null; S.user = null; clearInterval(S.iv); clearInterval(S.jam); Object.keys(PC).forEach(k => delete PC[k]); if (chart) { chart.destroy(); chart = null; } closeModal(); closeSidebar(); document.body.classList.add('guest'); renderLogin(); if (gerbang === true) tampilGerbang(); }
 function expire() { toast('Sesi berakhir. Silakan masuk kembali.', 'warning'); logoutLocal(); }
 function doLogoutUI() { api('doLogout', S.token).catch(() => {}); logoutLocal(true); }
 
