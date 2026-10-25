@@ -140,3 +140,26 @@ html{-webkit-text-size-adjust:100%}
 .rr.terkunci{background:color-mix(in srgb,var(--gold) 6%,transparent)}
 @media(max-width:575.98px){.ketbar{grid-template-columns:1fr}.pasfoto{width:96px;font-size:36px}}
 @media print{.mtabs,.no-print{display:none!important}.pasfoto{border:1px solid #999}}
+
+/* ── Gerbang depan: gambar penuh + tombol geser ── */
+#gerbang{--r:1.598;--vh:100vh;--W:max(100vw,calc(var(--vh) * var(--r)));--H:max(var(--vh),calc(100vw / var(--r)));position:fixed;inset:0;z-index:1040;background:#cfe6fb;overflow:hidden;transition:opacity .45s ease,transform .45s ease}
+@supports (height:100dvh){#gerbang{--vh:100dvh}}
+@media (max-aspect-ratio:1/1){#gerbang{--r:.5628}}
+#gerbang.keluar{opacity:0;transform:scale(1.04);pointer-events:none}
+#gerbang .stage{position:absolute;left:50%;top:50%;width:var(--W);height:var(--H);transform:translate(-50%,-50%);font-size:calc(var(--W) / 100)}
+#gerbang .stage img{width:100%;height:100%;display:block;user-select:none;-webkit-user-drag:none}
+.swipe{position:absolute;left:34.4%;top:40.8%;width:31.2%;height:13.3%;border-radius:999px;background:rgba(255,255,255,.88);box-shadow:0 0 0 .6em rgba(255,255,255,.45),0 .8em 2.4em rgba(30,64,140,.18)}
+@media (max-aspect-ratio:1/1){.swipe{left:13%;width:74%;height:max(8.2%,68px);top:calc(45% - max(4.1%,34px))}#gerbang .stage{font-size:calc(var(--W) / 52)}}
+.trk{--pad:0px;position:absolute;inset:11% 2.2%;border-radius:999px;background:linear-gradient(90deg,#F57C00,#FFA21F);overflow:hidden;box-shadow:inset 0 -.2em .5em rgba(180,70,0,.25),inset 0 .15em .3em rgba(255,255,255,.45)}
+.trk .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#EA6A00,#F58A12);border-radius:999px;transition:width .25s}
+.trk .lbl{position:absolute;inset:0;display:grid;place-items:center;padding-left:18%;color:transparent;font-weight:600;font-size:max(15px,1.75em);letter-spacing:.01em;white-space:nowrap;pointer-events:none;background:linear-gradient(100deg,#fff 42%,#FFE3B0 50%,#fff 58%) 0 0/250% 100% repeat-x;-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1px 1px rgba(120,50,0,.45));animation:kilau 2.6s linear infinite}
+.trk .hdl{position:absolute;left:0;top:0;bottom:0;aspect-ratio:1;border-radius:50%;border:max(3px,.35em) solid #fff;background:linear-gradient(145deg,#FF8A1F,#F26B00);color:#fff;display:grid;place-items:center;font-size:max(20px,2.6em);padding:0;cursor:grab;touch-action:none;box-shadow:0 .3em .9em rgba(160,60,0,.4);transition:transform .25s}
+.trk .hdl:focus-visible{outline:3px solid #1D4ED8;outline-offset:3px}
+.trk.drag .hdl,.trk.drag .fill{transition:none;cursor:grabbing}
+.trk .hdl svg{width:48%;height:48%;animation:dorong 1.8s ease-in-out infinite}
+@keyframes dorong{0%,55%,100%{transform:translateX(0)}75%{transform:translateX(18%)}}
+@keyframes kilau{from{background-position:150% 0}to{background-position:-100% 0}}
+.g-info{position:fixed;top:max(14px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));z-index:2;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:0;border-radius:999px;background:rgba(255,255,255,.92);color:#0F2A6B;font:inherit;font-weight:600;box-shadow:0 2px 12px rgba(30,64,140,.2);cursor:pointer;backdrop-filter:blur(6px)}
+.g-info i{color:#0F2A6B;font-size:1.15em}.g-info:hover{background:#fff}.g-info:focus-visible{outline:3px solid #1D4ED8;outline-offset:2px}
+.info-isi{max-height:70vh;overflow:auto;line-height:1.6}.info-h{font-size:1rem;font-weight:700;margin:1.1rem 0 .35rem;color:var(--navy)}.info-h:first-child{margin-top:0}.info-isi p{margin:0 0 .6rem}.info-ul{padding-left:1.2rem;margin:0 0 .6rem}.info-ul li{margin-bottom:.25rem}
+@media (prefers-reduced-motion:reduce){#gerbang,.trk .hdl,.trk .fill{transition:none}.trk .lbl,.trk .hdl svg{animation:none}}

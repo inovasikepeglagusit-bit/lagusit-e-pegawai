@@ -166,15 +166,20 @@ MT.tampilan = async () => {
   mb(`<div class="card-x"><h3 class="h6">Tampilan aplikasi</h3><p class="muted small">Nama, logo, dan warna berlaku untuk semua pengguna, termasuk halaman masuk. Warna yang membuat tulisan sulit dibaca akan ditolak.</p>
   <form onsubmit="simpanTemaUI(event)"><div class="row g-3"><div class="col-md-6"><label class="lbl" for="t_nama">Nama aplikasi</label><input id="t_nama" class="form-control" maxlength="40" value="${esc(t.nama)}" oninput="pratinjauTema()" required></div><div class="col-md-6"><label class="lbl" for="t_sub">Subjudul</label><input id="t_sub" class="form-control" maxlength="60" value="${esc(t.sub)}" oninput="pratinjauTema()"></div><div class="col-md-6"><label class="lbl" for="t_instansi">Nama instansi</label><input id="t_instansi" class="form-control" maxlength="60" value="${esc(t.instansi)}" oninput="pratinjauTema()"></div>
   <div class="col-md-6"><span class="lbl">Logo</span><div class="rowb"><div class="logo-box" id="t_logobox"></div><div class="grow"><input id="t_logo" type="file" accept="image/png,image/jpeg" class="form-control" onchange="pilihLogo(this)" aria-label="Pilih logo"><div class="small muted mt-1">PNG atau JPEG, otomatis diperkecil. <a href="javascript:void(0)" onclick="hapusLogoUI()">Hapus logo</a></div></div></div></div></div>
+  <div class="col-12 mt-3"><h4 class="h6 mb-1">Informasi di halaman depan</h4><p class="muted small mb-2">Muncul saat pengguna menekan tombol Informasi di halaman depan. Tulisan biasa menjadi paragraf, awali baris dengan <code># </code> untuk judul bagian dan <code>- </code> untuk butir daftar.</p>
+  <label class="lbl" for="t_infoJudul">Judul informasi</label><input id="t_infoJudul" class="form-control mb-2" maxlength="60" value="${esc(t.infoJudul)}" required>
+  <label class="lbl" for="t_info">Isi informasi</label><textarea id="t_info" class="form-control" rows="12" oninput="pratinjauTema()" maxlength="4000" required>${esc(t.info)}</textarea>
+  <div class="rowb mt-2"><span class="small muted grow"><span id="t_infoN">0</span>/4000 karakter</span><button type="button" class="btn-o" onclick="pratinjauInfo()"><i class="bi bi-eye"></i> Lihat pratinjau</button></div></div>
   <div class="tema-grid mt-3">${w('utama', 'Warna utama (menu, judul)')}${w('aksen', 'Warna aksen (tombol, penanda)')}${w('latar', 'Warna latar halaman')}</div>
   <div class="prev mt-3" aria-label="Pratinjau"><div class="pv-top" id="pv_top"><span id="pv_logo"></span><div><b id="pv_nama"></b><small id="pv_sub"></small></div></div><div class="pv-body" id="pv_body"><span class="pv-btn" id="pv_btn">Tombol contoh</span> <span class="small" id="pv_ins"></span></div></div>
   <div id="t_pesan" class="small text-danger mt-2" role="alert"></div>
   <div class="d-flex flex-wrap gap-2 justify-content-end mt-3"><button type="button" class="btn-o" onclick="resetTemaUI()">Kembalikan bawaan</button><button class="btn-x" type="submit" id="t_simpan">Simpan tampilan</button></div></form></div>`);
   pratinjauTema();
 };
-function nilaiTema() { const t = { nama: $('t_nama').value.trim(), sub: $('t_sub').value.trim(), instansi: $('t_instansi').value.trim(), utama: $('t_utama').value.toUpperCase(), aksen: $('t_aksen').value.toUpperCase(), latar: $('t_latar').value.toUpperCase() }; return t; }
+function pratinjauInfo() { openModal($('t_infoJudul').value || 'Informasi', `<div class="info-isi">${infoHtml($('t_info').value)}</div>`); }
+function nilaiTema() { const t = { nama: $('t_nama').value.trim(), sub: $('t_sub').value.trim(), instansi: $('t_instansi').value.trim(), infoJudul: $('t_infoJudul').value.trim(), info: $('t_info').value, utama: $('t_utama').value.toUpperCase(), aksen: $('t_aksen').value.toUpperCase(), latar: $('t_latar').value.toUpperCase() }; return t; }
 function pratinjauTema() {
-  if (!$('t_nama')) return; const t = nilaiTema(), lg = S.tpLogo !== undefined ? S.tpLogo : S.tp.logo;
+  if (!$('t_nama')) return; $('t_infoN').textContent = $('t_info').value.length; const t = nilaiTema(), lg = S.tpLogo !== undefined ? S.tpLogo : S.tp.logo;
   ['utama', 'aksen', 'latar'].forEach(k => $('h_' + k).textContent = t[k]);
   $('pv_top').style.background = t.utama; $('pv_body').style.background = t.latar; $('pv_btn').style.background = t.aksen; $('pv_body').style.color = lumHex(t.latar) > .5 ? '#0F172A' : '#fff';
   $('pv_nama').textContent = t.nama || '(nama)'; $('pv_sub').textContent = t.sub; $('pv_ins').textContent = t.instansi;

@@ -5,18 +5,19 @@ Data pegawai, foto, dan berkas tetap di Google Spreadsheet dan Google Drive Anda
 
 ## Isi paket
 - **Backend (disajikan terpisah):** semua berkas `.gs`: `Kode.gs`, `Modul_Apel.gs`, `Modul_Master.gs`, `Modul_Profil.gs`, `Modul_Kgb.gs`, `Modul_Laporan.gs`, serta dua berkas **baru** `Modul_Absen.gs` dan `Modul_Tampilan.gs`. Berkas `Modul_Foto.gs`, `Modul_Kalender.gs`, `Modul_Monitoring.gs`, `Modul_Nilai.gs` tidak berubah. `appsscript.json` opsional.
-- **Frontend (ZIP):** folder `lagusit-e-pegawai` berisi `index.html`, `css/style.css`, `js/config.js`, `js/app.js`, `js/inti.js`, `js/apel.js`, `js/master.js`, `js/absen.js` (baru), `js/nilai.js`, `js/kgb.js`, `js/lapor.js`, `README.md`, dan panduan ini.
+- **Frontend (ZIP):** folder `lagusit-e-pegawai` berisi `index.html`, `css/style.css`, `js/config.js`, `js/app.js`, `js/inti.js`, `js/apel.js`, `js/master.js`, `js/absen.js` (baru), folder `img/` (baru: gambar halaman depan), `js/nilai.js`, `js/kgb.js`, `js/lapor.js`, `README.md`, dan panduan ini.
 
 ---
 ## SUDAH PERNAH MEMASANG? Cukup perbarui (Tahap 15)
 Bagian ini untuk Anda yang aplikasinya sudah berjalan. Data tidak hilang; kolom dan sheet baru dibuat otomatis saat aplikasi pertama kali dipakai.
 1. **Cadangan:** salin proyek Apps Script dan spreadsheet database (lihat "Persiapan" di bawah).
 2. **Backend:** di Apps Script, ganti isi `Kode`, `Modul_Apel`, `Modul_Master`, `Modul_Profil`, `Modul_Kgb`, `Modul_Laporan` dengan berkas baru. Tambahkan dua berkas baru: tanda **+** di samping "Files" → **Script**, beri nama persis `Modul_Absen` lalu tempel isi `Modul_Absen.gs`; ulangi untuk `Modul_Tampilan`. Simpan semua (Ctrl+S). Lalu **Deploy → Manage deployments → pensil → New version → Deploy** (alamat `/exec` tetap).
-3. **Frontend:** salin berkas baru dari ZIP ke folder repo Anda dan **timpa** `index.html`, `css/style.css`, dan seluruh `js/*.js` (termasuk `absen.js` yang baru). **Jangan menimpa `js/config.js`**; alamat server Anda ada di sana. Di Command Prompt pada folder itu: `git add .` → `git commit -m "Tahap 15"` → `git push`. Tunggu 1-2 menit, lalu Ctrl+F5.
+3. **Frontend:** salin berkas baru dari ZIP ke folder repo Anda dan **timpa** `index.html`, `css/style.css`, seluruh `js/*.js` (termasuk `absen.js` yang baru), dan folder **`img`** yang baru (berisi dua gambar halaman depan; folder ini wajib ikut disalin). **Jangan menimpa `js/config.js`**; alamat server Anda ada di sana. Di Command Prompt pada folder itu: `git add .` → `git commit -m "Tahap 15"` → `git push`. Tunggu 1-2 menit, lalu Ctrl+F5.
 4. **Cek pertama:** masuk sebagai Super Admin. Menu **Master Data & Pengaturan** kini memuat delapan tab (Persetujuan, Akun & Peran, Unit & Regu, Operator, Profil & Kolom, Kehadiran, Aturan, Tampilan). Menu "Akun & Persetujuan" yang lama sudah digabung ke sana.
 5. **Atur sekali (urutan disarankan):** Master Data ▸ **Unit & Regu** (isi daftar unit kerja; daftar ini menjadi satu-satunya pilihan unit di Pegawai dan Profil) → ▸ **Kehadiran** (periksa daftar keterangan izin/cuti/sakit dan skornya) → ▸ **Tampilan** (nama, logo, warna).
 6. Yang dibuat otomatis: sheet `Keterangan_Hadir` dan `Surat_Absen`, kolom `Keterangan/Catatan/Sumber/SuratID` pada sheet kehadiran apel, dan folder Drive `Surat Ketidakhadiran` (muncul saat surat pertama diunggah, di dalam folder database Anda).
-7. **Unit lama:** pegawai yang unit kerjanya belum terdaftar tetap tampil apa adanya. Saat datanya diubah, unit harus dipilih dari daftar resmi, jadi tambahkan dulu unit-unit tersebut di tab Unit & Regu.
+7. **Halaman depan baru:** saat aplikasi dibuka tampil gambar penuh (gambar desktop di layar lebar, gambar HP di layar tegak) dengan tombol **Geser untuk masuk** dan tombol **Informasi**. Isi Informasi diatur Super Admin di Master Data ▸ Tampilan (bagian "Informasi di halaman depan"); isi bawaan sudah menjelaskan tujuan aplikasi. Gambar halaman depan bersifat tetap; untuk menggantinya, timpa `img/gerbang-desktop.jpg` dan `img/gerbang-mobile.jpg`.
+8. **Unit lama:** pegawai yang unit kerjanya belum terdaftar tetap tampil apa adanya. Saat datanya diubah, unit harus dipilih dari daftar resmi, jadi tambahkan dulu unit-unit tersebut di tab Unit & Regu.
 
 ## Persiapan (wajib, 5 menit)
 1. Di Apps Script: **File → Make a copy** pada proyek yang sekarang berjalan. Salinan ini adalah cadangan jika perlu kembali ke versi lama.

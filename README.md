@@ -4,6 +4,7 @@ Sistem Elektronik Kepegawaian Lapas Gunungsitoli. Frontend statis (HTML, CSS, Ja
 ## Struktur
 - `index.html`: halaman tunggal aplikasi
 - `css/style.css`: gaya tampilan
+- `img/`: gambar halaman depan (`gerbang-desktop.jpg`, `gerbang-mobile.jpg`)
 - `js/config.js`: **alamat Web App Apps Script (wajib diisi)**
 - `js/app.js`: inti aplikasi dan komunikasi ke server (`api()`)
 - `js/inti.js`, `apel.js`, `master.js`, `absen.js`, `nilai.js`, `kgb.js`, `lapor.js`: modul menu

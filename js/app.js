@@ -10,7 +10,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 const isAdmin = () => S.user && S.user.roles.includes('Super Admin');
 
 // ── Tampilan yang dapat diatur Super Admin (nama, logo, warna): data dari server, disimpan di peramban agar halaman masuk langsung bermerek ──
-const TAMPIL0 = { nama: 'LAGUSIT e-PEGAWAI', sub: 'Sistem Elektronik Kepegawaian', instansi: 'Lapas Gunungsitoli', utama: '#0F172A', aksen: '#D97706', latar: '#F1F5F9', logo: '' };
+const TAMPIL0 = { nama: 'LAGUSIT e-PEGAWAI', sub: 'Sistem Elektronik Kepegawaian', instansi: 'Lapas Gunungsitoli', utama: '#0F172A', aksen: '#D97706', latar: '#F1F5F9', logo: '', infoJudul: 'Tentang LAGUSIT e-PEGAWAI', info: '# Apa itu LAGUSIT e-PEGAWAI\nSistem Elektronik Kepegawaian Lapas Gunungsitoli: aplikasi web untuk mengelola data dan administrasi kepegawaian secara digital, terpusat, dan transparan.\n\n# Tujuan\n- Satu sumber data pegawai yang rapi dan selalu diperbarui\n- Mempermudah pencatatan apel staf dan apel serah terima regu penjagaan beserta foto dokumentasi\n- Memantau jadwal KGB dan kenaikan pangkat agar tidak terlewat\n- Mendukung penilaian kinerja yang objektif dan pemilihan pegawai teladan\n- Memudahkan pengajuan cuti, izin, dan sakit beserta verifikasinya\n- Menyediakan laporan dan rekap yang siap dicetak atau diunduh\n\n# Siapa yang memakai\nSeluruh pegawai dengan hak akses sesuai perannya: Super Admin, Operator, Atasan, Pimpinan, dan Pegawai. Setiap orang hanya melihat data yang menjadi haknya.\n\n# Keamanan dan privasi\n- Masuk memakai email dan kata sandi pribadi; pendaftaran akun disetujui Super Admin\n- Perubahan data profil diverifikasi Super Admin sebelum berlaku\n- Setiap aktivitas penting tercatat di riwayat aktivitas\n\n# Bantuan\nHubungi Super Admin Bidang Kepegawaian Lapas Gunungsitoli bila mengalami kendala.' };
 let TP = Object.assign({}, TAMPIL0);
 const FAV0 = document.getElementById('favicon') ? document.getElementById('favicon').href : '';
 const hexRgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
@@ -110,9 +110,42 @@ function askReason(title, cb) {
 function submitReason(e) { e.preventDefault(); const a = $('alasan').value.trim(); if (!a) return; closeModal(); window.reasonCb(a); }
 
 // ── Sesi & navigasi SPA ──
-function logoutLocal() { S.token = null; S.user = null; clearInterval(S.iv); Object.keys(PC).forEach(k => delete PC[k]); if (chart) { chart.destroy(); chart = null; } closeModal(); closeSidebar(); document.body.classList.add('guest'); renderLogin(); }
+function logoutLocal(gerbang) { S.token = null; S.user = null; clearInterval(S.iv); Object.keys(PC).forEach(k => delete PC[k]); if (chart) { chart.destroy(); chart = null; } closeModal(); closeSidebar(); document.body.classList.add('guest'); renderLogin(); if (gerbang === true) tampilGerbang(); }
 function expire() { toast('Sesi berakhir. Silakan masuk kembali.', 'warning'); logoutLocal(); }
-function doLogoutUI() { api('doLogout', S.token).catch(() => {}); logoutLocal(); }
+function doLogoutUI() { api('doLogout', S.token).catch(() => {}); logoutLocal(true); }
+
+// ── Informasi aplikasi: teks sederhana (# judul bagian, - butir, baris biasa = paragraf) ditampilkan aman tanpa HTML mentah ──
+function infoHtml(t) {
+  const o = []; let ul = false;
+  String(t || '').split('\n').forEach(l => {
+    l = l.trimEnd();
+    if (/^- /.test(l)) { if (!ul) { o.push('<ul class="info-ul">'); ul = true; } o.push('<li>' + esc(l.slice(2)) + '</li>'); return; }
+    if (ul) { o.push('</ul>'); ul = false; }
+    if (/^# /.test(l)) o.push('<h4 class="info-h">' + esc(l.slice(2)) + '</h4>'); else if (l.trim()) o.push('<p>' + esc(l) + '</p>');
+  });
+  if (ul) o.push('</ul>'); return o.join('');
+}
+function tampilInfo() { openModal(TP.infoJudul || 'Informasi', `<div class="info-isi">${infoHtml(TP.info)}</div>`); }
+
+// ── Gerbang depan: gambar penuh, tombol masuk berupa geser (swipe), dan tombol Informasi ──
+function tampilGerbang() {
+  const lama = $('gerbang'); if (lama) lama.remove();
+  const g = document.createElement('div'); g.id = 'gerbang';
+  g.innerHTML = `<div class="stage"><picture><source media="(max-aspect-ratio: 1/1)" srcset="img/gerbang-mobile.jpg"><img src="img/gerbang-desktop.jpg" alt="Gedung kantor dan pegawai, latar halaman depan LAGUSIT e-PEGAWAI" draggable="false"></picture>
+    <div class="swipe"><div class="trk" id="gTrk"><div class="fill" id="gFill"></div><span class="lbl">Geser untuk masuk</span><button type="button" class="hdl" id="gHdl" role="slider" aria-label="Geser ke kanan untuk masuk. Dapat juga ditekan Enter." aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button></div></div></div>
+    <button type="button" class="g-info" onclick="tampilInfo()"><i class="bi bi-info-circle-fill"></i> Informasi</button>`;
+  document.body.appendChild(g); document.body.classList.add('guest');
+  const trk = $('gTrk'), h = $('gHdl'), fill = $('gFill'); let drag = false, x0 = 0, pos = 0, max = 1, selesai = false;
+  const set = p => { pos = Math.max(0, Math.min(max, p)); h.style.transform = `translateX(${pos}px)`; fill.style.width = (pos + h.offsetWidth) + 'px'; h.setAttribute('aria-valuenow', Math.round(pos * 100 / max)); };
+  const masuk = () => { if (selesai) return; selesai = true; set(max); setTimeout(() => { g.classList.add('keluar'); setTimeout(() => { g.remove(); const em = $('em'); if (em) em.focus(); }, 480); }, 160); };
+  h.addEventListener('pointerdown', e => { if (selesai) return; drag = true; max = Math.max(1, trk.clientWidth - h.offsetWidth - 2 * (parseFloat(getComputedStyle(trk).getPropertyValue('--pad')) || 0)); x0 = e.clientX - pos; h.setPointerCapture(e.pointerId); trk.classList.add('drag'); });
+  h.addEventListener('pointermove', e => { if (drag) set(e.clientX - x0); });
+  const lepas = () => { if (!drag) return; drag = false; trk.classList.remove('drag'); if (pos >= max * 0.85) masuk(); else set(0); };
+  h.addEventListener('pointerup', lepas); h.addEventListener('pointercancel', lepas);
+  h.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); max = Math.max(1, trk.clientWidth - h.offsetWidth - 2 * (parseFloat(getComputedStyle(trk).getPropertyValue('--pad')) || 0)); masuk(); } });
+  h.addEventListener('click', e => { if (e.detail === 0) return; }); // klik biasa tidak masuk; harus digeser
+  setTimeout(() => { try { h.focus({ preventScroll: true }); } catch (e) {} }, 300);
+}
 
 // ── Halaman akun ──
 const authCard = (t, s, b) => `<div class="auth"><div class="card-x auth-card"><div class="auth-brand">${brandHtml()}</div><h2 class="h4">${t}</h2><p class="muted">${s}</p>${b}</div></div>`;
@@ -237,7 +270,7 @@ RENDER.audit = async () => { const r = await call('getAudit'); if (r) $('app-con
 
 document.addEventListener('DOMContentLoaded', () => {
   let t = 'light'; try { t = localStorage.getItem('theme') || 'light'; } catch (e) {}
-  muatTampilan(); setTheme(t); $('boot').remove(); renderLogin();
+  muatTampilan(); setTheme(t); $('boot').remove(); renderLogin(); tampilGerbang();
 });
 
 // ── Pilihan pangkat dan golongan: golongan dibatasi menurut status; memilih golongan PNS mengisi pangkat yang sesuai ──
