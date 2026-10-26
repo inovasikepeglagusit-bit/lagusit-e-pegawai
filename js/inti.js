@@ -91,7 +91,7 @@ RENDER.dashboard = async () => {
     const kn = d.kgbN ? `<div class="grid2s o6">${statK('KGB mendekati atau terlambat', d.kgbN.KGB, 'Perlu tindak lanjut', 'bi-graph-up', 't-amber')}${statK('Kenaikan pangkat mendekati atau terlambat', d.kgbN.Pangkat, 'Perlu tindak lanjut', 'bi-award', 't-blue')}</div>` : '';
     const pg = d.pengumuman.length ? `<section class="card-x o12"><h3 class="jd mb-2">Pengumuman</h3>${d.pengumuman.map(p => `<div class="todo"><i class="bi bi-megaphone"></i><div><b>${esc(p.Judul)}</b><small>${esc(p.Deskripsi)}</small><small>Berlaku s.d. ${esc(p.Sampai)}</small></div></div>`).join('')}</section>` : '';
     const bd = {}; if (d.kgbN) bd.kgb = d.kgbN.KGB + d.kgbN.Pangkat; if (d.tugasNilai) bd.nilai = d.tugasNilai.belum;
-    c.innerHTML = `<div class="dash"><div class="col">${greetHtml()}${heroHtml()}${tilesHtml(bd)}${rs}${ab}${angka ? `<div class="grid4 o6">${angka}</div>` : ''}${kartuHadirSaya(d.hadirSaya)}${kn}${pg}</div>${kanan(d.agenda ? kartuAgenda(d.agenda) : '')}</div>`;
+    c.innerHTML = `<div class="dash"><div class="col">${greetHtml()}${heroHtml()}${tilesHtml(bd)}${rs}${ab}${angka ? `<div class="grid4 o6">${angka}</div>` : ''}${kartuHadirSaya(d.hadirSaya)}${typeof kartuTugas === 'function' ? kartuTugas(d.tugasSaya) : ''}${kn}${pg}</div>${kanan(d.agenda ? kartuAgenda(d.agenda) : '')}</div>`;
     gbrPasang(c); mulaiJam(); isiNotifKartu(); gfPasang(); return;
   }
   const A = d.apel, T = A.terakhir, R = T && T.rincian, todo = [];
