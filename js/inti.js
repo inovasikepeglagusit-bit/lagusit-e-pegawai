@@ -1,14 +1,14 @@
 /** Modul tambahan: navigasi (menu bawah HP), pencarian global, dashboard berbasis data apel, Apel Staf. */
-Object.assign(TITLES, { apel: 'Apel Staf', regu: 'Apel Regu', master: 'Master Data & Pengaturan', absen: 'Cuti & Izin', nilai: 'Penilaian Kinerja', kgb: 'KGB & Pangkat', kalender: 'Kalender & Pengumuman', laporan: 'Laporan', monitoring: 'Monitoring' });
-Object.assign(ICONS, { apel: 'bi-people', regu: 'bi-shield-check', master: 'bi-database-gear', absen: 'bi-calendar-x', nilai: 'bi-award', kgb: 'bi-graph-up-arrow', kalender: 'bi-calendar3', laporan: 'bi-file-earmark-bar-graph', monitoring: 'bi-eye' });
+Object.assign(TITLES, { apel: 'Apel Staf', regu: 'Apel Regu', master: 'Master Data & Pengaturan', absen: 'Cuti & Izin', nilai: 'Penilaian Kinerja', kgb: 'KGB & Pangkat', kalender: 'Kalender & Pengumuman', laporan: 'Laporan', monitoring: 'Monitoring', kehadiran: 'Kehadiran Saya' });
+Object.assign(ICONS, { apel: 'bi-people', regu: 'bi-shield-check', master: 'bi-database-gear', absen: 'bi-calendar-x', nilai: 'bi-award', kgb: 'bi-graph-up-arrow', kalender: 'bi-calendar3', laporan: 'bi-file-earmark-bar-graph', monitoring: 'bi-eye', kehadiran: 'bi-calendar2-check' });
 const REGU = ['Rupam A', 'Rupam B', 'Rupam C', 'Rupam D'];
 const SH = ['Hadir', 'Terlambat', 'Izin', 'Sakit', 'Dinas Luar', 'Tidak Hadir'];
 const canWrite = () => S.user.roles.some(r => r === 'Super Admin' || r === 'Operator');
 function bukaMenu(m, tab) { if (tab) S.tab = tab; return navigateTo(m); } // buka menu, opsional langsung ke tab tertentu
 const tglIndo = t => t ? new Date(t + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-const KATA = { dashboard: 'beranda utama ringkasan', pegawai: 'data pegawai nip jabatan karyawan', apel: 'apel staf kehadiran absensi hadir', regu: 'apel regu penjagaan rupam jaga', absen: 'cuti izin sakit surat ketidakhadiran', master: 'master data pengaturan akun unit operator persetujuan tampilan warna logo', nilai: 'penilaian kinerja skp teladan', kgb: 'kgb gaji berkala pangkat kenaikan', kalender: 'kalender agenda pengumuman jadwal', laporan: 'laporan rekap cetak unduh', monitoring: 'monitoring pantau', audit: 'riwayat aktivitas log jejak', profil: 'profil saya pasfoto data diri' };
-const TILE = { master: 'Master Data', kalender: 'Kalender', laporan: 'Laporan', nilai: 'Penilaian', kgb: 'KGB & Pangkat', audit: 'Riwayat', apel: 'Apel Staf', regu: 'Apel Regu', absen: 'Cuti & Izin', monitoring: 'Monitoring', profil: 'Profil Saya' };
+const KATA = { surat: 'nomor surat penomoran indeks register agenda surat keluar', kehadiran: 'kehadiran saya rekap absensi hadir terlambat riwayat apel', dashboard: 'beranda utama ringkasan', pegawai: 'data pegawai nip jabatan karyawan', apel: 'apel staf kehadiran absensi hadir', regu: 'apel regu penjagaan rupam jaga', absen: 'cuti izin sakit surat ketidakhadiran', master: 'master data pengaturan akun unit operator persetujuan tampilan warna logo', nilai: 'penilaian kinerja skp teladan', kgb: 'kgb gaji berkala pangkat kenaikan', kalender: 'kalender agenda pengumuman jadwal', laporan: 'laporan rekap cetak unduh', monitoring: 'monitoring pantau', audit: 'riwayat aktivitas log jejak', profil: 'profil saya pasfoto data diri' };
+const TILE = { surat: 'Nomor Surat', kehadiran: 'Kehadiran Saya', master: 'Master Data', kalender: 'Kalender', laporan: 'Laporan', nilai: 'Penilaian', kgb: 'KGB & Pangkat', audit: 'Riwayat', apel: 'Apel Staf', regu: 'Apel Regu', absen: 'Cuti & Izin', monitoring: 'Monitoring', profil: 'Profil Saya' };
 async function cariGlobal(v) {
   if (!S.menu.includes('pegawai')) return toast('Pencarian pegawai hanya untuk Super Admin dan Pimpinan.', 'warning');
   await navigateTo('pegawai'); $('q').value = v; drawPegawai();
@@ -68,6 +68,14 @@ function gantiGrafik(m) {
 }
 const kartuGrafik = A => { S.gd = { hari: A.hari.filter(x => x.v != null).map(x => ({ l: x.k.slice(8) + '/' + x.k.slice(5, 7), t: tglIndo(x.k), v: x.v })), bulan: A.bulan.filter(x => x.v != null).map(x => ({ l: blLabel(x.k), t: blLabel(x.k), v: x.v })) }; return `<section class="card-x o8"><div class="sec-h"><h3 class="jd">Kehadiran Apel</h3><div class="gtabs" role="group" aria-label="Rentang grafik"><button type="button" data-m="hari" class="on" onclick="gantiGrafik('hari')">7 apel</button><button type="button" data-m="bulan" onclick="gantiGrafik('bulan')">6 bulan</button></div></div><div id="gfBody"></div></section>`; };
 
+/** Kartu "Kehadiran Saya" di dashboard pegawai: persentase bulan ini, komposisi, dan tren enam bulan. */
+const kartuHadirSaya = h => {
+  const kop = `<div class="sec-h"><h3 class="jd">Kehadiran Saya</h3>${S.menu.includes('kehadiran') ? '<button class="lnk" onclick="navigateTo(\'kehadiran\')">Lihat rekap</button>' : ''}</div>`;
+  if (!h || !h.ada) return `<section class="card-x o7">${kop}${kosong('belum ada apel yang diselesaikan untuk Anda.')}</section>`;
+  const R = h.ringkas, n = R.status, tr = h.tren.filter(x => x.v != null).map(x => ({ l: blLabel(x.k), t: blLabel(x.k), v: x.v }));
+  return `<section class="card-x o7">${kop}<div class="gkpi"><div><small>Bulan ini</small><b>${R.pct == null ? '–' : gfPct(R.pct)}</b></div><div><small>Hadir</small><b>${n.Hadir + n.Terlambat}</b></div><div><small>Terlambat</small><b>${n.Terlambat}</b></div><div><small>Tidak mengikuti</small><b>${n.Izin + n.Sakit + n['Dinas Luar'] + n['Tidak Hadir']}</b></div></div>
+  ${R.jumlah ? gfTumpuk(STATUS_X.map(s => ({ l: s, v: n[s], c: GF_HADIR[s] }))) : ''}${tr.length ? `<div class="mt-3">${gfDaftar('gfSD', tr.length > 1 ? 'garis' : 'batang', tr, 'Persentase kehadiran per bulan')}</div>` : ''}</section>`;
+};
 RENDER.dashboard = async () => {
   const r = await call('getDashboard'); if (!r) return;
   const d = r.data, c = $('app-container'); clearInterval(S.jam);
@@ -83,8 +91,8 @@ RENDER.dashboard = async () => {
     const kn = d.kgbN ? `<div class="grid2s o6">${statK('KGB mendekati atau terlambat', d.kgbN.KGB, 'Perlu tindak lanjut', 'bi-graph-up', 't-amber')}${statK('Kenaikan pangkat mendekati atau terlambat', d.kgbN.Pangkat, 'Perlu tindak lanjut', 'bi-award', 't-blue')}</div>` : '';
     const pg = d.pengumuman.length ? `<section class="card-x o12"><h3 class="jd mb-2">Pengumuman</h3>${d.pengumuman.map(p => `<div class="todo"><i class="bi bi-megaphone"></i><div><b>${esc(p.Judul)}</b><small>${esc(p.Deskripsi)}</small><small>Berlaku s.d. ${esc(p.Sampai)}</small></div></div>`).join('')}</section>` : '';
     const bd = {}; if (d.kgbN) bd.kgb = d.kgbN.KGB + d.kgbN.Pangkat; if (d.tugasNilai) bd.nilai = d.tugasNilai.belum;
-    c.innerHTML = `<div class="dash"><div class="col">${greetHtml()}${heroHtml()}${tilesHtml(bd)}${rs}${ab}${angka ? `<div class="grid4 o6">${angka}</div>` : ''}${kn}${pg}</div>${kanan(d.agenda ? kartuAgenda(d.agenda) : '')}</div>`;
-    gbrPasang(c); mulaiJam(); isiNotifKartu(); return;
+    c.innerHTML = `<div class="dash"><div class="col">${greetHtml()}${heroHtml()}${tilesHtml(bd)}${rs}${ab}${angka ? `<div class="grid4 o6">${angka}</div>` : ''}${kartuHadirSaya(d.hadirSaya)}${kn}${pg}</div>${kanan(d.agenda ? kartuAgenda(d.agenda) : '')}</div>`;
+    gbrPasang(c); mulaiJam(); isiNotifKartu(); gfPasang(); return;
   }
   const A = d.apel, T = A.terakhir, R = T && T.rincian, todo = [];
   if (d.menunggu) todo.push(['bi-person-check', d.menunggu + ' akun menunggu persetujuan', 'Buka Master Data ▸ Persetujuan', 'master', 'persetujuan']);
@@ -126,8 +134,8 @@ const PC = {};
 // Cache data: bacaan yang aman diulang disimpan di memori. Bila masih segar (<3 dtk) langsung dipakai; bila agak lama dipakai dulu
 // sambil disegarkan di latar belakang, dan halaman digambar ulang hanya bila datanya benar-benar berubah dan pengguna tidak sedang mengisi.
 const DC = {}, DI = {}, PETA = (() => { try { return JSON.parse(localStorage.getItem('lg_peta') || '{}'); } catch (e) { return {}; } })();
-const BACA_AMAN = new Set(['listUnit', 'listAkun', 'listPegawai', 'getAntrian', 'getProfilLengkap', 'getRegu', 'getSkorHadir', 'getPenugasan', 'getParamKgb', 'getOpsiKepegawaian', 'getNilaiMeta', 'getMonitoring', 'getLaporanMeta', 'getKolom', 'getKgb', 'getKeterangan', 'getKalender', 'getDashboard', 'getAudit', 'getAbsenMeta', 'daftarSurat', 'daftarPengajuan', 'daftarNilai', 'daftarApel', 'ranking', 'nilaiSaya']);
-const SEGAR = 3000, BASI = 600000, SEGAR0 = new Set(['getAntrian', 'daftarSurat', 'daftarPengajuan', 'getMonitoring', 'getDashboard', 'getAudit', 'listAkun']); // SEGAR0: selalu disegarkan di latar belakang (antrian persetujuan harus mutakhir)
+const BACA_AMAN = new Set(['getNomorSurat', 'getKop', 'getKehadiranSaya', 'listUnit', 'listAkun', 'listPegawai', 'getAntrian', 'getProfilLengkap', 'getRegu', 'getSkorHadir', 'getPenugasan', 'getParamKgb', 'getOpsiKepegawaian', 'getNilaiMeta', 'getMonitoring', 'getLaporanMeta', 'getKolom', 'getKgb', 'getKeterangan', 'getKalender', 'getDashboard', 'getAudit', 'getAbsenMeta', 'daftarSurat', 'daftarPengajuan', 'daftarNilai', 'daftarApel', 'ranking', 'nilaiSaya']);
+const SEGAR = 3000, BASI = 600000, SEGAR0 = new Set(['getNomorSurat', 'getAntrian', 'daftarSurat', 'daftarPengajuan', 'getMonitoring', 'getDashboard', 'getAudit', 'listAkun']); // SEGAR0: selalu disegarkan di latar belakang (antrian persetujuan harus mutakhir)
 const segarMs = fn => SEGAR0.has(fn) ? 0 : SEGAR;
 const dcKunci = (fn, a) => fn + '|' + JSON.stringify(a);
 const dcBersih = () => { Object.keys(DC).forEach(k => delete DC[k]); };
@@ -198,7 +206,7 @@ function setHead(p) {
   $('mIns').textContent = dash ? TP.instansi : TP.nama; $('mName').textContent = dash ? TP.nama : TITLES[p]; document.body.dataset.p = p || 'dashboard';
 }
 function bangunNav() {
-  const PENDEK = { apel: 'Apel Staf', regu: 'Apel Regu', absen: 'Cuti', master: 'Master', nilai: 'Nilai', kgb: 'KGB', kalender: 'Kalender', monitoring: 'Monitor', audit: 'Riwayat' };
+  const PENDEK = { surat: 'No. Surat', kehadiran: 'Kehadiran', apel: 'Apel Staf', regu: 'Apel Regu', absen: 'Cuti', master: 'Master', nilai: 'Nilai', kgb: 'KGB', kalender: 'Kalender', monitoring: 'Monitor', audit: 'Riwayat' };
   const b = (m, c) => `<button ${c} data-p="${m}" onclick="navigateTo('${m}')"><i class="bi ${ICONS[m]}"></i><span>${c ? TITLES[m] : (PENDEK[m] || TITLES[m].split(' ')[0])}</span></button>`;
   $('nav').innerHTML = S.menu.map(m => b(m, 'class="nav-item"')).join('');
   $('bnav').innerHTML = S.menu.slice(0, 4).map(m => b(m, '')).join('') + '<button onclick="toggleSidebar()"><i class="bi bi-list"></i><span>Lainnya</span></button>';

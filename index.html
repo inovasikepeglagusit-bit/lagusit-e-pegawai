@@ -24,7 +24,7 @@
   window.addEventListener('load', function () {
     if (typeof GAS_URL === 'undefined' || /GANTI/.test(GAS_URL)) { galat.push('Alamat server belum diisi: buka js/config.js lalu isi GAS_URL dengan URL /exec dari Apps Script.'); tampil(); }
     var h = ['start', 'navigateTo', 'call', 'muatNotif', 'bangunNav', 'renderLogin'].filter(function (n) { return typeof window[n] !== 'function'; });
-    var ada = window.MOD || [], hilang = ['Grafik', 'Loading', 'Inti', 'Apel', 'Master', 'Absen', 'Nilai', 'Kgb', 'Lapor'].filter(function (n) { return ada.indexOf(n) < 0; });
+    var ada = window.MOD || [], hilang = ['Grafik', 'Loading', 'Inti', 'Apel', 'Master', 'Absen', 'Nilai', 'Kgb', 'Kehadiran', 'Kop', 'Surat', 'Lapor'].filter(function (n) { return ada.indexOf(n) < 0; });
     if (hilang.length) { galat.push('Berkas belum termuat: ' + hilang.map(function (n) { return 'js/' + n.toLowerCase() + '.js'; }).join(', ') + '. Tempel ulang isi berkas tersebut secara utuh lalu simpan.'); tampil(); }
     if (h.length) { galat.push('Fungsi tidak ditemukan: ' + h.join(', ') + '. Periksa folder js/: semua berkas harus ada dan utuh.'); tampil(); }
   });
@@ -71,9 +71,12 @@
 <script src="js/inti.js"></script>
 <script src="js/apel.js"></script>
 <script src="js/master.js"></script>
+<script src="js/kop.js"></script>
+<script src="js/surat.js"></script>
 <script src="js/absen.js"></script>
 <script src="js/nilai.js"></script>
 <script src="js/kgb.js"></script>
+<script src="js/kehadiran.js"></script>
 <script src="js/lapor.js"></script>
 </body>
 </html>

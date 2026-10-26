@@ -140,3 +140,11 @@ Pita muncul bila ada bagian aplikasi yang tidak termuat. Contoh isi dan artinya:
 - Data menu yang sudah pernah dibuka tampil seketika, lalu disegarkan diam-diam; halaman digambar ulang hanya bila datanya berubah dan Anda belum mulai mengetik atau mengklik.
 - Menyentuh/menunjuk menu di sidebar memanaskan datanya lebih dulu; menu yang biasa Anda pakai dimuat di latar belakang setelah masuk.
 - Koneksi ke server disiapkan lebih awal, ketukan di HP tanpa jeda, animasi pindah halaman dipersingkat.
+
+
+## Tahap 18 — Paket 1: Kehadiran Saya, keterangan fleksibel, banyak operator
+**Apps Script:** tempel `Kode.gs`, `Modul_Absen.gs`, `Modul_Apel.gs`, `Modul_Master.gs`, dan **berkas baru `Modul_Kehadiran.gs`** (File ▸ + ▸ Script, beri nama `Modul_Kehadiran`), lalu buat versi baru deployment. Sheet `Keterangan_Hadir` otomatis bertambah kolom `UangMakan` dan `Warna`.
+**Frontend:** timpa semua berkas dari ZIP (berkas baru `js/kehadiran.js`), `git add -A`, commit, push, Ctrl+F5.
+- Menu **Kehadiran Saya** untuk semua pengguna: persentase, kalender, tren 6 bulan, komposisi, dan riwayat beserta keterangan. Dashboard pegawai memuat kartu ringkasannya.
+- **Master Data ▸ Kehadiran**: keterangan kini dapat dipasang pada semua kategori status (termasuk Hadir dan Terlambat, bersifat opsional), dengan aturan uang makan per keterangan dan per status serta warna.
+- **Master Data ▸ Operator**: tombol "Tambah operator" menambah operator sejajar (tanpa batas jumlah) pada satu ruang; dapat dicabut kapan saja.

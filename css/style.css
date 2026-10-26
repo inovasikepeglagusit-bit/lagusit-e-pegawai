@@ -81,7 +81,7 @@ body.guest{background:radial-gradient(900px 500px at 10% -10%,color-mix(in srgb,
 .kal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.kh{text-align:center;font-weight:600;font-size:12px;color:var(--muted);padding:4px 0}
 .kd{min-height:62px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);padding:4px 6px;text-align:left;display:flex;flex-direction:column;gap:4px}
 .kd:hover{border-color:var(--primer)}.kd.now b{color:var(--link)}.kd.sel{outline:2px solid var(--primer)}.kdots{display:flex;gap:3px;flex-wrap:wrap}.kdot{width:8px;height:8px;border-radius:50%;display:inline-block}
-.k-a{background:var(--gold)}.k-p{background:var(--navy)}[data-theme=dark] .k-p{background:#E2E8F0}.k-k{background:#B91C1C}.k-n{background:#1D4ED8}
+.k-a{background:var(--gold)}.k-p{background:var(--navy)}[data-theme=dark] .k-p{background:#E2E8F0}.k-k{background:#B91C1C}.k-l{background:#DC2626;box-shadow:0 0 0 2px color-mix(in srgb,#DC2626 25%,transparent)}.k-n{background:#1D4ED8}
 @media(max-width:575.98px){.kd{min-height:48px;padding:2px 4px}}
 @media print{.sidebar,.topbar,.bnav,.scrim,.no-print,.toast-container,#prog{display:none!important}.main{margin:0}.content{padding:0}body{background:#fff;color:#000}.card-x{box-shadow:none;border:0}}
 .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}.ft img{width:100%;height:100px;object-fit:cover;border-radius:8px;background:var(--bg);cursor:pointer;display:block}.ft small{display:block;line-height:1.3}
@@ -382,3 +382,25 @@ html.lite #lo .lo-cloud,html.lite #lo .lo-orbit{animation:none}html.lite #lo{tra
 /* Responsif sentuh: tanpa jeda 300 md, tanpa kilatan sorot ketuk; kartu di luar layar tidak dihitung ulang */
 button,a,[onclick],.nav-item,.tile,label,select,input{touch-action:manipulation}
 button,a,.tile{-webkit-tap-highlight-color:transparent}
+
+/* ── Kehadiran Saya ── */
+.kh{display:flex;flex-direction:column;gap:16px}.kh>*{min-width:0}
+.kh .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.kh .grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media(max-width:1199.98px){.kh .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:767.98px){.kh .grid2{grid-template-columns:1fr}.kh .grid4{gap:12px}}
+.kh-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.kh-nav{display:flex;align-items:center;gap:10px}.kh-nav b{min-width:96px;text-align:center}.kh-nav button{padding:6px 11px}
+.stb{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;background:color-mix(in srgb,var(--c) 14%,transparent);color:color-mix(in srgb,var(--c) 62%,#000);border:1px solid color-mix(in srgb,var(--c) 32%,transparent)}
+[data-theme=dark] .stb{color:color-mix(in srgb,var(--c) 70%,#fff)}
+.kcal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.kcal>b{font-size:11px;color:var(--muted);font-weight:700;padding-bottom:4px}
+.kd{border:1px solid var(--line);border-radius:10px;min-height:46px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12.5px}.kd.ini{border-color:var(--primer);box-shadow:0 0 0 1px var(--primer) inset}.kd.ada{background:color-mix(in srgb,var(--primer) 4%,transparent)}
+.kd em{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;font-style:normal}.kd u{width:8px;height:8px;border-radius:50%;display:block}
+.kleg{margin-top:12px}.kleg span{display:inline-flex;align-items:center;gap:5px;margin-right:10px;font-size:12px}
+.kchips{display:flex;flex-wrap:wrap;gap:8px}.kchip{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:12.5px}.kchip b{margin-left:4px}
+.ket-w{display:flex;align-items:center;gap:8px;background:color-mix(in srgb,var(--gold) 12%,var(--card));font-size:13.5px}
+i.sw{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:middle}
+.kh{text-align:left}.kh h3.jd{font-size:16px;font-weight:800;margin:0;letter-spacing:-.02em}.kh h4{text-align:left}.kh .table th,.kh .table td{text-align:left}.kh-head .grow{min-width:200px}
+
+/* ── Kop surat ── */
+.kmod{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.kmod label{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:13px;cursor:pointer}.kmod label.on{border-color:var(--primer);background:color-mix(in srgb,var(--primer) 8%,transparent)}
+.kbar{display:grid;grid-template-columns:1fr 64px auto auto;gap:6px;margin-bottom:6px;align-items:center}.kbar label{display:flex;align-items:center;gap:3px;font-size:12px;white-space:nowrap}
+.kpage{background:#fff;color:#000;border:1px solid var(--line);border-radius:10px;padding:22px 26px;min-height:200px}.kisi i{display:block;height:9px;background:#e5e7eb;border-radius:4px;margin:9px 0}
+@media print{.kopx{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.kopx img{-webkit-print-color-adjust:exact}}
