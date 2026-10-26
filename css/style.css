@@ -404,3 +404,4 @@ i.sw{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-alig
 .kbar{display:grid;grid-template-columns:1fr 64px auto auto;gap:6px;margin-bottom:6px;align-items:center}.kbar label{display:flex;align-items:center;gap:3px;font-size:12px;white-space:nowrap}
 .kpage{background:#fff;color:#000;border:1px solid var(--line);border-radius:10px;padding:22px 26px;min-height:200px}.kisi i{display:block;height:9px;background:#e5e7eb;border-radius:4px;margin:9px 0}
 @media print{.kopx{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.kopx img{-webkit-print-color-adjust:exact}}
+button.kchip{cursor:pointer;font-family:inherit;color:inherit}button.kchip:hover{border-color:var(--p,#2563eb)}.kchip.on{background:var(--p,#2563eb);border-color:var(--p,#2563eb);color:#fff}.kchip b{margin-left:4px}.kchip input{margin-right:4px}
