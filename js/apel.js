@@ -11,17 +11,24 @@ async function apelPage(j) {
   <div class="card-x"><h3 class="h6">Riwayat apel ${g ? 'serah terima regu' : 'staf'}</h3>${r.data.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Tanggal</th><th>Sesi</th>${g ? '<th>Regu</th>' : '<th>Pembina</th>'}<th>Hadir</th><th>Status</th><th></th></tr></thead><tbody>${r.data.map(a => `<tr><td class="nw">${esc(a.Tanggal)}</td><td>${esc(a.Sesi)}</td><td>${esc(g ? a.Regu : a.Pembina) || '–'}</td><td>${a.Hadir + a.Terlambat}/${a.Wajib} (${a.Wajib ? Math.round((a.Hadir + a.Terlambat) * 100 / a.Wajib) : 0}%)</td><td><span class="badge-x ${a.Status === 'Selesai' ? 'ok' : 'wait'}">${esc(a.Status)}</span></td><td class="nw"><button class="btn-o" onclick="muatApel('${a.ID}')">${w && (a.Status !== 'Selesai' || isAdmin()) ? 'Buka' : 'Lihat'}</button>${isAdmin() ? ` <button class="btn-o danger" onclick="hapusApelRow('${a.ID}')">Hapus</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : kosong('belum ada apel dicatat.')}</div>`;
 }
 async function bukaUI(e) { e.preventDefault(); const b = e.target.querySelector('[type=submit]'); busy(b, true); const r = await call('bukaApel', S.aj, $('at').value, $('as').value, S.aj === 'regu' ? $('ar').value : ''); busy(b, false); if (r) editor(r); }
+/** Petugas apel hari itu (dari Kalender & Pengumuman ▸ Petugas Apel) + tombol mengisi pembina apel dari petugas. */
+function petugasApel(L, w, j) {
+  if (j !== 'staf' || !L || !L.length) return '';
+  const pb = L.find(x => /^(pembina|inspektur)/i.test(x.Peran));
+  return `<div class="todo mb-3"><i class="bi bi-people"></i><div><b>Petugas hari ini</b><small>${L.map(x => esc(x.Peran) + ': <b>' + esc(x.Nama) + '</b>').join(' · ')}</small>${w && pb ? `<div class="mt-1"><button type="button" class="btn-o" onclick="isiPembina()">Isi pembina apel: ${esc(pb.Nama)}</button></div>` : ''}</div></div>`;
+}
+function isiPembina() { const L = (S.ed && S.ed.petugas) || [], pb = L.find(x => /^(pembina|inspektur)/i.test(x.Peran)); if (!pb) return; if ($('f_Pembina')) $('f_Pembina').value = pb.Nama; if ($('f_JabatanPembina')) $('f_JabatanPembina').value = pb.Jabatan || ''; toast('Pembina apel terisi dari petugas. Klik Simpan untuk menyimpan.'); }
 async function muatApel(id) { const r = await call('ambilApel', S.aj, id); if (r) editor(r); }
 const TANPA = '(Tanpa unit kerja)', urutUnit = (a, b) => (a === TANPA) - (b === TANPA) || a.localeCompare(b);
 const SC = [['Hadir', 'Hadir', 'h'], ['Terlambat', 'Telat', 't'], ['Izin', 'Izin', 'i'], ['Sakit', 'Sakit', 's'], ['Dinas Luar', 'DL', 'd'], ['Tidak Hadir', 'Alpa', 'x']];
 function editor(r) {
   const a = r.data.apel, H = r.data.hadir, w = r.data.ubah === true, dis = w ? '' : 'disabled';
-  S.ed = { a, H, w, unit: '', q: '', grup: [], ket: r.data.ket || [] };
+  S.ed = { a, H, w, unit: '', q: '', grup: [], ket: r.data.ket || [], petugas: r.data.petugas || [] };
   const fld = ([k, l, t]) => t === 'i' ? `<div class="col-md-6"><label class="lbl" for="f_${k}">${l}</label><input id="f_${k}" class="form-control" value="${esc(a[k])}" ${dis}></div>` : `<div class="col-12"><label class="lbl" for="f_${k}">${l}</label><textarea id="f_${k}" rows="3" class="form-control" ${dis}>${esc(a[k])}</textarea></div>`;
   const units = [...new Set(H.map(h => h.Unit || TANPA))].sort(urutUnit);
   $('apelEd').innerHTML = `<div class="card-x mb-3"><div class="d-flex flex-wrap align-items-center gap-2 mb-3"><h3 class="h6 mb-0">Apel ${esc(a.Sesi)} · ${esc(a.Tanggal)}${a.Regu ? ' · ' + esc(a.Regu) : ''}</h3><span class="badge-x ${a.Status === 'Selesai' ? 'ok' : 'wait'}">${esc(a.Status)}</span>${isAdmin() ? `<button class="btn-o danger ms-auto" onclick="hapusApelRow('${a.ID}')"><i class="bi bi-trash"></i> Hapus apel</button>` : ''}</div>
   ${a.Status === 'Selesai' && !isAdmin() ? '<p class="muted small">Apel ini sudah selesai dan terkunci. Hanya Super Admin yang dapat mengoreksi atau menghapusnya.</p>' : ''}
-  ${w ? '' : '<p class="muted small">Hanya lihat: Anda bukan operator yang ditugaskan untuk apel ini pada tanggal tersebut.</p>'}<div class="row g-3 mb-3">${AP[S.aj].f.map(fld).join('')}</div>
+  ${w ? '' : '<p class="muted small">Hanya lihat: Anda bukan operator yang ditugaskan untuk apel ini pada tanggal tersebut.</p>'}${petugasApel(r.data.petugas, w, S.aj)}<div class="row g-3 mb-3">${AP[S.aj].f.map(fld).join('')}</div>
   <h4 class="h6">Daftar kehadiran <span class="muted">(${H.length} orang)</span></h4>
   <div class="toolbar"><select id="ru" class="form-select" aria-label="Pilih unit kerja" onchange="S.ed.unit=this.value;gambarRoster()"><option value="">Semua unit kerja</option>${units.map(u => `<option value="${esc(u)}">${esc(u)} (${H.filter(h => (h.Unit || TANPA) === u).length})</option>`).join('')}</select><input id="rq" class="form-control" placeholder="Cari nama" aria-label="Cari nama" oninput="S.ed.q=this.value;gambarRoster()">${w ? '<button type="button" class="btn-o" onclick="semuaHadir()">Semua hadir</button>' : ''}${w && a.Status === 'Draf' ? '<button type="button" class="btn-o" onclick="sinkronUI()" title="Samakan daftar dengan penempatan regu terbaru">Sinkronkan daftar</button>' : ''}</div>
   <div class="rsum mb-2" id="rsum" aria-live="polite"></div><div id="rost"></div>

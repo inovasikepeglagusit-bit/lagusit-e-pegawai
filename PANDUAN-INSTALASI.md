@@ -148,3 +148,124 @@ Pita muncul bila ada bagian aplikasi yang tidak termuat. Contoh isi dan artinya:
 - Menu **Kehadiran Saya** untuk semua pengguna: persentase, kalender, tren 6 bulan, komposisi, dan riwayat beserta keterangan. Dashboard pegawai memuat kartu ringkasannya.
 - **Master Data ▸ Kehadiran**: keterangan kini dapat dipasang pada semua kategori status (termasuk Hadir dan Terlambat, bersifat opsional), dengan aturan uang makan per keterangan dan per status serta warna.
 - **Master Data ▸ Operator**: tombol "Tambah operator" menambah operator sejajar (tanpa batas jumlah) pada satu ruang; dapat dicabut kapan saja.
+
+---
+
+## Tahap 18 — Paket 2: Kop Surat Laporan & Nomor Surat
+
+### Backend (Apps Script)
+1. Buat **2 file skrip baru**: `Modul_Kop.gs` dan `Modul_Surat.gs` (tempel isinya).
+2. **Ganti isi** `Kode.gs`, `Modul_Kalender.gs`, `Modul_Laporan.gs` dengan versi baru.
+3. Simpan, lalu **Deploy → Kelola deployment → Edit → Versi baru → Deploy**.
+4. Sheet baru (`Surat_Indeks`, `Surat_Nomor`, `Surat_Pengambil`) dibuat otomatis.
+
+### Frontend (GitHub Pages)
+Ganti folder dengan isi ZIP: file baru `js/kop.js`, `js/surat.js`; perubahan di `index.html`, `js/inti.js`, `js/master.js`, `js/lapor.js`, `js/kgb.js`, `css/style.css`. Lalu `git add .`, `git commit -m "Tahap 18 paket 2"`, `git push`.
+
+### Cara pakai
+- **Kop surat**: Super Admin → Master Data & Pengaturan → tab **Kop**. Pilih model (6 pilihan), isi hingga 6 baris tulisan (ukuran, tebal, kapital), font, garis, warna, ukuran dan unggah logo kiri/kanan. Pratinjau langsung. Kop otomatis tampil di cetakan Laporan dan Register Nomor Surat.
+- **Nomor Surat** (menu hanya tampil untuk Super Admin dan akun pengambil):
+  1. Tab *Indeks Surat*: tambah kode indeks dan nama surat.
+  2. Tab *Penomoran*: atur jumlah nomor yang dilangkahi per hari (bawaan 5), jumlah digit, dan format (`{NO}/{INDEKS}/{BLR}/{THN}`).
+  3. Tab *Pengambil & PIN*: tunjuk akun pengambil dan beri PIN khusus. PIN tampak oleh Super Admin. 5 kali salah → terkunci 15 menit.
+  4. Tab *Tanggal Merah*: tanggal merah diambil dari **Kalender** (jenis entri *Libur*). Tanggal merah tertutup kecuali dibuka Super Admin di sini.
+  5. Pengambil: pilih indeks, isi keterangan (wajib), masukkan PIN, ambil nomor. Nomor cadangan (hasil langkahan) dipakai Super Admin.
+- Data yang diubah langsung di Google Sheets baru tampil maksimal 5 menit (cache server).
+
+---
+
+## Tahap 18 — Paket 3: Rekap Uang Makan (staf dan rupam)
+
+### Backend (Apps Script)
+1. Buat **1 file skrip baru**: `Modul_RekapUangMakan.gs`.
+2. **Ganti isi** `Modul_Laporan.gs`, `Modul_Absen.gs`, dan `Kode.gs` dengan versi baru.
+3. Deploy → Kelola deployment → Edit → **Versi baru** → Deploy.
+
+### Frontend
+Ganti folder dengan isi ZIP (berubah: `js/lapor.js`, `js/master.js`), lalu `git add .`, `git commit -m "Tahap 18 paket 3"`, `git push`.
+
+### Cara kerja
+- Menu **Laporan** → jenis **Rekap Uang Makan (per pegawai)** atau **Rekap Uang Makan (rincian harian)** (per tanggal).
+- Lingkup: seluruh pegawai, seluruh staf, seluruh rupam, satu rupam, per pegawai, per unit kerja/bidang. Rentang tanggal mengikuti **tanggal uang makan**.
+- Dibayar atau tidak mengikuti **Master Data → Kehadiran**: aturan per status dan aturan khusus per keterangan. Terlambat bisa dibayar, tidak dibayar, atau dibuat keterangan khusus. Cuti memakai keterangannya sendiri.
+- **Staf**: satu hari uang makan per tanggal apel (dua sesi pada hari yang sama dihitung satu hari).
+- **Rupam**: apel tidak berubah. Untuk uang makan: Siang (hari 1), Pagi (hari 2), Malam (hari 3), Off (hari 4, tidak dihitung). Apel Malam dihitung pada hari berikutnya; dapat diubah ke hari yang sama di Master Data → Kehadiran → "Siklus uang makan rupam".
+- Tanpa nominal rupiah; hanya jumlah hari. Cetak memakai kop surat dari Super Admin; tersedia unduh Excel (CSV).
+
+---
+
+## Tahap 19 — Nomor Surat fleksibel, email status, super operator, urutan menu baru
+
+### Backend (Apps Script) — ganti isi 3 file
+`Kode.gs`, `Modul_Surat.gs`, `Modul_Kgb.gs`, lalu Deploy → Kelola deployment → Edit → **Versi baru** → Deploy. Kolom baru (`Format`, `Skop`, `Riwayat`, `Super`) ditambahkan otomatis ke sheet lama.
+
+### Frontend
+Ganti folder dengan isi ZIP (berubah: `js/surat.js`, `css/style.css`), lalu `git add .`, `git commit -m "Tahap 19"`, `git push`.
+
+### Yang baru
+- **Format nomor surat bebas** (Nomor Surat → Penomoran): susun sendiri dengan teks tetap dan penanda `{NO}` (wajib), `{INDEKS}`, `{NAMA}`, `{BLN}`, `{BLR}`, `{THN}`, `{THN2}`, `{TGL}`. Bawaan sekarang `{INDEKS} - {NO}` (contoh `W2.PAS.PK.01 - 123`). Tersedia contoh siap pakai, pilihan mulai ulang nomor per tahun/bulan/tidak pernah, dan **format khusus per indeks** (tab Indeks Surat).
+- **Email status**: setiap nomor diambil, dibatalkan, atau cadangan dipakai, rincian lengkap (nomor, status, indeks, perihal, tujuan, riwayat) dikirim ke email pengambil. Pembatalan juga memberi email kepada pemilik nomor dan notifikasi di lonceng aplikasi. Riwayat status tiap nomor dapat dilihat lewat tautan **rincian** di register.
+- **Nomor yang dilangkahi (cadangan) disembunyikan** dari pengambil biasa. Hanya Super Admin dan **super operator** (dicentang di tab Pengambil & PIN) yang melihat dan dapat memakai nomor cadangan.
+- Register: ringkasan status per chip, filter "Nomor saya saja", indeks terakhir/terseringdipakai diingat.
+- **Urutan menu**: Dashboard, Monitoring, Kalender & Pengumuman, Kehadiran Saya, Pegawai, Apel Staf, Apel Regu, KGB & Pangkat, Cuti & Izin, Penilaian Kinerja, Laporan, Nomor Surat, Riwayat Aktivitas, Master Data & Pengaturan, Profil Saya.
+- Pastikan akun pengirim email (pemilik skrip) sudah mengizinkan layanan email; bila email gagal terkirim, nomor tetap tercatat.
+
+---
+
+## Tahap 20 — Jadwal Piket, Lepas Piket otomatis, Petugas Apel/Upacara, Pengingat Email
+
+### Backend (Apps Script)
+1. Buat **1 file skrip baru**: `Modul_Piket.gs`.
+2. **Ganti isi** `Kode.gs`, `Modul_Apel.gs`, `Modul_Kalender.gs`, `Modul_Kgb.gs`, `Modul_Laporan.gs`.
+3. Deploy → Kelola deployment → Edit → **Versi baru** → Deploy. Sheet baru (`Piket_Jenis`, `Piket_Jadwal`, `Petugas_Peran`, `Petugas_Apel`, `Pengingat_Log`) dibuat otomatis.
+4. **Izin pemicu waktu**: di editor Apps Script, pilih fungsi `kirimPengingatTugas` lalu klik **Jalankan** sekali dan setujui izinnya (sekali saja). Setelah itu Super Admin cukup menekan **Aktifkan pengingat otomatis** di web.
+
+### Frontend
+Ganti folder dengan isi ZIP (baru: `js/piket.js`; berubah: `index.html`, `js/kgb.js`, `js/inti.js`, `css/style.css`), lalu `git add .`, `git commit -m "Tahap 20"`, `git push`.
+
+### Cara pakai
+Menu **Kalender & Pengumuman** kini punya 4 tab: Kalender, Jadwal Piket, Petugas Apel, Aturan Piket (Super Admin).
+1. **Aturan Piket (Super Admin)**: tunjuk *operator jadwal*; atur jenis piket (bawaan Perwira Piket, Piket, Bantuan Jaga Hari Libur) dan apakah keesokan harinya Lepas Piket; atur nama status dan kategorinya (bawaan **Lepas Piket = Hadir**); atur peran petugas (mode Otomatis/Manual/Tetap, batas unit), hari apel, sesi, jeda; atur tenggat pengingat email (contoh `3,1` = H-3 dan H-1) serta jam kirim.
+2. **Jadwal Piket (operator jadwal)**: isi per hari dan jenis sekali sebulan lalu Simpan. Pegawai yang dijadwalkan langsung diberi tahu lewat email. Keesokan harinya pada apel pegawai itu otomatis berstatus **Lepas Piket** (keterangan muncul di Apel, Kehadiran Saya, laporan, dan rekap uang makan mengikuti aturan Master Data). Bila piket lagi di hari berikutnya, tidak Lepas Piket.
+3. **Petugas Apel**: *Buat otomatis* untuk rentang tanggal (rotasi adil, melewati pegawai yang cuti/izin/sakit/dinas luar/piket/Lepas Piket), atau *Tambah petugas* manual: pegawai atau **orang dari luar** (nama + email). Pada tanggal yang diberi agenda **Upacara** (jenis baru di Kalender) dipakai peran upacara.
+4. **Pengingat**: dikirim ke email pegawai atau email petugas luar sesuai tenggat; tidak dikirim ganda. Notifikasi lonceng dan kartu **Tugas Saya** di dashboard juga muncul.
+5. **Laporan** baru: *Rekap jadwal piket* dan *Petugas apel dan upacara*.
+- Batas kuota email Google berlaku (akun gratis sekitar 100 email/hari); pengiriman dibatasi 80 email per proses.
+
+---
+
+## Tahap 21 — Jenis & Nama Jabatan dinamis, aturan petugas apel per hari, hapus semua petugas
+
+### Backend (Apps Script)
+1. Buat **1 file skrip baru**: `Modul_Jabatan.gs` (tanda **+** di panel File → **Skrip** → nama `Modul_Jabatan` → tempel isinya → Ctrl+S).
+2. **Ganti isi** file ini (tempel ulang seluruhnya): `Kode.gs`, `Modul_Piket.gs`, `Modul_Apel.gs`.
+3. Deploy → Kelola deployment → pensil → **Versi baru** → Deploy. Sheet baru (`Jabatan_Jenis`, `Jabatan_Daftar`, `Petugas_Aturan`) dan kolom `JenisJabatan` pada sheet Pegawai dibuat otomatis. Tidak perlu menjalankan fungsi apa pun lagi.
+
+### Frontend
+Ganti folder dengan isi ZIP (berubah: `js/master.js`, `js/piket.js`, `js/app.js`, `js/apel.js`, `css/style.css`), lalu:
+```
+git add .
+git commit -m "Tahap 21: jabatan dinamis, aturan petugas apel, hapus semua petugas"
+git push
+```
+
+### Langkah pemakaian (urutan yang disarankan)
+1. **Master Data & Pengaturan → tab Jabatan** (Super Admin)
+   - **1. Jenis jabatan**: bawaan *Eselon I–V*, *JFT*, *JFU*. Tambah sendiri bila perlu (mis. *Eselon VI* dengan tingkat 6, *Pelaksana*). Rumpun: Struktural (pakai tingkat eselon), JFT, JFU, atau Lainnya. Klik **Simpan jenis jabatan**.
+   - **2. Nama jabatan → jenis**: daftarkan nama jabatan dan jenisnya. Pencocokan **Persis** (nama sama), **Diawali** (mis. "Kepala Seksi" berlaku untuk semua "Kepala Seksi …"), atau **Mengandung** (mis. "Analis"). Bila beberapa aturan cocok, yang paling spesifik menang. Jabatan pada data pegawai yang belum terpetakan muncul sebagai chip: klik untuk menambahkannya, pilih jenis, lalu **Simpan nama jabatan**.
+   - **3. Penetapan per pegawai**: periksa hasilnya; untuk pengecualian pilih jenis secara manual (manual selalu didahulukan). Klik **Simpan penetapan**.
+   - Jenis jabatan juga dapat dipilih di formulir **Pegawai** (kolom Jabatan menyarankan nama dari daftar).
+2. **Kalender & Pengumuman → tab Aturan Piket → Peran petugas apel dan upacara**
+   - Klik **Terapkan aturan apel standar** untuk langsung memasang aturan Lapas: *Pembina Apel* Senin Eselon III, Selasa–Jumat Eselon IV, Sabtu Eselon V (bergantian berurutan, satu orang per pekan); *Komandan Apel* Senin–Jumat Eselon V dan Sabtu pegawai yang ditentukan; *Pembawa Acara*, *Pembaca Tri Dharma*, *Dirigen* dari jabatan fungsional (JFT/JFU); *Pembaca Doa* hanya Senin. Hari Sabtu otomatis ikut diaktifkan. Setelah itu pilih pegawai untuk **Komandan Apel hari Sabtu** (aturan Sabtu → mode *Pegawai tertentu*) dan klik **Simpan aturan**.
+   - Semuanya bisa diubah: tiap peran punya aturan per hari (centang hari; tanpa centang = setiap hari), cara menentukan (*Otomatis*, *Manual*, *Pegawai tertentu*), jenis jabatan yang boleh (boleh lebih dari satu), batas unit, cara bergilir (*Adil* atau *Berurutan*), dan masa tugas (*ganti tiap hari* atau *satu orang per pekan*). Ringkasan di bawah nama peran menunjukkan aturan dalam kalimat. Satu hari hanya boleh punya satu aturan per peran.
+   - Angka di samping jenis jabatan = jumlah pegawai aktif berjenis itu; bila 0 muncul peringatan merah.
+3. **Petugas Apel** (operator jadwal / Super Admin)
+   - **Buat otomatis → Pratinjau**: lihat dulu siapa yang akan bertugas dan alasan bila ada peran tanpa calon, tanpa menyimpan apa pun. Lalu **Buat petugas**.
+   - **Hapus semua** (khusus Super Admin): pilih semua petugas atau hanya yang otomatis, boleh dibatasi rentang tanggal (kosong = seluruh tanggal), lihat jumlahnya, ketik **HAPUS** untuk mengonfirmasi. Petugas berstatus *Batal* (tercatat di Riwayat Aktivitas dan tidak dikirimi pengingat).
+4. **Apel Staf**: pada halaman apel tertentu muncul kartu **Petugas hari ini**; tombol **Isi pembina apel** mengisi nama dan jabatan pembina dari petugas. **Laporan → Petugas apel dan upacara** kini memuat kolom Jabatan.
+
+### Aturan yang perlu diketahui
+- Pegawai yang sedang cuti/izin/sakit/dinas luar, piket, atau Lepas Piket tidak pernah dipilih. Satu orang tidak merangkap dua peran pada apel yang sama.
+- *Berurutan* melanjutkan dari pemegang terakhir peran itu menurut urutan daftar (tingkat jabatan, lalu unit dan nama), jadi urutan tetap terjaga walau dibuat bulan demi bulan.
+- Hari libur nasional (agenda jenis *Libur*) dilewati; Sabtu/Minggu ditentukan oleh pilihan "Hari apel" di Aturan Piket.
+- Jenis jabatan yang masih dipakai aturan peran tidak dapat dinonaktifkan sebelum aturannya diubah.

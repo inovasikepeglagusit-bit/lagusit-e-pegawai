@@ -1,7 +1,7 @@
 /** Master Data & Pengaturan: satu pusat untuk semua persetujuan dan pengaturan Super Admin (tab). */
 const ROLE_X = ['Super Admin', 'Operator', 'Atasan', 'Pimpinan'];
 const MTABS = [
-  ['persetujuan', 'Persetujuan', 'bi-patch-check'], ['akun', 'Akun & Peran', 'bi-people'], ['unit', 'Unit & Regu', 'bi-diagram-3'], ['operator', 'Operator', 'bi-person-gear'],
+  ['persetujuan', 'Persetujuan', 'bi-patch-check'], ['akun', 'Akun & Peran', 'bi-people'], ['unit', 'Unit & Regu', 'bi-diagram-3'], ['jabatan', 'Jabatan', 'bi-award'], ['operator', 'Operator', 'bi-person-gear'],
   ['profil', 'Profil & Kolom', 'bi-ui-checks'], ['kehadiran', 'Kehadiran', 'bi-calendar-x'], ['aturan', 'Aturan', 'bi-sliders'], ['tampilan', 'Tampilan', 'bi-palette'], ['kop', 'Kop Surat', 'bi-card-heading']
 ];
 const MT = {};
@@ -275,5 +275,49 @@ async function simpanKolomUI(e) {
   const r = await call('simpanKolom', arr); if (r) { closeModal(); toast(r.message); muatTab(); }
 }
 
+// ── Tab Jabatan: jenis jabatan (eselon, JFT, JFU), nama jabatan, dan penetapan per pegawai ──
+MT.jabatan = async () => { const r = await call('getJabatan'); if (!r) return; S.jb = r.data; S.jbp = {}; S.jbq = S.jbq || ''; S.jbf = S.jbf || 'belum'; mb(panelJabatan()); jbGambarPeg(); };
+const jbRum = k => (S.jb.rumpun.find(x => x.Kode === k) || {}).Nama || k;
+const jbOptJenis = (cur, kosong) => (kosong ? `<option value="">${kosong}</option>` : '<option value="">Pilih jenis...</option>') + S.jb.jenis.filter(j => j.Aktif || j.ID === cur).map(j => `<option value="${j.ID}" ${j.ID === cur ? 'selected' : ''}>${esc(j.Nama)}${j.Aktif ? '' : ' (nonaktif)'}</option>`).join('');
+const jbBarisJenis = j => `<tr><td><input class="form-control" data-f="nama" data-id="${esc(j.ID || '')}" value="${esc(j.Nama || '')}" maxlength="60" aria-label="Nama jenis jabatan"></td><td><select class="form-select" data-f="rumpun" onchange="jbRumpun(this)" aria-label="Rumpun">${S.jb.rumpun.map(r => `<option value="${r.Kode}" ${(j.Rumpun || 'Struktural') === r.Kode ? 'selected' : ''}>${esc(r.Nama)}</option>`).join('')}</select></td><td style="width:92px"><input type="number" min="1" max="20" class="form-control" data-f="tingkat" value="${esc(j.Tingkat === undefined ? '' : j.Tingkat)}" ${(j.Rumpun || 'Struktural') === 'Struktural' ? '' : 'disabled'} aria-label="Tingkat eselon"></td><td><input class="form-control" data-f="ket" value="${esc(j.Keterangan || '')}" maxlength="100" placeholder="Opsional, misalnya Pimpinan" aria-label="Keterangan"></td><td class="text-center"><input type="checkbox" data-f="aktif" ${j.Aktif !== false ? 'checked' : ''} aria-label="Aktif"></td><td class="nw">${j.ID ? (j.Jumlah || 0) + ' pegawai' : '–'}${j.Dipakai && j.Dipakai.length ? `<small class="d-block muted">dipakai: ${esc(j.Dipakai.join(', '))}</small>` : ''}</td></tr>`;
+const jbBarisNama = d => `<tr><td><input class="form-control" data-f="nama" data-id="${esc(d.ID || '')}" value="${esc(d.Nama || '')}" maxlength="120" aria-label="Nama jabatan"></td><td style="width:150px"><select class="form-select" data-f="cocok" aria-label="Cara mencocokkan">${S.jb.cocok.map(c => `<option ${(d.Cocok || 'Persis') === c ? 'selected' : ''}>${c}</option>`).join('')}</select></td><td><select class="form-select" data-f="jenis" aria-label="Jenis jabatan">${jbOptJenis(d.JenisID)}</select></td><td class="text-center"><input type="checkbox" data-f="aktif" ${d.Aktif !== false ? 'checked' : ''} aria-label="Aktif"></td><td class="nw">${d.ID ? (d.Jumlah || 0) + ' pegawai' : '–'}</td></tr>`;
+function jbRumpun(el) { const t = el.closest('tr').querySelector('[data-f=tingkat]'); t.disabled = el.value !== 'Struktural'; if (t.disabled) t.value = ''; else if (!t.value) t.value = 1; }
+function panelJabatan() {
+  const b = S.jb;
+  return `<div class="card-x mb-3"><div class="rowb mb-2"><h3 class="h6 mb-0 grow">1. Jenis jabatan</h3></div>
+  <p class="muted small">Jenis jabatan dipakai untuk menentukan siapa yang boleh menjadi pembina, komandan, dan petugas apel lainnya. Bawaan: Eselon I sampai V, Jabatan Fungsional Tertentu (JFT), dan Jabatan Fungsional Umum (JFU). Anda dapat menambah jenis lain (misalnya <i>Eselon VI</i> dengan tingkat 6, atau <i>Pelaksana</i>) dan mengubah namanya. Tingkat eselon: Eselon I = 1, II = 2, dan seterusnya; dipakai untuk mengurutkan.</p>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Nama jenis jabatan</th><th>Rumpun</th><th>Tingkat</th><th>Keterangan</th><th>Aktif</th><th>Pegawai</th></tr></thead><tbody id="jbJ">${b.jenis.map(jbBarisJenis).join('')}</tbody></table></div>
+  <div class="d-flex flex-wrap gap-2"><button type="button" class="btn-o" onclick="$('jbJ').insertAdjacentHTML('beforeend', jbBarisJenis({}))">+ Tambah jenis jabatan</button><button type="button" class="btn-x" onclick="jbSimpanJenis(this)">Simpan jenis jabatan</button></div>
+  <p class="muted small mt-2 mb-0">Simpan jenis lebih dulu sebelum memakainya pada daftar nama jabatan di bawah.</p></div>
+  <div class="card-x mb-3"><div class="rowb mb-2"><h3 class="h6 mb-0 grow">2. Nama jabatan → jenis jabatan</h3></div>
+  <p class="muted small">Pegawai otomatis mengikuti kolom <b>Jabatan</b> di data pegawainya. <b>Persis</b>: nama harus sama. <b>Diawali</b>: berlaku untuk semua jabatan yang diawali tulisan itu, misalnya "Kepala Seksi" → semua "Kepala Seksi …". <b>Mengandung</b>: berlaku bila tulisan ada di mana saja, misalnya "Pembimbing Kemasyarakatan". Bila beberapa aturan cocok, yang paling spesifik dipakai.</p>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Nama jabatan</th><th>Pencocokan</th><th>Jenis jabatan</th><th>Aktif</th><th>Pegawai</th></tr></thead><tbody id="jbD">${b.daftar.map(jbBarisNama).join('')}</tbody></table></div>
+  ${b.belum.length ? `<div class="mb-2"><div class="lbl">Jabatan pada data pegawai yang belum terpetakan (${b.belum.reduce((n, x) => n + x.Jumlah, 0)} pegawai) — klik untuk menambahkan ke daftar:</div><div class="kchips">${b.belum.map((x, i) => `<button type="button" class="kchip" onclick="jbTambahNama(${i})">${esc(x.Jabatan)} <b>${x.Jumlah}</b></button>`).join('')}</div></div>` : '<p class="muted small">Semua jabatan pada data pegawai sudah terpetakan atau kosong.</p>'}
+  <div class="d-flex flex-wrap gap-2"><button type="button" class="btn-o" onclick="$('jbD').insertAdjacentHTML('beforeend', jbBarisNama({}))">+ Tambah nama jabatan</button><button type="button" class="btn-x" onclick="jbSimpanNama(this)">Simpan nama jabatan</button></div></div>
+  <div class="card-x"><div class="rowb mb-2"><h3 class="h6 mb-0 grow">3. Penetapan per pegawai</h3></div>
+  <p class="muted small">Hasil pemetaan nama jabatan tampil di kolom Jenis. Untuk pengecualian, pilih jenis secara manual; penetapan manual selalu didahulukan.</p>
+  <div class="toolbar"><input id="jbQ" class="form-control" placeholder="Cari nama, jabatan, unit" aria-label="Cari pegawai" value="${esc(S.jbq)}" oninput="S.jbq=this.value;jbGambarPeg()"><select id="jbF" class="form-select" aria-label="Filter" onchange="S.jbf=this.value;jbGambarPeg()">${[['belum', 'Belum punya jenis'], ['semua', 'Semua pegawai'], ['manual', 'Ditetapkan manual']].map(o => `<option value="${o[0]}" ${S.jbf === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select><button type="button" class="btn-x ms-auto" onclick="jbSimpanPeg(this)">Simpan penetapan</button></div>
+  <div id="jbPeg"></div></div>`;
+}
+function jbGambarPeg() {
+  const b = S.jb, q = S.jbq.toLowerCase(), f = S.jbf, nm = {}; b.jenis.forEach(j => nm[j.ID] = j.Nama);
+  const L = b.pegawai.filter(p => (f === 'semua' || (f === 'belum' && !p.JenisID && !(p.ID in S.jbp && S.jbp[p.ID])) || (f === 'manual' && p.Manual)) && [p.Nama, p.Jabatan, p.Unit].join(' ').toLowerCase().includes(q));
+  $('jbPeg').innerHTML = L.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Nama</th><th>Jabatan</th><th>Jenis saat ini</th><th>Tetapkan manual</th></tr></thead><tbody>${L.slice(0, 300).map(p => { const v = p.ID in S.jbp ? S.jbp[p.ID] : p.Manual; return `<tr><td>${esc(p.Nama)}<small class="d-block muted">${esc(p.Unit || '')}</small></td><td>${esc(p.Jabatan || '–')}</td><td>${p.JenisID ? `${esc(nm[p.JenisID] || '?')} <span class="badge-x ${p.Sumber === 'Manual' ? 'wait' : 'ok'}">${p.Sumber === 'Manual' ? 'manual' : 'dari nama'}</span>` : '<span class="badge-x off">Belum ada</span>'}</td><td style="min-width:210px"><select class="form-select form-select-sm" onchange="S.jbp['${p.ID}']=this.value" aria-label="Jenis jabatan ${esc(p.Nama)}">${jbOptJenis(v, 'Ikuti nama jabatan')}</select></td></tr>`; }).join('')}</tbody></table></div>${L.length > 300 ? `<p class="muted small">Menampilkan 300 dari ${L.length}. Persempit pencarian.</p>` : ''}` : `<p class="muted text-center py-3 mb-0">${f === 'belum' ? 'Semua pegawai sudah punya jenis jabatan.' : 'Tidak ada pegawai yang cocok.'}</p>`;
+}
+const jbQ = (r, f) => r.querySelector('[data-f=' + f + ']');
+async function jbSimpanJenis(btn) {
+  const jenis = [...$('jbJ').querySelectorAll('tr')].map(r => ({ ID: jbQ(r, 'nama').dataset.id || undefined, Nama: jbQ(r, 'nama').value, Rumpun: jbQ(r, 'rumpun').value, Tingkat: jbQ(r, 'tingkat').value, Keterangan: jbQ(r, 'ket').value, Aktif: jbQ(r, 'aktif').checked })).filter(j => j.Nama.trim() || j.ID);
+  busy(btn, true); const r = await call('simpanJenisJabatan', { jenis }); busy(btn, false); if (r) { toast(r.message); MT.jabatan(); }
+}
+async function jbSimpanNama(btn) {
+  const daftar = [...$('jbD').querySelectorAll('tr')].map(r => ({ ID: jbQ(r, 'nama').dataset.id || undefined, Nama: jbQ(r, 'nama').value, Cocok: jbQ(r, 'cocok').value, JenisID: jbQ(r, 'jenis').value, Aktif: jbQ(r, 'aktif').checked })).filter(d => d.Nama.trim() || d.ID);
+  busy(btn, true); const r = await call('simpanDaftarJabatan', { daftar }); busy(btn, false); if (r) { toast(r.message); MT.jabatan(); }
+}
+function jbTambahNama(i) { const x = S.jb.belum[i]; $('jbD').insertAdjacentHTML('beforeend', jbBarisNama({ Nama: x.Jabatan, Cocok: 'Persis' })); const r = $('jbD').lastElementChild; r.scrollIntoView({ behavior: 'smooth', block: 'center' }); jbQ(r, 'jenis').focus(); toast('Pilih jenis jabatannya, lalu klik "Simpan nama jabatan".'); }
+async function jbSimpanPeg(btn) {
+  const baris = Object.keys(S.jbp).filter(id => (S.jbp[id] || '') !== ((S.jb.pegawai.find(p => p.ID === id) || {}).Manual || '')).map(id => ({ PegawaiID: id, JenisID: S.jbp[id] }));
+  if (!baris.length) return toast('Tidak ada perubahan.', 'warning');
+  busy(btn, true); const r = await call('petakanJabatanPegawai', { Baris: baris }); busy(btn, false); if (r) { toast(r.message); MT.jabatan(); }
+}
 
 (window.MOD = window.MOD || []).push('Master');
