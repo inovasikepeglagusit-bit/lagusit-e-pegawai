@@ -269,3 +269,36 @@ git push
 - *Berurutan* melanjutkan dari pemegang terakhir peran itu menurut urutan daftar (tingkat jabatan, lalu unit dan nama), jadi urutan tetap terjaga walau dibuat bulan demi bulan.
 - Hari libur nasional (agenda jenis *Libur*) dilewati; Sabtu/Minggu ditentukan oleh pilihan "Hari apel" di Aturan Piket.
 - Jenis jabatan yang masih dipakai aturan peran tidak dapat dinonaktifkan sebelum aturannya diubah.
+
+---
+
+## Tahap 22 — Halaman depan publik (beranda.html) dengan pengumuman dari Super Admin
+
+### Yang baru
+- **`beranda.html`**: landing page bergaya ilustrasi senja dengan paralaks berlapis dan tiga adegan bertema Pemasyarakatan (fajar di gerbang lapas dengan petugas dan menara jaga, apel pagi di tepi laut, malam siaga dengan lampu sorot dan petugas patroli). Tidak ada logo, nama, atau tulisan yang tertanam di gambar, dan **semua kata-kata dapat diatur Super Admin**.
+- **Pengumuman publik**: pengumuman yang diberi tanda **Tampilkan di halaman depan** muncul otomatis di beranda selama masa berlakunya. Agenda, upacara, dan libur tidak pernah tampil di publik.
+- Tombol **Masuk** di beranda mengarah ke `index.html` (gerbang aplikasi, login email dan kata sandi).
+
+### Backend (Apps Script)
+Tempel ulang **semua** berkas ini secara utuh, simpan, lalu **Deploy → Manage deployments → Edit (ikon pensil) → Version: New version → Deploy** (URL /exec tetap):
+`Kode.gs`, `Modul_Tampilan.gs`, `Modul_Kalender.gs`.
+Kolom baru **Publik** pada sheet *Agenda* ditambahkan otomatis oleh sistem; tidak perlu mengubah sheet secara manual.
+
+### Frontend
+Berkas baru/berubah: `beranda.html` (baru), `js/kgb.js`, `js/master.js`.
+```
+git add .
+git commit -m "Tahap 22: halaman depan publik dengan pengumuman dari Super Admin"
+git push
+```
+Halaman terbuka di `https://<akun>.github.io/lagusit-e-pegawai/beranda.html`.
+
+### Cara pakai
+1. **Mengatur kata-kata**: Master Data & Pengaturan → tab **Tampilan** → bagian **Halaman depan (beranda)**. Dapat diubah: teks kecil, judul besar, kalimat miring, kalimat pembuka, teks tombol, daftar fungsi, kartu layanan (satu baris satu kartu, pola `Judul | Isi`, maksimal 6), daftar peran (maksimal 4), judul bagian Pengumuman, dan kutipan penutup. Kolom yang dikosongkan kembali ke teks bawaan. Nama aplikasi, subjudul, instansi, logo (opsional), dan warna aksen yang sudah ada ikut dipakai.
+2. **Menayangkan pengumuman**: Kalender & Pengumuman → **Tambah** → Jenis *Pengumuman* → isi judul, tanggal mulai, **berlaku sampai**, deskripsi (opsional waktu dan lokasi) → centang **Tampilkan di halaman depan** → Simpan. Pengumuman hilang dari beranda otomatis setelah tanggal berlaku habis atau bila dibatalkan.
+3. Beranda menyimpan hasil selama 60 detik di server agar hemat kuota; perubahan biasanya terlihat dalam satu menit.
+
+### Aturan yang perlu diketahui
+- Pengumuman bertanda publik **dapat dibaca siapa saja tanpa login**. Hanya judul, isi, tanggal, waktu, dan lokasi yang keluar; jangan menulis data pribadi atau rahasia.
+- Bila alamat server belum diisi di `js/config.js`, beranda tetap tampil dengan teks bawaan dan keterangan "Belum ada pengumuman".
+- Animasi otomatis berhenti bila perangkat meminta pengurangan gerakan.
