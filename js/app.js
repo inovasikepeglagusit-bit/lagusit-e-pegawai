@@ -155,24 +155,16 @@ function infoHtml(t) {
 }
 function tampilInfo() { openModal(TP.infoJudul || 'Informasi', `<div class="info-isi">${infoHtml(TP.info)}</div>`); }
 
-// ── Gerbang depan: gambar penuh, tombol masuk berupa geser (swipe), dan tombol Informasi ──
+// ── Gerbang depan: landing "Pelayaran" (landing.html) dimuat penuh layar di atas halaman masuk ──
+// Landing berada di iframe agar gaya dan skripnya terpisah dari aplikasi. Tombol "Masuk" di landing mengirim pesan ke sini.
 function tampilGerbang() {
   const lama = $('gerbang'); if (lama) lama.remove();
-  const g = document.createElement('div'); g.id = 'gerbang';
-  g.innerHTML = `<div class="stage"><picture><source media="(max-aspect-ratio: 1/1)" srcset="img/gerbang-mobile.jpg"><img src="img/gerbang-desktop.jpg" alt="Gedung kantor dan pegawai, latar halaman depan LAGUSIT e-PEGAWAI" draggable="false"></picture>
-    <div class="swipe"><div class="trk" id="gTrk"><div class="fill" id="gFill"></div><span class="lbl">Geser untuk masuk</span><button type="button" class="hdl" id="gHdl" role="slider" aria-label="Geser ke kanan untuk masuk. Dapat juga ditekan Enter." aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button></div></div></div>
-    <button type="button" class="g-info" onclick="tampilInfo()"><i class="bi bi-info-circle-fill"></i> Informasi</button>`;
+  const g = document.createElement('div'); g.id = 'gerbang'; g.className = 'lp';
+  g.innerHTML = '<iframe src="landing.html" title="Halaman depan LAGUSIT e-PEGAWAI"></iframe>';
   document.body.appendChild(g); document.body.classList.add('guest');
-  const trk = $('gTrk'), h = $('gHdl'), fill = $('gFill'); let drag = false, x0 = 0, pos = 0, max = 1, selesai = false;
-  const set = p => { pos = Math.max(0, Math.min(max, p)); h.style.transform = `translateX(${pos}px)`; fill.style.width = (pos + h.offsetWidth) + 'px'; h.setAttribute('aria-valuenow', Math.round(pos * 100 / max)); };
-  const masuk = () => { if (selesai) return; selesai = true; set(max); setTimeout(() => { g.classList.add('keluar'); setTimeout(() => { g.remove(); const em = $('em'); if (em) em.focus(); }, 480); }, 160); };
-  h.addEventListener('pointerdown', e => { if (selesai) return; drag = true; max = Math.max(1, trk.clientWidth - h.offsetWidth - 2 * (parseFloat(getComputedStyle(trk).getPropertyValue('--pad')) || 0)); x0 = e.clientX - pos; h.setPointerCapture(e.pointerId); trk.classList.add('drag'); });
-  h.addEventListener('pointermove', e => { if (drag) set(e.clientX - x0); });
-  const lepas = () => { if (!drag) return; drag = false; trk.classList.remove('drag'); if (pos >= max * 0.85) masuk(); else set(0); };
-  h.addEventListener('pointerup', lepas); h.addEventListener('pointercancel', lepas);
-  h.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); max = Math.max(1, trk.clientWidth - h.offsetWidth - 2 * (parseFloat(getComputedStyle(trk).getPropertyValue('--pad')) || 0)); masuk(); } });
-  h.addEventListener('click', e => { if (e.detail === 0) return; }); // klik biasa tidak masuk; harus digeser
-  setTimeout(() => { try { h.focus({ preventScroll: true }); } catch (e) {} }, 300);
+  const tutup = () => { removeEventListener('message', onMsg); if (!g.isConnected) return; g.classList.add('keluar'); setTimeout(() => { g.remove(); const em = $('em'); if (em) em.focus(); }, 480); };
+  function onMsg(e) { if (e.origin === location.origin && e.data && e.data.lagusit === 'masuk') tutup(); }
+  addEventListener('message', onMsg);
 }
 
 // ── Halaman akun ──

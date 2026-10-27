@@ -302,3 +302,11 @@ Halaman terbuka di `https://<akun>.github.io/lagusit-e-pegawai/beranda.html`.
 - Pengumuman bertanda publik **dapat dibaca siapa saja tanpa login**. Hanya judul, isi, tanggal, waktu, dan lokasi yang keluar; jangan menulis data pribadi atau rahasia.
 - Bila alamat server belum diisi di `js/config.js`, beranda tetap tampil dengan teks bawaan dan keterangan "Belum ada pengumuman".
 - Animasi otomatis berhenti bila perangkat meminta pengurangan gerakan.
+
+### Tahap 22d — Landing "Pelayaran" menggantikan gerbang depan aplikasi
+- Layar awal "Geser untuk masuk" diganti landing Pelayaran (`landing.html`). Landing dimuat penuh layar di atas halaman masuk, di dalam iframe, jadi gaya dan skripnya tidak bercampur dengan aplikasi. Tombol **Masuk ke Sistem** (di hero, menu atas, dan lembar Informasi) menutup landing dan membuka form login. Setelah **Keluar**, landing tampil lagi.
+- `index.html` tetap aplikasi; alamat utama situs tidak berubah.
+- Menu **Informasi** di landing menampilkan teks Informasi aplikasi dari Pengaturan Tampilan (judul dan isi `# judul / - butir`) di bagian bawah, jadi tidak ada isi ganda.
+- `landing.html` juga bisa dibuka langsung; tombol Masuknya mengarah ke `index.html`.
+- Berkas yang berubah: `landing.html` (baru), `js/app.js`, `css/style.css`. Gambar `img/gerbang-*.jpg` tidak lagi dipakai (boleh dibiarkan).
+- `beranda.html` dan `beranda-gerbang.html` adalah desain alternatif; tidak dipakai kecuali Anda ingin menggantinya (salin isinya ke `landing.html`).

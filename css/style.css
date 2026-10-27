@@ -410,3 +410,6 @@ button.kchip{cursor:pointer;font-family:inherit;color:inherit}button.kchip:hover
 .ar-peran{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}.ar-off{opacity:.65}.ar-rule{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}.ar-ring{margin:10px 0 0;padding-left:18px;font-size:13px}.ar-ring li{margin-bottom:2px}
 .btn-x.danger{background:var(--danger,#dc2626);border-color:var(--danger,#dc2626)}
 #jbJ select{min-width:200px}#jbD select{min-width:170px}
+
+/* Gerbang depan = landing dalam iframe */
+#gerbang.lp{background:#0d1950}#gerbang.lp iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
