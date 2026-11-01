@@ -456,3 +456,7 @@ button.kchip{cursor:pointer;font-family:inherit;color:inherit}button.kchip:hover
 .ly-kertas{background:#fff;color:#000;border:1px solid var(--line);border-radius:8px;padding:22px 26px;max-height:560px;overflow:auto;box-shadow:inset 0 0 0 1px rgba(0,0,0,.03)}
 
 .pf .form-control,.pf .form-select{min-width:0;max-width:100%}.pf .row{margin-left:0;margin-right:0}.pf summary{list-style:none}.pf summary::-webkit-details-marker{display:none}
+
+/* Pemilih banyak pegawai */
+.pm-list{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:12px}.pm-i{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer;min-height:48px}.pm-i:last-child{border-bottom:0}.pm-i:hover{background:var(--bg)}.pm-i.off{opacity:.55;cursor:not-allowed}.pm-i input{width:20px;height:20px;flex:0 0 auto}.pm-i small{font-size:12px}.btn-x.danger{background:var(--bad,#dc2626)}
+.k-u{background:#0D9488}.k-ps{background:#7C3AED}

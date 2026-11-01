@@ -105,18 +105,69 @@ function formBuatAkun(pid) {
 }
 async function buatAkunUI(e, pid) { e.preventDefault(); const b = e.target.querySelector('[type=submit]'); busy(b, true); const r = await call('buatAkun', pid, $('ba').value, [...document.querySelectorAll('[name=br]:checked')].map(x => x.value)); busy(b, false); if (r) { closeModal(); toast(r.message); muatTab(); } }
 
-// ── Tab Unit & Regu: unit kerja adalah sumber tunggal pilihan unit di Pegawai dan Profil ──
+// ── Tab Unit & Regu: unit kerja adalah sumber tunggal pilihan unit di Pegawai dan Profil; anggota unit dan regu dipilih banyak sekaligus ──
+const SESI_REGU = ['Pagi', 'Siang', 'Malam'];
 MT.unit = async () => {
-  const [u, g] = await Promise.all([call('listUnit'), call('getRegu')]); if (!u || !g) return; S.un = u.data;
+  const [u, g, p] = await Promise.all([call('listUnit'), call('getRegu'), call('listPegawai')]); if (!u || !g || !p) return; S.un = u.data; S.rg = g.data; S.pgm = p.data.filter(x => x.Aktif === true);
   const cur = n => g.data.anggota.filter(a => a.Regu === n && !a.Sampai);
   mb(`<div class="row g-3"><div class="col-lg-5"><div class="card-x"><h3 class="h6">Unit kerja</h3>
   <form class="toolbar" onsubmit="unitUI(event)"><input id="un" class="form-control" placeholder="Nama unit kerja baru" aria-label="Nama unit kerja baru" maxlength="80" required><button class="btn-x" type="submit">Tambah</button></form>
-  ${u.data.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Unit</th><th>Pegawai</th><th></th></tr></thead><tbody>${u.data.map(x => `<tr><td>${esc(x.Nama)}${x.Aktif === true ? '' : ' <span class="badge-x off">Nonaktif</span>'}</td><td>${x.Dipakai}</td><td class="text-end nw"><button class="btn-o" onclick="unitNama('${x.ID}')">Ubah nama</button> <button class="btn-o ${x.Aktif === true ? 'danger' : ''}" onclick="unitAktif('${x.ID}',${x.Aktif === true ? 'false' : 'true'})">${x.Aktif === true ? 'Nonaktifkan' : 'Aktifkan'}</button>${x.Dipakai ? '' : ` <button class="btn-o danger" onclick="unitHapus('${x.ID}')">Hapus</button>`}</td></tr>`).join('')}</tbody></table></div>` : kosong('belum ada unit kerja.')}<p class="muted small mt-3 mb-0">Daftar ini menjadi satu-satunya pilihan unit di formulir Pegawai dan Profil. Mengubah nama unit ikut memperbarui semua pegawai di unit itu. Unit yang masih dipakai pegawai hanya dapat dinonaktifkan.</p></div></div>
-  <div class="col-lg-7"><div class="card-x"><h3 class="h6">Regu penjagaan dan anggota</h3>
-  <form class="toolbar" onsubmit="anggotaUI(event)"><select id="mr" class="form-select" aria-label="Regu">${REGU.map(n => `<option>${n}</option>`).join('')}</select><select id="mp" class="form-select" style="max-width:240px" aria-label="Pegawai" required><option value="">Pilih pegawai...</option>${g.data.pegawai.map(p => `<option value="${p.ID}">${esc(p.Nama)}</option>`).join('')}</select><input id="mt" type="date" class="form-control" style="max-width:170px" value="${today()}" aria-label="Berlaku mulai" required><button class="btn-x" type="submit">Masukkan</button></form>
-  ${REGU.map(n => `<div class="mb-3"><b>${n}</b> <span class="muted">(${cur(n).length} anggota)</span><div class="mt-1">${cur(n).map(a => `<span class="badge-x ok me-1 mb-1">${esc(a.Nama)} · sejak ${esc(a.Mulai)} <a href="javascript:void(0)" onclick="keluarUI('${a.ID}')" aria-label="Keluarkan ${esc(a.Nama)}">&times;</a></span>`).join('') || '<span class="muted">Belum ada anggota.</span>'}</div></div>`).join('')}
-  <p class="muted small mb-0">Memindahkan pegawai ke regu lain menutup keanggotaan lama; catatan apel lama tetap menunjukkan regu lamanya.</p></div></div></div>`);
+  ${u.data.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Unit</th><th>Pegawai</th><th></th></tr></thead><tbody>${u.data.map(x => `<tr><td>${esc(x.Nama)}${x.Aktif === true ? '' : ' <span class="badge-x off">Nonaktif</span>'}</td><td>${x.Dipakai}</td><td class="text-end nw"><button class="btn-x" onclick="unitAnggota('${x.ID}')"><i class="bi bi-people"></i> Anggota</button> <button class="btn-o" onclick="unitNama('${x.ID}')">Ubah nama</button> <button class="btn-o ${x.Aktif === true ? 'danger' : ''}" onclick="unitAktif('${x.ID}',${x.Aktif === true ? 'false' : 'true'})">${x.Aktif === true ? 'Nonaktifkan' : 'Aktifkan'}</button>${x.Dipakai ? '' : ` <button class="btn-o danger" onclick="unitHapus('${x.ID}')">Hapus</button>`}</td></tr>`).join('')}</tbody></table></div>` : kosong('belum ada unit kerja.')}<p class="muted small mt-3 mb-0">Daftar ini menjadi satu-satunya pilihan unit di formulir Pegawai dan Profil. Tombol <b>Anggota</b> memilih banyak pegawai sekaligus; pegawai dari unit lain otomatis dipindahkan. Mengubah nama unit ikut memperbarui semua pegawai di unit itu.</p></div></div>
+  <div class="col-lg-7"><div class="card-x"><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><h3 class="h6 mb-0 grow">Regu penjagaan (Rupam) dan anggota</h3><button class="btn-o" onclick="reguForm('')"><i class="bi bi-plus-lg"></i> Regu baru</button></div>
+  ${g.data.regu.map(r => `<div class="mb-3 ${r.Aktif ? '' : 'opacity-50'}"><div class="d-flex flex-wrap align-items-center gap-2"><b>${esc(r.Nama)}</b> <span class="muted">(${cur(r.Nama).length} anggota)</span>${r.Aktif ? '' : '<span class="badge-x off">Nonaktif</span>'}${r.Sesi.map(x => `<span class="badge-x wait">${x}</span>`).join('')}<span class="ms-auto nw">${r.Aktif ? `<button class="btn-x" onclick="reguAnggota('${esc(r.Nama)}')"><i class="bi bi-person-plus"></i> Tambah anggota</button> ` : ''}<button class="btn-o" onclick="reguForm('${r.ID}')">Atur regu</button></span></div><div class="mt-1">${cur(r.Nama).map(a => `<span class="badge-x ok me-1 mb-1">${esc(a.Nama)} · sejak ${esc(a.Mulai)} <a href="javascript:void(0)" onclick="keluarUI('${a.ID}')" aria-label="Keluarkan ${esc(a.Nama)}">&times;</a></span>`).join('') || '<span class="muted">Belum ada anggota.</span>'}</div></div>`).join('')}
+  <p class="muted small mb-0">Setiap regu punya sesi apel sendiri (mis. Rupam Blok Wanita: Pagi dan Siang saja). Regu baru dapat ditambahkan kapan saja. Memindahkan pegawai ke regu lain menutup keanggotaan lama; catatan apel lama tetap menunjukkan regu lamanya. Pegawai berstatus Detaser/BKO tidak dapat dimasukkan ke regu.</p></div></div></div>`);
 };
+
+// ── Pemilih banyak pegawai (dipakai anggota unit dan anggota regu): cari, saring, centang, lalu proses sekaligus ──
+const PM = { ids: new Set(), daftar: [], go: null };
+const pmUnitOpsi = () => '<option value="">Semua unit</option>' + [...new Set(PM.daftar.map(d => d.Unit).filter(Boolean))].sort().map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('') + '<option value="-">(belum diisi)</option>';
+function pmHtml(aksiHtml) {
+  return `<div class="pm"><div class="row g-2 mb-2"><div class="col-12 col-md-5"><input id="pmq" class="form-control" placeholder="Cari nama, NIP, atau jabatan" oninput="pmGambar()" aria-label="Cari pegawai"></div><div class="col-6 col-md-4"><select id="pmu" class="form-select" onchange="pmGambar()" aria-label="Saring unit">${pmUnitOpsi()}</select></div><div class="col-6 col-md-3"><select id="pmj" class="form-select" onchange="pmGambar()" aria-label="Saring jenis kelamin"><option value="">Semua</option><option>Laki-laki</option><option>Perempuan</option></select></div></div>
+  <div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button type="button" class="btn-o" onclick="pmSemua(true)">Pilih semua yang tampil</button><button type="button" class="btn-o" onclick="pmSemua(false)">Kosongkan pilihan</button><span class="muted small ms-auto" id="pmc" aria-live="polite"></span></div>
+  <div id="pmL" class="pm-list" role="group" aria-label="Daftar pegawai"></div>${aksiHtml}</div>`;
+}
+function pmMulai(daftar, go) { PM.ids = new Set(); PM.daftar = daftar; PM.go = go; }
+function pmTampil() { const q = ($('pmq') || {}).value || '', un = ($('pmu') || {}).value || '', jk = ($('pmj') || {}).value || ''; const k = q.toLowerCase();
+  return PM.daftar.filter(d => (!k || [d.Nama, d.NIP, d.Jabatan].join(' ').toLowerCase().includes(k)) && (!un || (un === '-' ? !d.Unit : d.Unit === un)) && (!jk || d.JK === jk)); }
+function pmGambar() {
+  const L = pmTampil(); $('pmL').innerHTML = L.length ? L.map(d => `<label class="pm-i ${d.Kunci ? 'off' : ''}"><input type="checkbox" ${PM.ids.has(d.ID) ? 'checked' : ''} ${d.Kunci ? 'disabled' : ''} onchange="pmToggle('${d.ID}',this.checked)"><span class="grow"><b>${esc(d.Nama)}</b><small class="d-block muted">${esc([d.NIP, d.Jabatan, d.Unit].filter(Boolean).join(' · '))}</small></span>${d.Info ? `<span class="badge-x ${d.Kunci ? 'off' : 'wait'}">${esc(d.Info)}</span>` : ''}</label>`).join('') : '<p class="muted p-3 mb-0">Tidak ada pegawai yang cocok.</p>';
+  pmHitung();
+}
+function pmToggle(id, on) { if (on) PM.ids.add(id); else PM.ids.delete(id); pmHitung(); }
+function pmSemua(on) { if (on) pmTampil().forEach(d => { if (!d.Kunci) PM.ids.add(d.ID); }); else PM.ids.clear(); pmGambar(); }
+function pmHitung() { const n = PM.ids.size, c = $('pmc'), g = $('pmGo'); if (c) c.textContent = n + ' dipilih · ' + pmTampil().length + ' tampil'; if (g) { g.disabled = !n; g.querySelector('b').textContent = n ? ' (' + n + ')' : ''; } }
+async function pmEksekusi(b) { if (!PM.ids.size) return; busy(b, true); const r = await PM.go([...PM.ids]); busy(b, false); if (r) { closeModal(); toast(r.message); const g = (r.data && r.data.gagal) || []; await muatTab(); if (g.length) openModal('Sebagian dilewati', `<p>${g.length} pegawai tidak diproses:</p><ul>${g.map(x => `<li><b>${esc(x.Nama)}</b>: ${esc(x.Alasan)}</li>`).join('')}</ul><div class="text-end"><button class="btn-x" data-bs-dismiss="modal">Tutup</button></div>`); } }
+const pmItem = (p, extra) => Object.assign({ ID: p.ID, Nama: p.Nama, NIP: p.NIP, Jabatan: p.Jabatan, Unit: p.Unit, JK: p.JenisKelamin }, extra || {});
+
+// ── Anggota unit kerja ──
+function unitAnggota(id, mode) {
+  const x = S.un.find(u => u.ID === id); mode = mode || 'tambah'; S.unA = { id: id, mode: mode };
+  const D = S.pgm.filter(p => mode === 'tambah' ? p.Unit !== x.Nama : p.Unit === x.Nama).map(p => pmItem(p, mode === 'tambah' && p.Unit ? { Info: 'dari ' + p.Unit } : p.Penugasan ? { Info: p.Penugasan } : {}));
+  pmMulai(D, ids => call('aturAnggotaUnit', { Unit: x.Nama, PegawaiIDs: ids, Aksi: mode }));
+  const n = S.pgm.filter(p => p.Unit === x.Nama).length;
+  openModal('Anggota ' + x.Nama, `<div class="seg sm mb-2"><button type="button" class="seg-b ${mode === 'tambah' ? 'on' : ''}" onclick="unitAnggota('${id}','tambah')">Tambah anggota</button><button type="button" class="seg-b ${mode === 'keluar' ? 'on' : ''}" onclick="unitAnggota('${id}','keluar')">Anggota saat ini (${n})</button></div>
+  <p class="muted small">${mode === 'tambah' ? 'Centang pegawai yang akan masuk ke unit ini, lalu tekan tombol di bawah. Pegawai yang masih berada di unit lain akan dipindahkan.' : 'Centang anggota yang akan dikeluarkan dari unit ini (unit pegawai dikosongkan).'}</p>${pmHtml(`<div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button id="pmGo" class="btn-x ${mode === 'keluar' ? 'danger' : ''}" onclick="pmEksekusi(this)" disabled>${mode === 'tambah' ? 'Tambahkan' : 'Keluarkan'}<b></b></button></div>`)}`);
+  pmGambar();
+}
+
+// ── Anggota regu (banyak sekaligus) dan pengaturan regu ──
+function reguAnggota(nama) {
+  const aktif = {}; S.rg.anggota.filter(a => !a.Sampai).forEach(a => aktif[a.PegawaiID] = a.Regu);
+  const D = S.pgm.map(p => pmItem(p, p.Penugasan ? { Kunci: true, Info: p.Penugasan + ' (tidak dapat masuk regu)' } : aktif[p.ID] === nama ? { Kunci: true, Info: 'sudah anggota' } : aktif[p.ID] ? { Info: 'pindah dari ' + aktif[p.ID] } : {}));
+  S.reguT = nama; pmMulai(D, ids => call('aturAnggotaMassal', { Regu: nama, PegawaiIDs: ids, Tanggal: $('pmt').value }));
+  openModal('Tambah anggota ' + nama, `<p class="muted small">Centang pegawai yang akan masuk ke ${esc(nama)}. Yang masih berada di regu lain otomatis dipindahkan mulai tanggal berlaku.</p>${pmHtml(`<div class="row g-2 align-items-end mt-2"><div class="col-12 col-md-5"><label class="lbl" for="pmt">Berlaku mulai</label><input id="pmt" type="date" class="form-control" value="${today()}" required></div><div class="col-12 col-md-7 text-end"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button id="pmGo" class="btn-x" onclick="pmEksekusi(this)" disabled>Masukkan<b></b></button></div></div>`)}`);
+  pmGambar();
+}
+function reguForm(id) {
+  const r = id ? S.rg.regu.find(x => x.ID === id) : { Nama: '', Sesi: ['Pagi', 'Siang', 'Malam'], Aktif: true };
+  openModal(id ? 'Atur ' + r.Nama : 'Regu baru', `<form onsubmit="reguSimpan(event,'${id}')"><div class="row g-3"><div class="col-12"><label class="lbl" for="rgN">Nama regu${id ? '' : ' *'}</label><input id="rgN" class="form-control" maxlength="40" value="${esc(r.Nama)}" ${id ? 'disabled' : 'required placeholder="Contoh: Rupam E"'}>${id ? '<small class="muted">Nama tidak dapat diubah karena dipakai pada riwayat apel dan penugasan operator.</small>' : ''}</div>
+  <div class="col-12"><span class="lbl">Sesi apel</span><div class="d-flex flex-wrap gap-3">${SESI_REGU.map(s => `<label class="chk"><input type="checkbox" name="rgS" value="${s}" ${r.Sesi.includes(s) ? 'checked' : ''}> ${s}</label>`).join('')}</div><small class="muted">Hanya sesi yang dicentang yang dapat dibuka pada Apel Regu untuk regu ini.</small></div>
+  ${id ? `<div class="col-12"><label class="chk"><input type="checkbox" id="rgA" ${r.Aktif ? 'checked' : ''}> Regu aktif (tampil pada Apel Regu dan penugasan operator)</label></div>` : ''}</div><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
+}
+async function reguSimpan(e, id) {
+  e.preventDefault(); const b = e.target.querySelector('[type=submit]'); busy(b, true); const d = { Nama: $('rgN').value, Sesi: [...document.querySelectorAll('[name=rgS]:checked')].map(x => x.value) }; if (id) { d.ID = id; d.Aktif = $('rgA').checked; }
+  const r = await call('simpanRegu', d); busy(b, false); if (r) { closeModal(); toast(r.message); muatTab(); }
+}
 async function unitUI(e) { e.preventDefault(); const r = await call('simpanUnit', $('un').value); if (r) { toast(r.message); muatTab(); } }
 async function unitAktif(id, aktif) { const r = await call('ubahUnit', id, { Aktif: aktif }); if (r) { toast(r.message); muatTab(); } }
 function unitNama(id) {
@@ -124,7 +175,6 @@ function unitNama(id) {
   openModal('Ubah nama unit kerja', `<form onsubmit="unitNamaGo(event,'${id}')"><label class="lbl" for="unn">Nama unit</label><input id="unn" class="form-control" maxlength="80" value="${esc(x.Nama)}" required>${x.Dipakai ? `<p class="muted small mt-2">${x.Dipakai} pegawai di unit ini ikut diperbarui otomatis.</p>` : ''}<div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
 }
 async function unitNamaGo(e, id) { e.preventDefault(); const r = await call('ubahUnit', id, { Nama: $('unn').value }); if (r) { closeModal(); toast(r.message); muatTab(); } }
-async function anggotaUI(e) { e.preventDefault(); const r = await call('aturAnggota', 'tambah', { Regu: $('mr').value, PegawaiID: $('mp').value, Tanggal: $('mt').value }); if (r) { toast(r.message); muatTab(); } }
 function keluarUI(id) { openModal('Keluarkan dari regu', `<form onsubmit="keluarGo(event,'${id}')"><label class="lbl" for="kt">Tidak lagi anggota mulai tanggal</label><input id="kt" type="date" class="form-control" value="${today()}" required><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Keluarkan</button></div></form>`); }
 async function keluarGo(e, id) { e.preventDefault(); const t = $('kt').value; closeModal(); const r = await call('aturAnggota', 'keluar', { ID: id, Tanggal: t }); if (r) { toast(r.message); muatTab(); } }
 
@@ -172,15 +222,23 @@ async function simpanSkorUI(e) {
 
 // ── Tab Aturan: parameter KGB & pangkat ──
 MT.aturan = async () => {
-  const r = await call('getParamKgb'); if (!r) return; S.pk = r.data; const P = r.data;
+  const [r, rp] = await Promise.all([call('getParamKgb'), call('getParamPensiun')]); if (!r || !rp) return; S.pk = r.data; S.pn = rp.data; const P = r.data, PN = rp.data;
   mb(`<div class="card-x"><div class="rowb mb-2"><h3 class="h6 mb-0 grow">Aturan jadwal KGB &amp; kenaikan pangkat</h3><button class="btn-x" onclick="formParam()">Atur parameter</button></div>
   ${P ? `<div class="table-wrap"><table class="table"><tbody><tr><td>Jarak KGB</td><td>${P.kgb_bulan} bulan</td></tr><tr><td>Peringatan KGB</td><td>${P.kgb_hari} hari sebelum jadwal</td></tr><tr><td>Jarak kenaikan pangkat</td><td>${P.pangkat_bulan} bulan</td></tr><tr><td>Peringatan kenaikan pangkat</td><td>${P.pangkat_hari} hari sebelum jadwal</td></tr></tbody></table></div>` : '<p class="muted">Parameter belum diatur, jadwal KGB &amp; pangkat belum dapat dihitung.</p>'}
-  <p class="muted small mb-0">Komponen dan bobot Penilaian Kinerja diatur di menu Penilaian Kinerja karena terkait periode penilaian.</p></div>`);
+  <p class="muted small mb-0">Komponen dan bobot Penilaian Kinerja diatur di menu Penilaian Kinerja karena terkait periode penilaian.</p></div>
+  <div class="card-x mt-3"><div class="rowb mb-2"><h3 class="h6 mb-0 grow">Pensiun dan ulang tahun</h3><button class="btn-x" onclick="formPensiun()">Atur parameter</button></div>
+  ${PN && PN.siap ? `<div class="table-wrap"><table class="table"><tbody><tr><td>Batas usia pensiun</td><td>${PN.usia} tahun (TMT pensiun: tanggal 1 bulan setelah bulan ulang tahun ke-${PN.usia})</td></tr><tr><td>Peringatan pensiun</td><td>${PN.hari} hari sebelum TMT</td></tr><tr><td>Ulang tahun di Kalender</td><td>${PN.ultah === 'ya' ? 'Ditampilkan' : 'Tidak ditampilkan'}</td></tr></tbody></table></div>` : '<p class="muted">Belum diatur: pengingat pensiun dan ulang tahun belum berjalan.</p>'}
+  <p class="muted small mb-0">Dihitung dari Tanggal Lahir pada data pegawai (hasil impor CSV atau Profil). Pengingat pensiun hanya terlihat oleh Super Admin dan Pimpinan; ulang tahun menampilkan nama dan jabatan di Kalender bila diaktifkan.</p></div>`);
 };
 function formParam() {
   const P = S.pk || {}, f = (k, l) => `<div class="col-6"><label class="lbl" for="p_${k}">${l}</label><input id="p_${k}" type="number" min="0" step="1" class="form-control" value="${P[k] ?? ''}" required></div>`;
   openModal('Parameter KGB & Pangkat', `<form onsubmit="simpanParamUI(event)"><p class="muted">Jarak dan masa peringatan mengikuti aturan resmi instansi; periksa kembali sebelum disimpan.</p><div class="row g-3">${f('kgb_bulan', 'Jarak KGB (bulan)')}${f('kgb_hari', 'Peringatan KGB (hari sebelum jadwal)')}${f('pangkat_bulan', 'Jarak kenaikan pangkat (bulan)')}${f('pangkat_hari', 'Peringatan pangkat (hari sebelum jadwal)')}</div><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
 }
+function formPensiun() {
+  const P = S.pn || {}, v = k => P[k] == null ? '' : P[k];
+  openModal('Parameter pensiun dan ulang tahun', `<form onsubmit="simpanPensiunUI(event)"><p class="muted">Batas usia pensiun mengikuti ketentuan jabatan di instansi; periksa kembali sebelum disimpan.</p><div class="row g-3"><div class="col-6"><label class="lbl" for="pn_usia">Batas usia pensiun (tahun)</label><input id="pn_usia" type="number" min="45" max="70" step="1" class="form-control" value="${v('usia')}" required></div><div class="col-6"><label class="lbl" for="pn_hari">Peringatan (hari sebelum TMT)</label><input id="pn_hari" type="number" min="0" max="1095" step="1" class="form-control" value="${v('hari')}" required></div><div class="col-12"><label class="lbl" for="pn_ultah">Tampilkan ulang tahun pegawai di Kalender</label><select id="pn_ultah" class="form-select" required><option value="">Pilih...</option><option value="ya" ${P.ultah === 'ya' ? 'selected' : ''}>Ya</option><option value="tidak" ${P.ultah === 'tidak' ? 'selected' : ''}>Tidak</option></select></div></div><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
+}
+async function simpanPensiunUI(e) { e.preventDefault(); const r = await call('simpanParamPensiun', { pensiun_usia: $('pn_usia').value, pensiun_hari: $('pn_hari').value, ultah_tampil: $('pn_ultah').value }); if (r) { closeModal(); toast(r.message); muatTab(); } }
 async function simpanParamUI(e) { e.preventDefault(); const d = {}; ['kgb_bulan', 'kgb_hari', 'pangkat_bulan', 'pangkat_hari'].forEach(k => d[k] = $('p_' + k).value); const r = await call('simpanParam', d); if (r) { closeModal(); toast(r.message); muatTab(); } }
 
 // ── Tab Tampilan: identitas, halaman depan (landing), informasi, dashboard. Terhubung ke landing.html lewat pratinjau langsung ──
