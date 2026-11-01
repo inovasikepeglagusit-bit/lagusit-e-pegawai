@@ -1,6 +1,6 @@
 /** LAGUSIT e-PEGAWAI — Frontend SPA. Token hanya di memori (bukan URL); URL tidak pernah berubah. */
 const S = { token: null, user: null, menu: [], pegawai: [], akun: [] };
-const STATUS = ['PNS', 'PPPK', 'CPNS'], ROLES = ['Super Admin', 'Operator', 'Atasan', 'Pimpinan'];
+const PENUGASAN = ['Detaser', 'BKO'], STATUS = ['PNS', 'PPPK', 'CPNS'], ROLES = ['Super Admin', 'Operator', 'Atasan', 'Pimpinan'];
 const TITLES = { dashboard: 'Dashboard', pegawai: 'Pegawai', audit: 'Riwayat Aktivitas', profil: 'Profil Saya' };
 const ICONS = { dashboard: 'bi-grid-1x2', pegawai: 'bi-person-vcard', audit: 'bi-clock-history', profil: 'bi-person-circle' };
 const RENDER = {};
@@ -253,8 +253,9 @@ RENDER.pegawai = async () => {
   $('app-container').innerHTML = `<div class="card-x"><div class="toolbar">
     <input id="q" class="form-control" placeholder="Cari nama, NIP, jabatan, unit" aria-label="Cari pegawai" oninput="drawPegawai()">
     <select id="fs" class="form-select" aria-label="Filter status" onchange="drawPegawai()"><option value="">Semua status</option>${STATUS.map(s => `<option>${s}</option>`).join('')}</select>
+    <select id="fp" class="form-select" aria-label="Filter penugasan" onchange="drawPegawai()"><option value="">Semua penugasan</option><option value="-">Bertugas di Lapas</option>${PENUGASAN.map(s => `<option>${s}</option>`).join('')}</select>
     <label class="chk"><input type="checkbox" id="fa" onchange="drawPegawai()"> Tampilkan nonaktif</label>
-    ${isAdmin() ? '<button class="btn-x ms-auto" onclick="formPegawai()"><i class="bi bi-plus-lg"></i> Tambah pegawai</button>' : ''}</div><div id="pl"></div></div>`;
+    ${isAdmin() ? '<button class="btn-o ms-auto" onclick="formImpor()"><i class="bi bi-file-earmark-arrow-up"></i> Impor DUK</button> <button class="btn-x" onclick="formPegawai()"><i class="bi bi-plus-lg"></i> Tambah pegawai</button>' : ''}</div><div id="pl"></div></div>`;
   drawPegawai();
 };
 const akunBadge = p => p.Akun ? `<span class="badge-x ${p.Akun === 'Aktif' ? 'ok' : p.Akun === 'Menunggu' ? 'wait' : 'off'}">${esc(p.Akun)}</span>` : '<span class="badge-x off">Belum ada</span>';
@@ -263,9 +264,9 @@ function unitOpsi(cur) { // sumber tunggal: unit kerja yang diatur Super Admin d
   return '<option value="">Pilih unit kerja...</option>' + A.map(n => `<option value="${esc(n)}" ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('') + (cur && !A.includes(cur) ? `<option value="${esc(cur)}" selected>${esc(cur)} (tidak terdaftar)</option>` : '');
 }
 function drawPegawai() {
-  const q = $('q').value.toLowerCase(), fs = $('fs').value, fa = $('fa').checked;
-  const L = S.pegawai.filter(p => (fa || p.Aktif === true) && (!fs || p.StatusKepegawaian === fs) && [p.Nama, p.NIP, p.Jabatan, p.Unit].join(' ').toLowerCase().includes(q));
-  $('pl').innerHTML = L.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Nama</th><th>NIP</th><th>Pangkat/Gol.</th><th>Jabatan</th><th>Unit</th><th>Status</th><th>Akun</th>${isAdmin() ? '<th>Aksi</th>' : ''}</tr></thead><tbody>${L.map(p => `<tr><td>${esc(p.Nama)}</td><td class="nw">${esc(p.NIP)}</td><td>${esc(p.Pangkat)} ${esc(p.Golongan)}</td><td>${esc(p.Jabatan)}${p.JenisNama ? `<small class="d-block muted">${esc(p.JenisNama)}</small>` : ''}</td><td>${esc(p.Unit)}</td><td><span class="badge-x ${p.Aktif === true ? 'ok' : 'off'}">${p.Aktif === true ? esc(p.StatusKepegawaian || 'Aktif') : 'Nonaktif'}</span></td><td>${akunBadge(p)}</td>${isAdmin() ? `<td class="nw"><button class="btn-o" onclick="formPegawai('${p.ID}')">Ubah</button> <button class="btn-o" onclick="profilPeg('${p.ID}')">Profil</button>${p.Aktif === true ? ` <button class="btn-o danger" onclick="formNonaktif('${p.ID}')">Nonaktifkan</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>` : '<p class="muted mb-0 py-3">Belum tersedia: tidak ada data yang cocok.</p>';
+  const q = $('q').value.toLowerCase(), fs = $('fs').value, fa = $('fa').checked, fp = $('fp').value;
+  const L = S.pegawai.filter(p => (fa || p.Aktif === true) && (!fs || p.StatusKepegawaian === fs) && (!fp || (fp === '-' ? !p.Penugasan : p.Penugasan === fp)) && [p.Nama, p.NIP, p.Jabatan, p.Unit].join(' ').toLowerCase().includes(q));
+  $('pl').innerHTML = L.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Nama</th><th>NIP</th><th>Pangkat/Gol.</th><th>Jabatan</th><th>Unit</th><th>Status</th><th>Akun</th>${isAdmin() ? '<th>Aksi</th>' : ''}</tr></thead><tbody>${L.map(p => `<tr><td>${esc(p.Nama)}</td><td class="nw">${esc(p.NIP)}</td><td>${esc(p.Pangkat)} ${esc(p.Golongan)}</td><td>${esc(p.Jabatan)}${p.JenisNama ? `<small class="d-block muted">${esc(p.JenisNama)}</small>` : ''}</td><td>${esc(p.Unit)}</td><td><span class="badge-x ${p.Aktif === true ? 'ok' : 'off'}">${p.Aktif === true ? esc(p.StatusKepegawaian || 'Aktif') : 'Nonaktif'}</span>${p.Penugasan ? ` <span class="badge-x wait" title="${esc(p.PenugasanKet || '')}">${esc(p.Penugasan)}</span>` : ''}</td><td>${akunBadge(p)}</td>${isAdmin() ? `<td class="nw"><button class="btn-o" onclick="formPegawai('${p.ID}')">Ubah</button> <button class="btn-o" onclick="profilPeg('${p.ID}')">Profil</button>${p.Aktif === true ? ` <button class="btn-o danger" onclick="formNonaktif('${p.ID}')">Nonaktifkan</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>` : '<p class="muted mb-0 py-3">Belum tersedia: tidak ada data yang cocok.</p>';
 }
 function formPegawai(id) {
   const p = S.pegawai.find(x => x.ID === id) || {};
@@ -273,13 +274,14 @@ function formPegawai(id) {
   openModal(id ? 'Ubah pegawai' : 'Tambah pegawai', `<form onsubmit="savePegawai(event)"><input type="hidden" name="ID" value="${esc(p.ID)}"><input type="hidden" name="UpdatedAt" value="${esc(p.UpdatedAt)}">
     <div class="row g-3">${f('Nama', 'Nama lengkap', 'text', 1)}${f('NIP', 'NIP', 'text', 1)}<div class="col-md-6"><label class="lbl" for="fGol">Golongan</label><select id="fGol" name="Golongan" class="form-select" onchange="pgBerubah('fGol','fPangkat',$('fSt').value)"></select></div><div class="col-md-6"><label class="lbl" for="fPangkat">Pangkat</label><select id="fPangkat" name="Pangkat" class="form-select"></select></div><div class="col-md-6"><label class="lbl" for="fJabatan">Jabatan</label><input id="fJabatan" name="Jabatan" class="form-control" list="jbNama" value="${esc(p.Jabatan)}"><datalist id="jbNama">${((S.jj || {}).nama || []).map(n => `<option value="${esc(n)}">`).join('')}</datalist></div><div class="col-md-6"><label class="lbl" for="fJenis">Jenis jabatan</label><select id="fJenis" name="JenisJabatan" class="form-select"><option value="">Otomatis (ikuti nama jabatan)</option>${((S.jj || {}).jenis || []).map(j => `<option value="${j.ID}" ${p.JenisJabatan === j.ID ? 'selected' : ''}>${esc(j.Nama)}</option>`).join('')}</select><div class="small muted mt-1">${p.JenisNama ? 'Saat ini: ' + esc(p.JenisNama) + (p.JenisSumber === 'Manual' ? ' (manual)' : ' (dari nama jabatan)') + '. ' : ''}Atur daftar di Master Data ▸ Jabatan.</div></div><div class="col-md-6"><label class="lbl" for="fUnit">Unit kerja</label><select id="fUnit" name="Unit" class="form-select">${unitOpsi(p.Unit)}</select>${(S.units || []).some(x => x.Aktif === true) ? '<div class="small muted mt-1">Pilihan mengikuti Master Data ▸ Unit &amp; Regu.</div>' : '<div class="small text-danger mt-1">Belum ada unit kerja aktif. Tambahkan dulu di Master Data ▸ Unit &amp; Regu.</div>'}</div>
     <div class="col-md-6"><label class="lbl" for="fSt">Status kepegawaian</label><select id="fSt" name="StatusKepegawaian" class="form-select" onchange="rakitPG('fGol','fPangkat',this.value)"><option value="">Pilih...</option>${STATUS.map(s => `<option ${p.StatusKepegawaian === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-    ${f('TMT', 'TMT', 'date')}${f('Email', 'Email aktif', 'email')}</div>
+    ${f('TMT', 'TMT', 'date')}${f('Email', 'Email aktif', 'email')}
+    <div class="col-md-6"><label class="lbl" for="fPn">Penugasan</label><select id="fPn" name="Penugasan" class="form-select" onchange="$('fPnK').disabled=!this.value"><option value="">Bertugas di Lapas</option>${PENUGASAN.map(s => `<option ${p.Penugasan === s ? 'selected' : ''}>${s}</option>`).join('')}</select><small class="muted">Detaser/BKO tidak ikut apel, piket, dan jadwal petugas.</small></div><div class="col-md-6"><label class="lbl" for="fPnK">Tempat / keterangan penugasan</label><input id="fPnK" name="PenugasanKet" class="form-control" maxlength="120" value="${esc(p.PenugasanKet)}" ${p.Penugasan ? '' : 'disabled'} placeholder="Contoh: Lapas Nusakambangan"></div></div>
     <div class="text-end mt-4"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`);
   rakitPG('fGol', 'fPangkat', p.StatusKepegawaian || '', p.Golongan || '', p.Pangkat || '');
 }
 async function savePegawai(e) {
   e.preventDefault(); const b = e.target.querySelector('[type=submit]'); busy(b, true);
-  const d = Object.fromEntries(new FormData(e.target)); if (!d.ID) delete d.ID; if (!d.UpdatedAt) delete d.UpdatedAt;
+  const d = Object.fromEntries(new FormData(e.target)); if (!d.ID) delete d.ID; if (!d.UpdatedAt) delete d.UpdatedAt; if (!d.PenugasanKet) d.PenugasanKet = '';
   const r = await call('simpanPegawai', d); busy(b, false);
   if (r) { closeModal(); toast(r.message); RENDER.pegawai(); }
 }
@@ -319,3 +321,37 @@ function labelTables() {
   });
 }
 ['app-container', 'mdlB'].forEach(id => { const el = document.getElementById(id); if (el && window.MutationObserver) new MutationObserver(labelTables).observe(el, { childList: true, subtree: true }); });
+
+// ── Impor Pegawai (DUK) dari berkas CSV: pratinjau dulu, baru simpan ──
+const IMPOR_KOLOM = { 'nip': 'NIP', 'nama': 'Nama', 'jabatan': 'Jabatan', 'pangkat': 'Pangkat', 'golongan': 'Golongan', 'status kepegawaian': 'StatusKepegawaian', 'status': 'StatusKepegawaian', 'tmt pegawai': 'TMT', 'tmt': 'TMT', 'tanggal lahir': 'TglLahir', 'agama': 'Agama', 'pendidikan terakhir': 'Pendidikan', 'pendidikan': 'Pendidikan', 'tmt pangkat': 'TMTPangkat', 'tmt jabatan': 'TMTJabatan', 'penugasan': 'Penugasan' };
+const IMPOR_CONTOH = 'NIP,Nama,Jabatan,Golongan,Pangkat,Status Kepegawaian,TMT Pegawai,Tanggal Lahir,Agama,Pendidikan Terakhir,TMT Pangkat,TMT Jabatan,Penugasan\n';
+function csvUrai(teks) { // CSV bertanda kutip; pemisah koma atau titik koma (menyesuaikan pengaturan regional Excel)
+  teks = String(teks).replace(/^﻿/, ''); const awal = teks.split('\n')[0], sep = (awal.match(/;/g) || []).length > (awal.match(/,/g) || []).length ? ';' : ',';
+  const R = []; let b = [], c = '', q = false;
+  for (let i = 0; i < teks.length; i++) { const ch = teks[i];
+    if (q) { if (ch === '"') { if (teks[i + 1] === '"') { c += '"'; i++; } else q = false; } else c += ch; }
+    else if (ch === '"') q = true; else if (ch === sep) { b.push(c); c = ''; } else if (ch === '\n') { b.push(c); R.push(b); b = []; c = ''; } else if (ch !== '\r') c += ch; }
+  if (c !== '' || b.length) { b.push(c); R.push(b); } return R.filter(r => r.some(x => String(x).trim() !== ''));
+}
+function formImpor() {
+  S.imp = null;
+  openModal('Impor Pegawai (DUK)', `<p class="muted small">Unggah berkas CSV berisi data pegawai. NIP dipakai sebagai kunci: NIP yang sudah ada diperbarui (tidak digandakan), NIP baru ditambahkan. Email tidak diubah; pegawai mengisinya saat mendaftar dan akunnya otomatis tertaut ke data ini setelah disetujui Super Admin.</p>
+  <div class="mb-3"><label class="lbl" for="impF">Berkas CSV</label><input id="impF" type="file" accept=".csv,text/csv" class="form-control" onchange="imporBaca(this)"><small class="muted">Kolom: NIP, Nama, Jabatan, Golongan, Pangkat, Status Kepegawaian, TMT Pegawai, Tanggal Lahir, Agama, Pendidikan Terakhir, TMT Pangkat, TMT Jabatan, Penugasan. Tanggal berformat TTTT-BB-HH. <a href="javascript:void(0)" onclick="imporContoh()">Unduh templat kosong</a></small></div><div id="impHasil" aria-live="polite"></div>`);
+}
+function imporContoh() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + IMPOR_CONTOH], { type: 'text/csv' })); a.download = 'templat-impor-pegawai.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+async function imporBaca(inp) {
+  const f = inp.files[0]; if (!f) return; const h = $('impHasil');
+  if (f.size > 2 * 1024 * 1024) { h.innerHTML = '<p class="text-danger">Berkas terlalu besar (maks. 2 MB).</p>'; return; }
+  const R = csvUrai(await f.text()); if (R.length < 2) { h.innerHTML = '<p class="text-danger">Berkas kosong atau tidak memiliki baris data.</p>'; return; }
+  const kol = R[0].map(x => IMPOR_KOLOM[String(x).trim().toLowerCase()] || ''); if (!kol.includes('NIP') || !kol.includes('Nama')) { h.innerHTML = '<p class="text-danger">Judul kolom tidak dikenali. Pastikan baris pertama memuat minimal NIP dan Nama (lihat templat).</p>'; return; }
+  S.imp = R.slice(1).map(r => { const o = {}; kol.forEach((k, i) => { if (k) o[k] = String(r[i] === undefined ? '' : r[i]).trim(); }); return o; });
+  h.innerHTML = '<p class="muted">Memeriksa…</p>'; const r = await call('imporPegawai', { Baris: S.imp, Simulasi: true }); if (!r) { h.innerHTML = ''; return; } imporTampil(r.data);
+}
+function imporTampil(d) {
+  const n = d.ringkasan, ST = { tambah: 'ok', ubah: 'wait', sama: 'off', galat: 'off' }, L = d.baris.filter(x => x.status === 'galat' || x.catatan.length), jml = n.tambah + n.ubah, final = !d.simulasi;
+  $('impHasil').innerHTML = `<div class="kchips mb-2"><span class="kchip">Ditambah <b>${n.tambah}</b></span><span class="kchip">Diperbarui <b>${n.ubah}</b></span><span class="kchip">Sama <b>${n.sama}</b></span><span class="kchip ${n.galat ? 'lp' : ''}">Bermasalah <b>${n.galat}</b></span></div>
+  ${d.kolomBaru && d.kolomBaru.length ? `<p class="small muted">Kolom Profil yang akan dibuat: ${d.kolomBaru.map(esc).join(', ')}.</p>` : ''}
+  ${L.length ? `<div class="table-wrap" style="max-height:260px;overflow:auto"><table class="table"><thead><tr><th>Baris</th><th>Nama</th><th>Keterangan</th></tr></thead><tbody>${L.slice(0, 80).map(x => `<tr><td>${x.no}</td><td>${esc(x.Nama)}<small class="d-block muted">${esc(x.NIP)}</small></td><td>${x.galat ? `<span class="badge-x off">Dilewati</span> ${esc(x.galat)}` : esc(x.catatan.join('; '))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="small muted">Tidak ada catatan; semua baris valid.</p>'}
+  ${final ? '<div class="text-end mt-3"><button class="btn-x" onclick="closeModal();RENDER.pegawai()">Selesai</button></div>' : `<div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" onclick="imporSimpan(this)" ${jml || n.sama ? '' : 'disabled'}>Impor sekarang</button></div>`}`;
+}
+async function imporSimpan(b) { busy(b, true); const r = await call('imporPegawai', { Baris: S.imp, Simulasi: false }); busy(b, false); if (r) { toast(r.message); imporTampil(r.data); } }
