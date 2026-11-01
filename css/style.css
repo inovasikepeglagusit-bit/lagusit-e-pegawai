@@ -460,3 +460,7 @@ button.kchip{cursor:pointer;font-family:inherit;color:inherit}button.kchip:hover
 /* Pemilih banyak pegawai */
 .pm-list{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:12px}.pm-i{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer;min-height:48px}.pm-i:last-child{border-bottom:0}.pm-i:hover{background:var(--bg)}.pm-i.off{opacity:.55;cursor:not-allowed}.pm-i input{width:20px;height:20px;flex:0 0 auto}.pm-i small{font-size:12px}.btn-x.danger{background:var(--bad,#dc2626)}
 .k-u{background:#0D9488}.k-ps{background:#7C3AED}
+
+/* Giliran jaga */
+.sh{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent)}.sh-Pagi{--c:#D97706}.sh-Siang{--c:#2563EB}.sh-Malam{--c:#7C3AED}.sh-Libur{--c:#64748B}
+.gl-c{background:none;border:0;padding:4px;min-height:44px;min-width:56px;cursor:pointer;text-align:center}.gl-c:hover{background:var(--bg);border-radius:8px}.gl-tab td,.gl-tab th{text-align:center;vertical-align:middle}.gl-tab td:first-child,.gl-tab th:first-child{text-align:left}.gl-now td{background:color-mix(in srgb,var(--gold,#C8A24B) 12%,transparent)}

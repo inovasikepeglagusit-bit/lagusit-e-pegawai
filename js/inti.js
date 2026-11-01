@@ -2,7 +2,7 @@
 Object.assign(TITLES, { apel: 'Apel Staf', regu: 'Apel Regu', master: 'Master Data & Pengaturan', absen: 'Cuti & Izin', nilai: 'Penilaian Kinerja', kgb: 'KGB & Pangkat', kalender: 'Kalender & Pengumuman', laporan: 'Laporan', monitoring: 'Monitoring', kehadiran: 'Kehadiran Saya' });
 Object.assign(ICONS, { apel: 'bi-people', regu: 'bi-shield-check', master: 'bi-database-gear', absen: 'bi-calendar-x', nilai: 'bi-award', kgb: 'bi-graph-up-arrow', kalender: 'bi-calendar3', laporan: 'bi-file-earmark-bar-graph', monitoring: 'bi-eye', kehadiran: 'bi-calendar2-check' });
 const REGU = [], REGU_S = {}; // daftar regu dan sesinya dimuat dari server (diatur Super Admin di Master Data)
-async function muatRegu() { const r = await call('getReguDaftar'); if (r) { REGU.length = 0; Object.keys(REGU_S).forEach(k => delete REGU_S[k]); r.data.forEach(x => { REGU.push(x.Nama); REGU_S[x.Nama] = x.Sesi; }); } return !!r; }
+async function muatRegu() { const r = await call('getReguDaftar'); if (r) { REGU.length = 0; Object.keys(REGU_S).forEach(k => delete REGU_S[k]); r.data.forEach(x => { if (x.Mode === 'Titipan') return; REGU.push(x.Nama); REGU_S[x.Nama] = x.Sesi; }); } return !!r; }
 const SH = ['Hadir', 'Terlambat', 'Izin', 'Sakit', 'Dinas Luar', 'Tidak Hadir'];
 const canWrite = () => S.user.roles.some(r => r === 'Super Admin' || r === 'Operator');
 function bukaMenu(m, tab) { if (tab) S.tab = tab; return navigateTo(m); } // buka menu, opsional langsung ke tab tertentu
