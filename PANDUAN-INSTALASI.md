@@ -304,9 +304,18 @@ Halaman terbuka di `https://<akun>.github.io/lagusit-e-pegawai/beranda.html`.
 - Animasi otomatis berhenti bila perangkat meminta pengurangan gerakan.
 
 ### Tahap 22d — Landing "Pelayaran" menggantikan gerbang depan aplikasi
-- Layar awal "Geser untuk masuk" diganti landing Pelayaran (`landing.html`). Landing dimuat penuh layar di atas halaman masuk, di dalam iframe, jadi gaya dan skripnya tidak bercampur dengan aplikasi. Tombol **Masuk ke Sistem** (di hero, menu atas, dan lembar Informasi) menutup landing dan membuka form login. Setelah **Keluar**, landing tampil lagi.
-- `index.html` tetap aplikasi; alamat utama situs tidak berubah.
-- Menu **Informasi** di landing menampilkan teks Informasi aplikasi dari Pengaturan Tampilan (judul dan isi `# judul / - butir`) di bagian bawah, jadi tidak ada isi ganda.
-- `landing.html` juga bisa dibuka langsung; tombol Masuknya mengarah ke `index.html`.
-- Berkas yang berubah: `landing.html` (baru), `js/app.js`, `css/style.css`. Gambar `img/gerbang-*.jpg` tidak lagi dipakai (boleh dibiarkan).
-- `beranda.html` dan `beranda-gerbang.html` adalah desain alternatif; tidak dipakai kecuali Anda ingin menggantinya (salin isinya ke `landing.html`).
+- Layar awal "Geser untuk masuk" diganti landing Pelayaran (`landing.html`), dimuat penuh layar di atas halaman masuk (di dalam iframe, jadi gaya dan skripnya terpisah dari aplikasi). Satu-satunya tombol **Masuk ke Sistem** ada di tengah; menu atas hanya berisi **Informasi**, **Pengumuman** (dengan lencana jumlah yang belum dibaca), dan tombol tema. Setelah **Keluar**, landing tampil lagi. `index.html` tetap aplikasi.
+- Tema otomatis menurut jam (siang 06.00–17.00, senja 17.00–18.30 dan 05.00–06.00, malam di luar itu). Pengunjung dapat mengganti lewat tombol tema; tema awal dapat diatur Super Admin.
+- Notifikasi pengumuman muncul otomatis bila ada pengumuman yang belum dibuka; diperiksa ulang tiap 5 menit dan saat tab aktif kembali.
+- Berkas `beranda.html` dan `beranda-gerbang.html` (konsep awal) dihapus; semuanya kini satu halaman. Gambar `img/gerbang-*.jpg` tidak lagi dipakai (boleh dibiarkan).
+
+### Tahap 22e — Menu Pengaturan Tampilan (Master Data) dirombak dan terhubung ke landing
+Master Data > Tampilan kini punya empat sub-tab:
+1. **Identitas & warna**: nama, subjudul, instansi, logo, empat warna (warna aksen dipakai tombol masuk landing).
+2. **Halaman depan**: semua kata di landing, dikelompokkan (Judul utama, Lembar Informasi, Lembar Pengumuman, Penutup, Perilaku). Tiap kolom punya penghitung huruf dan tombol ↺ untuk mengembalikan ke teks bawaan. Di bagian **Perilaku**: tema awal (otomatis/siang/senja/malam) dan nyalakan/matikan notifikasi pengumuman.
+3. **Informasi**: judul dan isi informasi (tampil di lembar Informasi landing dan tombol Informasi dashboard).
+4. **Dashboard**: judul banner, kata kunci, kutipan, animasi loading, dan gambar banner/kartu.
+
+Di samping form ada **Pratinjau langsung** landing (ukuran Komputer/HP, pilihan tema). Pratinjau berubah saat Anda mengetik, sebelum disimpan, dan membuka lembar yang sesuai saat Anda memilih kolomnya. Bar bawah menandai "Ada perubahan yang belum disimpan".
+**Penting:** bagian Halaman depan hanya berfungsi bila server Apps Script sudah memakai `Kode.gs`, `Modul_Tampilan.gs`, dan `Modul_Kalender.gs` terbaru dan sudah **di-deploy sebagai versi baru** (Terapkan > Kelola deployment > ikon pensil > Versi baru > Terapkan). Bila belum, tab ini menampilkan peringatan dan mengunci kolom halaman depan; kolom kosong berarti server lama.
+Berkas berubah: backend `Kode.gs`, `Modul_Tampilan.gs`; frontend `landing.html`, `js/master.js`, `js/app.js`, `css/style.css`.

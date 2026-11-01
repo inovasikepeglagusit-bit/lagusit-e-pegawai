@@ -2,7 +2,7 @@
 const ROLE_X = ['Super Admin', 'Operator', 'Atasan', 'Pimpinan'];
 const MTABS = [
   ['persetujuan', 'Persetujuan', 'bi-patch-check'], ['akun', 'Akun & Peran', 'bi-people'], ['unit', 'Unit & Regu', 'bi-diagram-3'], ['jabatan', 'Jabatan', 'bi-award'], ['operator', 'Operator', 'bi-person-gear'],
-  ['profil', 'Profil & Kolom', 'bi-ui-checks'], ['kehadiran', 'Kehadiran', 'bi-calendar-x'], ['aturan', 'Aturan', 'bi-sliders'], ['tampilan', 'Tampilan', 'bi-palette'], ['kop', 'Kop Surat', 'bi-card-heading']
+  ['profil', 'Profil & Kolom', 'bi-ui-checks'], ['kehadiran', 'Kehadiran', 'bi-calendar-x'], ['aturan', 'Aturan', 'bi-sliders'], ['tampilan', 'Tampilan', 'bi-palette'], ['kop', 'Kop Surat', 'bi-card-heading'], ['layanan', 'Layanan Surat', 'bi-file-earmark-text']
 ];
 const MT = {};
 const mb = h => { const b = $('mbody'); if (b) b.innerHTML = h; return !!b; };
@@ -38,9 +38,24 @@ MT.persetujuan = async () => {
   S.akun = r.data.akun; S.ta = r.data.tanpaAkun; S.pj = pj.data; S.sr = sr.data;
   mb(akunBaruCard() + suratCard() + pengajuanCard());
 };
+const COCOK_LABEL = { cocok: ['ok', 'Cocok dengan data pegawai'], nama_beda: ['wait', 'Nama berbeda'], email_beda: ['wait', 'Email berbeda'], ragu: ['wait', 'Perlu dicek: data tanpa NIP'], baru: ['off', 'Pegawai baru'], bentrok: ['bad', 'Bentrok data'] };
+function cocokHtml(a) {
+  const c = a.cocok; if (!c) return ''; const l = COCOK_LABEL[c.status] || ['off', c.status], p = c.pegawai;
+  const info = p ? `<div class="small mt-1">Data pegawai: <b>${esc(p.Nama)}</b> · NIP ${esc(p.NIP) || '–'}${p.Unit ? ' · ' + esc(p.Unit) : ''}${p.Jabatan ? ' · ' + esc(p.Jabatan) : ''}${p.Email ? ' · ' + esc(p.Email) : ' · belum ada email'}</div>` : '';
+  let aksi = '';
+  if (c.status === 'nama_beda' || c.status === 'email_beda') aksi = `<label class="chk small mt-1"><input type="checkbox" id="kf-${a.ID}"> ${c.status === 'nama_beda' ? 'Saya sudah memeriksa: ini orang yang sama' : 'Ganti email di data pegawai dengan email pendaftar'}</label>`;
+  else if (c.status === 'ragu') aksi = `<div class="small mt-1">${c.kandidat.map(k => `<label class="chk d-block"><input type="radio" name="kd-${a.ID}" value="${k.ID}"> Gabungkan dengan <b>${esc(k.Nama)}</b>${k.Unit ? ' · ' + esc(k.Unit) : ''}${k.Jabatan ? ' · ' + esc(k.Jabatan) : ''} <span class="muted">(kemiripan ${k.Skor}%)</span></label>`).join('')}<label class="chk d-block"><input type="radio" name="kd-${a.ID}" value="baru"> Bukan salah satunya: buat pegawai baru</label></div>`;
+  return `<div class="cocok mt-1"><span class="badge-x ${l[0]}">${l[1]}</span> <span class="small muted">${esc(c.pesan)}</span>${info}${aksi}</div>`;
+}
 function akunBaruCard() {
   const M = S.akun.filter(a => a.Status === 'Menunggu');
-  return `<div class="card-x mb-3"><h3 class="h6">Pendaftaran akun baru <span class="badge-x ${M.length ? 'wait' : 'off'}">${M.length}</span></h3>${M.length ? `<p class="muted small">Setelah disetujui, pendaftar otomatis tercatat sebagai pegawai dan dapat masuk. Pastikan nama dan NIP sudah benar.</p>` + M.map(a => `<div class="todo"><div><b>${esc(a.Nama)}</b><small>NIP ${esc(a.NIP) || '–'} · ${esc(a.Email)}</small></div><button class="btn-x" onclick="aksiAkun('${a.ID}','setujui')">Setujui</button><button class="btn-o danger" onclick="tolakAkun('${a.ID}')">Tolak</button></div>`).join('') : '<p class="muted mb-0">Tidak ada pendaftaran yang menunggu.</p>'}</div>`;
+  return `<div class="card-x mb-3"><h3 class="h6">Pendaftaran akun baru <span class="badge-x ${M.length ? 'wait' : 'off'}">${M.length}</span></h3>${M.length ? `<p class="muted small">Pendaftar dicocokkan otomatis dengan data pegawai yang sudah Anda input: <b>NIP</b> sebagai kunci, nama sebagai pemeriksa. Yang cocok langsung ditautkan tanpa data ganda dan datanya terlengkapi; yang meragukan perlu Anda putuskan.</p>` + M.map(a => `<div class="todo align-items-start"><div class="grow"><b>${esc(a.Nama)}</b><small>NIP ${esc(a.NIP) || '–'} · ${esc(a.Email)}</small>${cocokHtml(a)}</div><button class="btn-x" onclick="setujuiAkun('${a.ID}')" ${a.cocok && a.cocok.status === 'bentrok' ? 'disabled' : ''}>Setujui</button><button class="btn-o danger" onclick="tolakAkun('${a.ID}')">Tolak</button></div>`).join('') : '<p class="muted mb-0">Tidak ada pendaftaran yang menunggu.</p>'}</div>`;
+}
+async function setujuiAkun(id) {
+  const a = S.akun.find(x => x.ID === id), c = a && a.cocok, opsi = {};
+  if (c && (c.status === 'nama_beda' || c.status === 'email_beda')) { if (!$('kf-' + id).checked) { toast('Centang konfirmasi dulu setelah memeriksa data.', 'warning'); return; } opsi.Konfirmasi = true; }
+  if (c && c.status === 'ragu') { const v = document.querySelector(`[name="kd-${id}"]:checked`); if (!v) { toast('Pilih data pegawai yang sama, atau buat pegawai baru.', 'warning'); return; } if (v.value === 'baru') opsi.Baru = true; else opsi.PegawaiID = v.value; }
+  const r = await call('ubahAkun', id, 'setujui', [], '', opsi); if (r) { toast(r.message); muatTab(); }
 }
 function suratCard() {
   const M = S.sr.menunggu, T = S.sr.terbaru;
@@ -168,35 +183,81 @@ function formParam() {
 }
 async function simpanParamUI(e) { e.preventDefault(); const d = {}; ['kgb_bulan', 'kgb_hari', 'pangkat_bulan', 'pangkat_hari'].forEach(k => d[k] = $('p_' + k).value); const r = await call('simpanParam', d); if (r) { closeModal(); toast(r.message); muatTab(); } }
 
-// ── Tab Tampilan: nama, logo, dan warna aplikasi ──
-const BER = [ // teks halaman depan (beranda.html): kunci, label, batas, tinggi kolom (0 = satu baris)
-  ['berKicker', 'Teks kecil di atas judul', 50, 0], ['berJudul', 'Judul besar (tampil huruf kapital)', 24, 0], ['berSub', 'Kalimat miring di atas judul', 70, 0], ['berLead', 'Kalimat pembuka', 260, 3], ['berTombol', 'Teks tombol masuk', 30, 0],
-  ['berPilarLabel', 'Label daftar fungsi', 40, 0], ['berPilar', 'Daftar fungsi (pisahkan dengan koma)', 200, 0],
-  ['berInfoKicker', 'Bagian Informasi: teks kecil', 40, 0], ['berInfoJudul', 'Bagian Informasi: judul', 30, 0], ['berInfoLead', 'Bagian Informasi: kalimat pembuka', 320, 3],
-  ['berFitur', 'Kartu layanan: satu baris satu kartu dengan pola Judul | Isi (maksimal 6 baris)', 900, 6], ['berPeranJudul', 'Daftar peran: judul', 50, 0], ['berPeranLead', 'Daftar peran: keterangan', 200, 0], ['berPeran', 'Peran pengguna: satu baris satu peran dengan pola Judul | Isi (maksimal 4 baris)', 700, 4],
-  ['berPengKicker', 'Bagian Pengumuman: teks kecil', 40, 0], ['berPengJudul', 'Bagian Pengumuman: judul', 30, 0], ['berPengLead', 'Bagian Pengumuman: keterangan', 200, 0], ['berKutip', 'Kutipan penutup di bagian bawah', 120, 0]];
-const berForm = t => BER.map(([k, l, m, r]) => `<div class="${r ? 'col-12' : 'col-md-6'}"><label class="lbl" for="t_${k}">${l}</label>${r ? `<textarea id="t_${k}" class="form-control" rows="${r}" maxlength="${m}">${esc(t[k])}</textarea>` : `<input id="t_${k}" class="form-control" maxlength="${m}" value="${esc(t[k])}">`}</div>`).join('');
+// ── Tab Tampilan: identitas, halaman depan (landing), informasi, dashboard. Terhubung ke landing.html lewat pratinjau langsung ──
+const BERG = [ // kelompok teks halaman depan: [id, judul, ikon, lembar yang dibuka di pratinjau, [[kunci, label, petunjuk, baris(0 = satu baris)]]]
+  ['hero', 'Judul utama', 'bi-stars', '', [['berKicker', 'Teks kecil di atas judul', '', 0], ['berJudul', 'Judul besar', 'Tampil huruf kapital dan otomatis menyesuaikan lebar layar.', 0], ['berSub', 'Kalimat di atas judul', '', 0], ['berLead', 'Kalimat pembuka', '', 3], ['berTombol', 'Teks tombol masuk', 'Satu-satunya tombol masuk di halaman depan.', 0], ['berPilarLabel', 'Judul daftar fungsi', '', 0], ['berPilar', 'Daftar fungsi', 'Pisahkan dengan koma. Tampil sebagai label di lembar Informasi.', 0]]],
+  ['info', 'Lembar Informasi', 'bi-info-circle', 'info', [['berInfoKicker', 'Teks kecil', '', 0], ['berInfoJudul', 'Judul (juga nama menu)', '', 0], ['berInfoLead', 'Kalimat pembuka', '', 3], ['berFitur', 'Kartu layanan', 'Satu baris satu kartu dengan pola Judul | Isi (maksimal 6 baris).', 6], ['berPeranJudul', 'Daftar peran: judul', '', 0], ['berPeranLead', 'Daftar peran: keterangan', '', 0], ['berPeran', 'Peran pengguna', 'Satu baris satu peran dengan pola Judul | Isi (maksimal 4 baris).', 4]]],
+  ['peng', 'Lembar Pengumuman', 'bi-megaphone', 'peng', [['berPengKicker', 'Teks kecil', '', 0], ['berPengJudul', 'Judul (juga nama menu)', '', 0], ['berPengLead', 'Keterangan', '', 0]]],
+  ['tutup', 'Penutup', 'bi-quote', 'info', [['berKutip', 'Kutipan di bagian bawah lembar Informasi', '', 0]]]];
+const TPL_PANE = [['id', 'Identitas & warna', 'bi-palette'], ['depan', 'Halaman depan', 'bi-window-stack'], ['info', 'Informasi', 'bi-info-circle'], ['dash', 'Dashboard', 'bi-speedometer2']];
+const tplBerBox = (t, B, k, l, p, r, grp, buka) => { const m = B.batas[k] || 200, v = t[k] === undefined ? '' : t[k], ro = B.usang ? ' disabled' : '', ev = `oninput="tplUbah(this)" onfocus="tplFokus('${buka}')"`;
+  return `<div class="${r ? 'col-12' : 'col-md-6'} tpl-f"><div class="rowb"><label class="lbl grow" for="t_${k}">${l}</label><span class="small muted"><span id="n_${k}">${v.length}</span>/${m}</span><button type="button" class="tpl-rs" id="rs_${k}" title="Kembalikan ke teks bawaan" aria-label="Kembalikan ${esc(l)} ke teks bawaan" onclick="tplBawaan('${k}')"><i class="bi bi-arrow-counterclockwise"></i></button></div>${r ? `<textarea id="t_${k}" class="form-control" rows="${r}" maxlength="${m}" data-ber="1" ${ev}${ro}>${esc(v)}</textarea>` : `<input id="t_${k}" class="form-control" maxlength="${m}" value="${esc(v)}" data-ber="1" ${ev}${ro}>`}${p ? `<div class="small muted mt-1">${p}</div>` : ''}</div>`; };
 MT.tampilan = async () => {
   const r = await call('getTampilan'); if (!r) return; S.tp = Object.assign({}, r.data); S.tpLogo = undefined;
-  const t = S.tp, w = (k, l) => `<div><label class="lbl" for="t_${k}">${l}</label><div class="color-in"><input type="color" id="t_${k}" value="${t[k]}" oninput="pratinjauTema()" aria-label="${l}"><code id="h_${k}">${t[k]}</code></div></div>`;
-  mb(`<div class="card-x"><h3 class="h6">Tampilan aplikasi</h3><p class="muted small">Nama, logo, teks banner, dan warna berlaku untuk semua pengguna, termasuk halaman masuk. Warna yang membuat tulisan sulit dibaca akan ditolak.</p>
-  <form onsubmit="simpanTemaUI(event)"><div class="row g-3"><div class="col-md-6"><label class="lbl" for="t_nama">Nama aplikasi</label><input id="t_nama" class="form-control" maxlength="40" value="${esc(t.nama)}" oninput="pratinjauTema()" required></div><div class="col-md-6"><label class="lbl" for="t_sub">Subjudul</label><input id="t_sub" class="form-control" maxlength="60" value="${esc(t.sub)}" oninput="pratinjauTema()"></div><div class="col-md-6"><label class="lbl" for="t_instansi">Nama instansi</label><input id="t_instansi" class="form-control" maxlength="60" value="${esc(t.instansi)}" oninput="pratinjauTema()"></div>
-  <div class="col-md-6"><label class="lbl" for="t_slogan">Judul banner dashboard</label><input id="t_slogan" class="form-control" maxlength="70" value="${esc(t.slogan)}" oninput="pratinjauTema()" required></div><div class="col-md-6"><label class="lbl" for="t_heroPoin">Kata kunci banner (pisahkan dengan koma)</label><input id="t_heroPoin" class="form-control" maxlength="80" value="${esc(t.heroPoin)}" oninput="pratinjauTema()" required></div><div class="col-12"><label class="lbl" for="t_motto">Kutipan di kartu jam dan menu samping</label><input id="t_motto" class="form-control" maxlength="140" value="${esc(t.motto)}" oninput="pratinjauTema()" required></div>
-  <div class="col-md-6"><span class="lbl">Logo</span><div class="rowb"><div class="logo-box" id="t_logobox"></div><div class="grow"><input id="t_logo" type="file" accept="image/png,image/jpeg" class="form-control" onchange="pilihLogo(this)" aria-label="Pilih logo"><div class="small muted mt-1">PNG atau JPEG, otomatis diperkecil. <a href="javascript:void(0)" onclick="hapusLogoUI()">Hapus logo</a></div></div></div></div></div>
-  <div class="col-12 mt-3"><h4 class="h6 mb-1">Informasi di halaman depan</h4><p class="muted small mb-2">Muncul saat pengguna menekan tombol Informasi di halaman depan. Tulisan biasa menjadi paragraf, awali baris dengan <code># </code> untuk judul bagian dan <code>- </code> untuk butir daftar.</p>
-  <label class="lbl" for="t_infoJudul">Judul informasi</label><input id="t_infoJudul" class="form-control mb-2" maxlength="60" value="${esc(t.infoJudul)}" required>
-  <label class="lbl" for="t_info">Isi informasi</label><textarea id="t_info" class="form-control" rows="12" oninput="pratinjauTema()" maxlength="4000" required>${esc(t.info)}</textarea>
-  <div class="rowb mt-2"><span class="small muted grow"><span id="t_infoN">0</span>/4000 karakter</span><button type="button" class="btn-o" onclick="pratinjauInfo()"><i class="bi bi-eye"></i> Lihat pratinjau</button></div></div>
-  <div class="col-12 mt-3"><h4 class="h6 mb-1">Halaman depan (beranda)</h4><p class="muted small mb-2">Teks halaman <a href="beranda.html" target="_blank" rel="noopener">beranda.html</a> yang dilihat siapa saja tanpa login. Nama dan subjudul aplikasi, nama instansi, logo, dan warna aksen di atas ikut dipakai. Kolom yang dikosongkan kembali ke teks bawaan. Pengumuman di halaman depan dipilih lewat Kalender &amp; Pengumuman (centang <b>Tampilkan di halaman depan</b>).</p><div class="row g-3">${berForm(t)}</div></div>
-  <div class="col-12 mt-3"><label class="chk"><input type="checkbox" id="t_animasi" ${t.animasi === 'tidak' ? '' : 'checked'}> Tampilkan animasi loading maskot saat pindah menu <span class="muted small">(hanya muncul bila pemuatan agak lama)</span></label><div><button type="button" class="btn-o sm" onclick="LOAD.contoh()">Lihat contoh animasi</button></div></div>
-  <div class="tema-grid mt-3">${w('utama', 'Warna utama (menu samping, banner)')}${w('primer', 'Warna sorotan (menu aktif, tombol, grafik)')}${w('aksen', 'Warna aksen (kilau, penanda)')}${w('latar', 'Warna latar halaman')}</div>
-  <div class="prev mt-3" aria-label="Pratinjau"><div class="pv-top" id="pv_top"><span id="pv_logo"></span><div><b id="pv_nama"></b><small id="pv_sub"></small></div></div><div class="pv-body" id="pv_body"><span class="pv-btn" id="pv_btn">Tombol contoh</span> <span class="small" id="pv_ins"></span></div></div>
+  let B = null; try { const x = await api('getBerBawaan'); if (x && x.success) B = x.data; } catch (e) {}
+  const usang = !B || S.tp.berJudul === undefined; B = Object.assign({ bawaan: {}, batas: {}, daftar: {}, pilihan: {} }, B || {}); B.usang = usang; S.berB = B;
+  const t = S.tp, w = (k, l) => `<div><label class="lbl" for="t_${k}">${l}</label><div class="color-in"><input type="color" id="t_${k}" value="${t[k]}" oninput="tplUbah(this)" aria-label="${l}"><code id="h_${k}">${t[k]}</code></div></div>`;
+  const tx = (k, l, m, extra = '', col = 'col-md-6') => `<div class="${col}"><label class="lbl" for="t_${k}">${l}</label><input id="t_${k}" class="form-control" maxlength="${m}" value="${esc(t[k])}" oninput="tplUbah(this)" ${extra}></div>`;
+  const grup = BERG.map(([id, jd, ik, bk, fs], i) => `<details class="tpl-g" ${i === 0 ? 'open' : ''}><summary><i class="bi ${ik}"></i><span>${jd}</span><small class="muted">${fs.length} kolom</small></summary><div class="row g-3 pt-2">${fs.map(([k, l, p, rw]) => tplBerBox(t, B, k, l, p, rw, id, bk)).join('')}</div></details>`).join('');
+  const dk = ['auto', 'siang', 'senja', 'malam'], dl = { auto: 'Otomatis mengikuti jam (siang, senja, malam)', siang: 'Selalu siang', senja: 'Selalu senja', malam: 'Selalu malam' };
+  const peril = `<details class="tpl-g"><summary><i class="bi bi-sliders"></i><span>Perilaku halaman depan</span></summary><div class="row g-3 pt-2"><div class="col-md-6"><label class="lbl" for="t_berTema">Tema awal pengunjung</label><select id="t_berTema" class="form-select" onchange="tplUbah(this)" onfocus="tplFokus('')" ${usang ? 'disabled' : ''}>${dk.map(x => `<option value="${x}" ${(t.berTema || 'auto') === x ? 'selected' : ''}>${dl[x]}</option>`).join('')}</select><div class="small muted mt-1">Pengunjung tetap dapat mengganti lewat tombol di pojok kanan atas.</div></div>
+    <div class="col-md-6"><span class="lbl">Notifikasi pengumuman</span><label class="chk"><input type="checkbox" id="t_berNotif" onchange="tplUbah(this)" ${t.berNotif === 'tidak' ? '' : 'checked'} ${usang ? 'disabled' : ''}> Munculkan otomatis saat ada pengumuman baru</label></div>
+    <div class="col-12 small muted">Pengumuman yang tampil dipilih di menu <a href="javascript:void(0)" onclick="bukaMenu('kalender')">Kalender &amp; Pengumuman</a> dengan mencentang <b>Tampilkan di halaman depan</b>. Pengumuman baru langsung memunculkan notifikasi dan lencana di halaman depan.</div></div></details>`;
+  mb(`<div class="card-x tpl"><div class="tpl-top"><div><h3 class="h6 mb-1">Tampilan aplikasi</h3><p class="muted small mb-0">Satu tempat untuk mengatur nama, warna, halaman depan, informasi, dan dashboard. Berlaku untuk semua pengguna setelah disimpan.</p></div><div class="rowb"><a class="btn-o sm" href="landing.html" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Buka halaman depan</a><button type="button" class="btn-o sm" onclick="resetTemaUI()"><i class="bi bi-arrow-counterclockwise"></i> Kembalikan bawaan</button></div></div>
+  ${usang ? `<div class="tpl-warn" role="alert"><i class="bi bi-exclamation-triangle-fill"></i><div><b>Server Apps Script belum diperbarui.</b> Kolom halaman depan dikunci karena server belum mengenalnya, sehingga halaman depan memakai teks bawaan. Tempel <code>Kode.gs</code>, <code>Modul_Tampilan.gs</code>, dan <code>Modul_Kalender.gs</code> terbaru, lalu <b>Terapkan &gt; Kelola deployment &gt; Edit &gt; Versi baru &gt; Terapkan</b>, kemudian muat ulang halaman ini.</div></div>` : ''}
+  <div class="seg" role="tablist" aria-label="Bagian pengaturan tampilan">${TPL_PANE.map(([k, l, ik]) => `<button type="button" role="tab" class="seg-b" data-p="${k}" aria-selected="false" onclick="tplPane('${k}')"><i class="bi ${ik}"></i> ${l}</button>`).join('')}</div>
+  <form onsubmit="simpanTemaUI(event)" id="tpl_form"><div class="tpl-grid" id="tpl_grid"><div class="tpl-form">
+   <section class="tpl-pane" id="tp_id"><div class="row g-3">${tx('nama', 'Nama aplikasi', 40, 'required')}${tx('sub', 'Subjudul', 60)}${tx('instansi', 'Nama instansi', 60)}<div class="col-md-6"><span class="lbl">Logo</span><div class="rowb"><div class="logo-box" id="t_logobox"></div><div class="grow"><input id="t_logo" type="file" accept="image/png,image/jpeg" class="form-control" onchange="pilihLogo(this)" aria-label="Pilih logo"><div class="small muted mt-1">PNG atau JPEG, otomatis diperkecil. <a href="javascript:void(0)" onclick="hapusLogoUI()">Hapus logo</a></div></div></div></div></div>
+   <div class="tema-grid mt-3">${w('utama', 'Warna utama (menu samping, banner)')}${w('primer', 'Warna sorotan (menu aktif, tombol, grafik)')}${w('aksen', 'Warna aksen (tombol masuk di halaman depan, penanda)')}${w('latar', 'Warna latar halaman')}</div>
+   <div class="prev mt-3" aria-label="Pratinjau warna"><div class="pv-top" id="pv_top"><span id="pv_logo"></span><div><b id="pv_nama"></b><small id="pv_sub"></small></div></div><div class="pv-body" id="pv_body"><span class="pv-btn" id="pv_btn">Tombol contoh</span> <span class="small" id="pv_ins"></span></div></div></section>
+   <section class="tpl-pane" id="tp_depan" hidden><p class="muted small">Teks yang dilihat siapa saja sebelum masuk. Nama aplikasi, logo, nama instansi, dan warna aksen dari tab <b>Identitas &amp; warna</b> ikut dipakai. Kolom yang dikosongkan kembali ke teks bawaan. Pratinjau di samping berubah saat Anda mengetik, tetapi baru berlaku untuk pengunjung setelah <b>Simpan</b>.</p>${grup}${peril}</section>
+   <section class="tpl-pane" id="tp_info" hidden><p class="muted small mb-2">Isi lembar <b>Informasi</b> di halaman depan (di bawah kartu layanan) dan tombol Informasi di dashboard. Tulisan biasa menjadi paragraf, awali baris dengan <code># </code> untuk judul bagian dan <code>- </code> untuk butir daftar.</p>
+   <label class="lbl" for="t_infoJudul">Judul informasi</label><input id="t_infoJudul" class="form-control mb-2" maxlength="60" value="${esc(t.infoJudul)}" oninput="tplUbah(this)" onfocus="tplFokus('info')" required>
+   <label class="lbl" for="t_info">Isi informasi</label><textarea id="t_info" class="form-control" rows="14" oninput="tplUbah(this)" onfocus="tplFokus('info')" maxlength="4000" required>${esc(t.info)}</textarea><div class="rowb mt-2"><span class="small muted grow"><span id="t_infoN">0</span>/4000 karakter</span><button type="button" class="btn-o sm" onclick="pratinjauInfo()"><i class="bi bi-eye"></i> Lihat tampilan teks</button></div></section>
+   <section class="tpl-pane" id="tp_dash" hidden><p class="muted small">Teks dan gambar banner pada dashboard setelah masuk.</p><div class="row g-3">${tx('slogan', 'Judul banner dashboard', 70, 'required')}${tx('heroPoin', 'Kata kunci banner (pisahkan dengan koma)', 80, 'required')}${tx('motto', 'Kutipan di kartu jam dan menu samping', 140, 'required', 'col-12')}</div>
+   <div class="mt-3"><label class="chk"><input type="checkbox" id="t_animasi" onchange="tplUbah(this)" ${t.animasi === 'tidak' ? '' : 'checked'}> Tampilkan animasi loading maskot saat pindah menu <span class="muted small">(hanya muncul bila pemuatan agak lama)</span></label><div><button type="button" class="btn-o sm" onclick="LOAD.contoh()">Lihat contoh animasi</button></div></div>
+   <h4 class="h6 mt-4 mb-1">Gambar dashboard</h4><p class="muted small">Banner dan kartu Informasi pada dashboard. Gambar diperkecil otomatis agar ringan di HP dan langsung berlaku setelah disimpan.</p>
+   <div class="gbr">${gbrKartu('hero', 'Banner dashboard', 'Gambar lanjut (landscape), perbandingan sekitar 2:1. Bagian kiri tertutup tulisan, jadi letakkan objek utama (mis. gedung) di sisi kanan.')}${gbrKartu('info', 'Kartu Informasi', 'Perbandingan sekitar 16:9. Judul informasi tampil di bagian bawah gambar.')}</div></section>
+  </div>
+  <aside class="tpl-prev" id="tpl_prev"><details id="tpl_det"><summary><i class="bi bi-eye"></i> Pratinjau langsung halaman depan</summary><div class="tpl-pt"><div class="seg sm" role="group" aria-label="Ukuran pratinjau"><button type="button" class="seg-b on" data-d="pc" onclick="tplUkuran('pc')">Komputer</button><button type="button" class="seg-b" data-d="hp" onclick="tplUkuran('hp')">HP</button></div><select id="tpl_pt" class="form-select form-select-sm" aria-label="Tema pratinjau" onchange="tplKirim()"><option value="">Tema: ikut pengaturan</option><option value="day">Siang</option><option value="dusk">Senja</option><option value="night">Malam</option></select></div><div class="tpl-fr pc" id="tpl_fr"><iframe id="tpl_if" title="Pratinjau halaman depan" loading="lazy"></iframe></div><p class="small muted mt-2 mb-0">Ketuk kolom di kiri untuk melihat bagian terkait.</p></details></aside></div>
   <div id="t_pesan" class="small text-danger mt-2" role="alert"></div>
-  <div class="d-flex flex-wrap gap-2 justify-content-end mt-3"><button type="button" class="btn-o" onclick="resetTemaUI()">Kembalikan bawaan</button><button class="btn-x" type="submit" id="t_simpan">Simpan tampilan</button></div></form></div>
-  <div class="card-x mt-3"><h3 class="h6">Gambar dashboard</h3><p class="muted small">Gambar yang tampil di banner dan kartu Informasi pada dashboard. Gambar diperkecil otomatis agar ringan dibuka di HP, dan langsung berlaku untuk semua pengguna setelah disimpan.</p>
-  <div class="gbr">${gbrKartu('hero', 'Banner dashboard', 'Gambar lanjut (landscape), perbandingan sekitar 2:1. Bagian kiri tertutup tulisan, jadi letakkan objek utama (mis. gedung) di sisi kanan.')}${gbrKartu('info', 'Kartu Informasi', 'Perbandingan sekitar 16:9. Judul informasi tampil di bagian bawah gambar.')}</div></div>`);
-  pratinjauTema(); S.gbrBaru = {}; ['hero', 'info'].forEach(gbrIsi);
+  <div class="tpl-bar"><span class="tpl-st" id="tpl_st"><i></i><span>Belum ada perubahan</span></span><div class="rowb"><button type="button" class="btn-o" id="tpl_batal" onclick="MT.tampilan()" disabled>Batalkan</button><button class="btn-x" type="submit" id="t_simpan">Simpan tampilan</button></div></div></form></div>`);
+  S.gbrBaru = {}; ['hero', 'info'].forEach(gbrIsi); S.tplAwal = JSON.stringify(nilaiTema()); S.tplPane = null;
+  const det = $('tpl_det'); det.open = innerWidth >= 992; det.addEventListener('toggle', () => { if (det.open) { tplMuat(); tplSkala(); } }); tplSkala();
+  tplPane(S.tplLast || 'id'); tplUbah(null);
 };
+function tplPane(k) {
+  S.tplLast = k; TPL_PANE.forEach(([p]) => { const e = $('tp_' + p); if (e) e.hidden = p !== k; });
+  document.querySelectorAll('.seg-b[data-p]').forEach(b => { const on = b.dataset.p === k; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  const g = $('tpl_grid'); if (g) g.classList.toggle('nop', k === 'dash'); tplMuat(); tplSkala(); tplFokus(k === 'info' ? 'info' : '');
+}
+function tplMuat() { const f = $('tpl_if'), d = $('tpl_det'); if (!f || !d.open || S.tplLast === 'dash' || f.dataset.on) return; f.dataset.on = '1'; f.src = 'landing.html?pratinjau=1'; }
+function tplUkuran(d) { const f = $('tpl_fr'); f.className = 'tpl-fr ' + d; document.querySelectorAll('.seg-b[data-d]').forEach(b => b.classList.toggle('on', b.dataset.d === d)); tplSkala(); }
+function tplSkala() { // iframe digambar pada ukuran sebenarnya (komputer 1280x800, HP 390x844) lalu diperkecil agar tata letak sama dengan aslinya
+  const f = $('tpl_fr'), i = $('tpl_if'); if (!f || !i) return; const hp = f.classList.contains('hp'), [w, h] = hp ? [390, 844] : [1280, 800], k = f.clientWidth / w;
+  i.style.width = w + 'px'; i.style.height = h + 'px'; i.style.transform = 'scale(' + k + ')'; f.style.height = Math.round(h * k) + 'px'; }
+addEventListener('resize', () => { if ($('tpl_fr')) tplSkala(); });
+function tplFokus(bk) { S.tplBuka = bk; tplKirim(); }
+let tplTm = 0;
+function tplKirim() {
+  clearTimeout(tplTm); tplTm = setTimeout(() => {
+    const f = $('tpl_if'); if (!f || !f.dataset.on || !f.contentWindow || !S.tplSiap) return; const t = nilaiTema(), pt = $('tpl_pt').value, dk = { auto: 'auto', siang: 'day', senja: 'dusk', malam: 'night' };
+    t.logo = S.tpLogo !== undefined ? S.tpLogo : S.tp.logo; Object.keys(t).forEach(k => { if (/^ber/.test(k) && !/^ber(Tema|Notif)$/.test(k) && S.berB.usang) delete t[k]; });
+    f.contentWindow.postMessage({ lagusit: 'pratinjau', tampilan: t, tema: pt || dk[t.berTema || 'auto'] || 'auto', buka: S.tplBuka || '' }, location.origin);
+  }, 220);
+}
+addEventListener('message', e => { if (e.origin === location.origin && e.data && e.data.lagusit === 'pratinjau-siap') { S.tplSiap = true; tplKirim(); } });
+function tplBawaan(k) { const e = $('t_' + k); if (!e || !S.berB.bawaan[k]) return; e.value = S.berB.bawaan[k]; tplUbah(e); e.focus(); }
+function tplUbah(el) {
+  if (!$('t_nama')) return; const t = nilaiTema(), B = S.berB;
+  if ($('t_info')) $('t_infoN').textContent = $('t_info').value.length;
+  if (el && el.dataset && el.dataset.ber) { const n = $('n_' + el.id.slice(2)); if (n) n.textContent = el.value.length; }
+  BER.forEach(([k]) => { const rs = $('rs_' + k); if (rs) { rs.disabled = B.usang || !B.bawaan[k] || $('t_' + k).value.trim() === B.bawaan[k]; $('t_' + k).classList.toggle('tpl-ubah', !!B.bawaan[k] && $('t_' + k).value.trim() !== B.bawaan[k]); } });
+  const kotor = JSON.stringify(t) !== S.tplAwal || S.tpLogo !== undefined, st = $('tpl_st'); S.tplKotor = kotor; pratinjauTema();
+  st.classList.toggle('kotor', kotor); st.lastElementChild.textContent = kotor ? 'Ada perubahan yang belum disimpan' : 'Belum ada perubahan'; $('tpl_batal').disabled = !kotor;
+  tplKirim();
+}
+const BER = BERG.flatMap(g => g[4].map(f => [f[0]]));
 const gbrKartu = (k, judul, petunjuk) => `<div class="gbr-k"><h4>${judul}</h4><div class="gbr-pv ${k === 'info' ? 'info' : ''}"><img alt="Pratinjau ${judul}" id="gi_${k}"><span class="bd" id="gb_${k}"></span></div><div class="small muted">${petunjuk}</div><input id="gf_${k}" type="file" accept="image/png,image/jpeg" class="form-control" onchange="pilihGambar('${k}',this)" aria-label="Pilih gambar untuk ${judul}"><div class="gbr-ac"><button type="button" class="btn-x" id="gs_${k}" onclick="simpanGambar('${k}')" disabled>Simpan gambar</button><button type="button" class="btn-o" id="gh_${k}" onclick="hapusGambarUI('${k}')">Kembalikan bawaan</button></div></div>`;
 async function gbrIsi(k) { // pratinjau gambar yang sedang dipakai dan status tombolnya
   const im = $('gi_' + k); if (!im) return; const kustom = !!TP[GBR[k].kv];
@@ -220,15 +281,19 @@ async function simpanGambar(k) {
 function hapusGambarUI(k) { openModal('Kembalikan gambar bawaan', `<p>Gambar kustom dihapus dan dashboard memakai gambar bawaan lagi untuk semua pengguna.</p><div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" onclick="hapusGambarGo('${k}')">Kembalikan</button></div>`); }
 async function hapusGambarGo(k) { const r = await call('hapusAset', k); if (r) { closeModal(); terapkanTampilan(r.data); simpanCacheTampilan(r.data); delete GBRM[k]; try { localStorage.removeItem('gbr_' + k); } catch (e) {} Object.keys(PC).forEach(x => delete PC[x]); toast(r.message); gbrIsi(k); } }
 function pratinjauInfo() { openModal($('t_infoJudul').value || 'Informasi', `<div class="info-isi">${infoHtml($('t_info').value)}</div>`); }
-function nilaiTema() { const t = { nama: $('t_nama').value.trim(), sub: $('t_sub').value.trim(), instansi: $('t_instansi').value.trim(), animasi: $('t_animasi').checked ? 'ya' : 'tidak', infoJudul: $('t_infoJudul').value.trim(), info: $('t_info').value, slogan: $('t_slogan').value.trim(), heroPoin: $('t_heroPoin').value.trim(), motto: $('t_motto').value.trim(), utama: $('t_utama').value.toUpperCase(), primer: $('t_primer').value.toUpperCase(), aksen: $('t_aksen').value.toUpperCase(), latar: $('t_latar').value.toUpperCase() }; BER.forEach(([k]) => { t[k] = $('t_' + k).value; }); return t; }
+function nilaiTema() {
+  const v = k => { const e = $('t_' + k); return e ? e.value : undefined; }, t = { nama: v('nama').trim(), sub: v('sub').trim(), instansi: v('instansi').trim(), animasi: $('t_animasi').checked ? 'ya' : 'tidak', infoJudul: v('infoJudul').trim(), info: v('info'), slogan: v('slogan').trim(), heroPoin: v('heroPoin').trim(), motto: v('motto').trim(), utama: v('utama').toUpperCase(), primer: v('primer').toUpperCase(), aksen: v('aksen').toUpperCase(), latar: v('latar').toUpperCase() };
+  BER.forEach(([k]) => { t[k] = v(k); }); if ($('t_berTema')) { t.berTema = v('berTema'); t.berNotif = $('t_berNotif').checked ? 'ya' : 'tidak'; } return t;
+}
 function pratinjauTema() {
-  if (!$('t_nama')) return; $('t_infoN').textContent = $('t_info').value.length; const t = nilaiTema(), lg = S.tpLogo !== undefined ? S.tpLogo : S.tp.logo;
+  if (!$('t_nama')) return; const t = nilaiTema(), lg = S.tpLogo !== undefined ? S.tpLogo : S.tp.logo;
   ['utama', 'primer', 'aksen', 'latar'].forEach(k => $('h_' + k).textContent = t[k]);
   $('pv_top').style.background = t.utama; $('pv_body').style.background = t.latar; $('pv_btn').style.background = t.primer; $('pv_body').style.color = lumHex(t.latar) > .5 ? '#0F172A' : '#fff';
   $('pv_nama').textContent = t.nama || '(nama)'; $('pv_sub').textContent = t.sub; $('pv_ins').textContent = t.instansi;
   $('pv_logo').innerHTML = lg ? `<img src="${esc(lg)}" alt="">` : ''; $('t_logobox').innerHTML = lg ? `<img src="${esc(lg)}" alt="Logo">` : '<i class="bi bi-image muted fs-3"></i>';
   const p = []; if (kontrasHex(t.utama, '#FFFFFF') < 7) p.push('Warna utama terlalu terang untuk tulisan putih.'); if (kontrasHex(t.primer, '#FFFFFF') < 4.5) p.push('Warna sorotan terlalu terang untuk tulisan putih.'); if (kontrasHex(t.aksen, '#FFFFFF') < 3) p.push('Warna aksen terlalu terang untuk tulisan putih.'); if (lumHex(t.latar) < .8) p.push('Warna latar harus terang agar tulisan gelap terbaca.');
-  $('t_pesan').textContent = p.join(' '); $('t_simpan').disabled = p.length > 0 || t.nama.length < 2 || t.slogan.length < 2 || t.heroPoin.length < 2 || t.motto.length < 2;
+  if (t.nama.length < 2 || t.slogan.length < 2 || t.heroPoin.length < 2 || t.motto.length < 2) p.push('Nama aplikasi, judul banner, kata kunci banner, dan kutipan wajib diisi.');
+  $('t_pesan').textContent = p.join(' '); $('t_simpan').disabled = p.length > 0 || !S.tplKotor;
 }
 async function pilihLogo(inp) {
   const f = inp.files[0]; if (!f) return;
@@ -238,12 +303,12 @@ async function pilihLogo(inp) {
     for (; ukuran >= 64; ukuran -= 32) { u = await olahGambar(f, ukuran, ukuran, 'fit', 'image/png'); if (u.length <= 42000) break; }
     if (u.length > 42000) for (ukuran = 192; ukuran >= 64; ukuran -= 32) { u = await olahGambar(f, ukuran, ukuran, 'fit', 'image/jpeg', 0.8); if (u.length <= 42000) break; }
     if (u.length > 42000) throw new Error('Logo terlalu rumit untuk diperkecil. Gunakan gambar yang lebih sederhana.');
-    S.tpLogo = u; pratinjauTema();
+    S.tpLogo = u; tplUbah(null);
   } catch (e) { toast(e.message, 'danger'); inp.value = ''; }
 }
-function hapusLogoUI() { S.tpLogo = ''; const i = $('t_logo'); if (i) i.value = ''; pratinjauTema(); }
+function hapusLogoUI() { S.tpLogo = ''; const i = $('t_logo'); if (i) i.value = ''; tplUbah(null); }
 async function simpanTemaUI(e) {
-  e.preventDefault(); const b = $('t_simpan'), d = nilaiTema(); if (S.tpLogo !== undefined) d.logo = S.tpLogo;
+  e.preventDefault(); const b = $('t_simpan'), d = nilaiTema(); if (S.tpLogo !== undefined) d.logo = S.tpLogo; if (S.berB && S.berB.usang) Object.keys(d).forEach(k => { if (/^ber/.test(k)) delete d[k]; });
   busy(b, true); const r = await call('simpanTampilan', d); busy(b, false);
   if (r) { terapkanTampilan(r.data); simpanCacheTampilan(r.data); Object.keys(PC).forEach(k => delete PC[k]); toast(r.message); MT.tampilan(); }
 }

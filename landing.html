@@ -108,7 +108,7 @@ a{color:inherit}button{font:inherit;color:inherit}
 .badge{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#ff5a7a;color:#fff;font-size:.68rem;font-weight:800;display:grid;place-items:center;line-height:1}.badge[hidden]{display:none}
 .ib.ring svg{animation:ring 1.6s ease-in-out 3}@keyframes ring{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font:800 .78rem/1 "Plus Jakarta Sans",sans-serif;letter-spacing:.14em;text-transform:uppercase;border-radius:6px;padding:15px 26px;min-height:46px;cursor:pointer;text-decoration:none;border:1px solid transparent;transition:transform .25s,background .25s,box-shadow .25s;white-space:nowrap}
-.btn-go{background:#f6bd62;color:#1b1233;box-shadow:0 10px 30px rgba(8,10,60,.35)}.btn-go:hover{transform:translateY(-2px);background:#ffd27a}.btn-go svg{width:16px;height:16px}
+.btn-go{background:var(--cta,#f6bd62);color:#1b1233;box-shadow:0 10px 30px rgba(8,10,60,.35)}.btn-go:hover{transform:translateY(-2px);filter:brightness(1.08)}.btn-go svg{width:16px;height:16px}
 .btn-sm{padding:11px 16px;min-height:42px;border-radius:999px;background:rgba(10,16,70,.22);border-color:rgba(255,255,255,.45);color:#fff}.btn-sm:hover{background:rgba(255,255,255,.9);color:#14214f}
 .hero{position:fixed;left:0;right:0;top:max(11vh,76px);z-index:10;text-align:center;padding-inline:max(18px,env(safe-area-inset-left,0px));pointer-events:none}.hero>*{pointer-events:auto}
 .eyebrow{display:inline-block;font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;font-weight:700;text-shadow:0 1px 12px rgba(10,16,70,.55)}
@@ -158,6 +158,9 @@ a{color:inherit}button{font:inherit;color:inherit}
 
 .info-isi{font-size:.9rem;color:var(--pmut)}.info-isi h4{margin:14px 0 4px;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:#d98a1c}:root[data-t=night] .info-isi h4,:root[data-t=dusk] .info-isi h4{color:#f6bd62}.info-isi p{margin:0 0 6px}.info-isi ul{margin:0 0 8px;padding-left:18px}.info-isi li{margin-bottom:3px}[hidden]{display:none!important}
 
+.nl{position:relative}.nl .badge,.btn-sm .badge{position:static;margin-left:7px;display:inline-grid;vertical-align:middle}.nl .badge[hidden],.btn-sm .badge[hidden]{display:none}.ring .badge{animation:pop 1s ease 3}@keyframes pop{0%,100%{transform:scale(1)}40%{transform:scale(1.35)}}
+.pv .nav,.pv .notif{}
+
 </style>
 </head>
 <body>
@@ -171,12 +174,10 @@ a{color:inherit}button{font:inherit;color:inherit}
   <div class="grp l">
     <a class="brand" href="#hero" aria-label="Beranda"><img id="bLogo" alt="" hidden><b id="bNama">LAGUSIT e-PEGAWAI</b></a>
     <button class="nl" type="button" data-open="info"><span class="lbl-info">Informasi</span></button>
-    <button class="nl" type="button" data-open="peng"><span class="lbl-peng">Pengumuman</span></button>
+    <button class="nl" type="button" id="bBell" data-open="peng"><span class="lbl-peng">Pengumuman</span><span class="badge" hidden>0</span></button>
   </div>
   <div class="grp">
-    <button class="ib" type="button" id="bBell" aria-label="Pengumuman" data-open="peng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="badge" id="bBadge" hidden>0</span></button>
     <button class="ib" type="button" id="bTema" aria-label="Tema otomatis" title="Tema otomatis"><svg id="iTema" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg></button>
-    <a class="btn btn-sm" href="index.html" data-masuk>Masuk</a>
   </div>
 </header>
 <main class="hero" id="hero">
@@ -184,7 +185,7 @@ a{color:inherit}button{font:inherit;color:inherit}
   <h1 class="hero-title" id="heroTitle"></h1>
   <p class="hero-lead" id="hLead"></p>
   <a class="btn btn-go" href="index.html" data-masuk><span id="hTombol">Masuk ke Sistem</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
-  <div class="pills"><button class="btn btn-sm" type="button" data-open="info"><span class="lbl-info">Informasi</span></button><button class="btn btn-sm" type="button" data-open="peng"><span class="lbl-peng">Pengumuman</span></button></div>
+  <div class="pills"><button class="btn btn-sm" type="button" data-open="info"><span class="lbl-info">Informasi</span></button><button class="btn btn-sm" type="button" data-open="peng"><span class="lbl-peng">Pengumuman</span><span class="badge" hidden>0</span></button></div>
 </main>
 
 <div class="back" id="back"></div>
@@ -195,7 +196,6 @@ a{color:inherit}button{font:inherit;color:inherit}
   <div class="fit" id="iFitur"></div>
   <div class="roles"><h3 id="pJudul"></h3><p id="pLead"></p><div id="pPeran"></div></div>
   <div class="roles" id="tentang" hidden><h3 id="tJudul"></h3><div class="info-isi" id="tIsi"></div></div>
-  <a class="btn btn-go go" href="index.html" data-masuk><span class="tb">Masuk ke Sistem</span></a>
   <div class="sh-foot"><q id="fKutip"></q><span id="fHak"></span></div>
 </aside>
 <aside class="sheet" id="sPeng" role="dialog" aria-modal="true" aria-labelledby="gJudul" tabindex="-1">
@@ -347,6 +347,8 @@ const mix=(a,b,p)=>{const f=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)),x=f(a)
 const kecil=innerWidth<720,lemah=(navigator.deviceMemory&&navigator.deviceMemory<=4)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)||(navigator.connection&&navigator.connection.saveData);
 const lite=reduce||kecil||lemah;
 const root=document.documentElement,stage=$('#stage'),scene=$('#scene');
+const PREV=/[?&]pratinjau/.test(location.search);
+let TT=Object.assign({},DEF);
 if(lite)root.classList.add('lite');
 scene.innerHTML=bangunLaut(lite);
 /* ===== BINGKAI: landscape = isi layar (slice); potret = tampil lebar adegan (meet) ===== */
@@ -359,18 +361,20 @@ function bingkai(){
 }
 bingkai();
 /* ===== TEMA OTOMATIS menurut jam: siang / senja / malam ===== */
-const MODE=['auto','day','night'];let mode='auto';
-try{const m=localStorage.getItem('beranda_tema');if(MODE.includes(m))mode=m}catch(e){}
+const MODE=['auto','day','dusk','night'],PEMETAAN={auto:'auto',siang:'day',senja:'dusk',malam:'night'};let mode='auto',pilih=false,PTEMA=null;
+try{const m=localStorage.getItem('beranda_tema');if(MODE.includes(m)){mode=m;pilih=true}}catch(e){}
 const q=new URLSearchParams(location.search).get('tema');const FORCE={siang:'day',senja:'dusk',malam:'night'}[q]||null;
-function tahap(){if(FORCE)return FORCE;if(mode!=='auto')return mode;const d=new Date(),m=d.getHours()*60+d.getMinutes();
+function modeAktif(){return pilih?mode:(PEMETAAN[TT.berTema]||'auto')}
+function tahap(){if(PTEMA)return PTEMA==='auto'?jam():PTEMA;if(FORCE)return FORCE;const mo=modeAktif();if(mo!=='auto')return mo;return jam()}
+function jam(){const d=new Date(),m=d.getHours()*60+d.getMinutes();
   if(m>=6*60&&m<17*60)return 'day';if((m>=17*60&&m<18*60+30)||(m>=5*60&&m<6*60))return 'dusk';return 'night'}
-const IT={auto:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/><path d="M15 15a4 4 0 0 1-6-6" opacity=".0"/>',day:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',night:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>'};
-const NM={auto:'Tema otomatis (ikut jam)',day:'Tema siang',night:'Tema malam'};
+const IT={dusk:'<path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 9v3M4.2 11.2l1.6 1.6M19.8 11.2l-1.6 1.6M2 18h20M7 22h10"/>',auto:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/><path d="M15 15a4 4 0 0 1-6-6" opacity=".0"/>',day:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',night:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>'};
+const NM={auto:'Tema otomatis (ikut jam)',day:'Tema siang',dusk:'Tema senja',night:'Tema malam'};
 const TC={day:'#4d63e0',dusk:'#3a2a80',night:'#0d1950'};
 function tema(){const t=tahap();root.dataset.t=t;$('#tcolor').content=TC[t];
-  const b=$('#bTema');$('#iTema').innerHTML=IT[mode];b.setAttribute('aria-label',NM[mode]);b.title=NM[mode]+(mode==='auto'?' — '+({day:'siang',dusk:'senja',night:'malam'})[t]:'');
-  if(mode==='auto')$('#iTema').innerHTML=IT.auto+'<text x="12" y="14.6" font-size="6.5" font-weight="800" text-anchor="middle" fill="currentColor" stroke="none">A</text>'}
-$('#bTema').addEventListener('click',()=>{mode=MODE[(MODE.indexOf(mode)+1)%3];try{localStorage.setItem('beranda_tema',mode)}catch(e){}tema()});
+  const mo=modeAktif(),b=$('#bTema');$('#iTema').innerHTML=IT[mo];b.setAttribute('aria-label',NM[mo]);b.title=NM[mo]+(mo==='auto'?' — '+({day:'siang',dusk:'senja',night:'malam'})[t]:'');
+  if(mo==='auto')$('#iTema').innerHTML=IT.auto+'<text x="12" y="14.6" font-size="6.5" font-weight="800" text-anchor="middle" fill="currentColor" stroke="none">A</text>'}
+$('#bTema').addEventListener('click',()=>{mode=MODE[(MODE.indexOf(modeAktif())+1)%MODE.length];pilih=true;try{localStorage.setItem('beranda_tema',mode)}catch(e){}tema()});
 tema();setInterval(tema,60000);
 /* ===== PARALAKS ringan (hanya desktop) ===== */
 if(!lite&&matchMedia('(pointer:fine)').matches){
@@ -382,7 +386,6 @@ document.addEventListener('visibilitychange',()=>stage.classList.toggle('paused'
 /* ===== ISI (dari Pengaturan Tampilan Super Admin) ===== */
 function fitJudul(){const t=$('#heroTitle');if(!t)return;t.style.fontSize='100px';const sp=[...t.querySelectorAll(':scope>span')];const w=sp.reduce((a,s)=>a+s.getBoundingClientRect().width,0)||1;
   t.style.fontSize=Math.max(24,Math.min(124,100*Math.min(innerWidth-36,980)/w))+'px'}
-let TT=Object.assign({},DEF);
 /* teks Informasi aplikasi dari Super Admin: "# judul", "- butir", baris biasa = paragraf (tanpa HTML mentah) */
 function infoHtml(t){const o=[];let ul=false;String(t||'').split('\n').forEach(l=>{l=l.trimEnd();
   if(/^- /.test(l)){if(!ul){o.push('<ul>');ul=true}o.push('<li>'+ESC(l.slice(2))+'</li>');return}
@@ -393,6 +396,7 @@ function infoHtml(t){const o=[];let ul=false;String(t||'').split('\n').forEach(l
 document.addEventListener('click',e=>{const a=e.target.closest('[data-masuk]');if(a&&window.parent!==window){e.preventDefault();parent.postMessage({lagusit:'masuk'},location.origin)}});
 function isi(T){
   T=TT=Object.assign({},DEF,T||{});
+  if(hexOk(T.aksen))root.style.setProperty('--cta',T.aksen.toUpperCase()==='#D97706'?'#f6bd62':mix(T.aksen,'#FFFFFF',.38));
   document.title=T.nama+' | '+T.instansi;
   $('#bNama').textContent=T.nama;
   const lg=$('#bLogo');if(T.logo&&/^data:image\/(png|jpeg);base64,/.test(T.logo)){lg.src=T.logo;lg.hidden=false}else{lg.hidden=true;lg.removeAttribute('src')}
@@ -411,7 +415,7 @@ function isi(T){
   const tb=$('#tentang');if(T.info){$('#tJudul').textContent=T.infoJudul||'Tentang';$('#tIsi').innerHTML=infoHtml(T.info);tb.hidden=false}else tb.hidden=true;
   $('#fKutip').textContent=T.berKutip;$('#fHak').textContent='© '+new Date().getFullYear()+' '+T.instansi+' · '+T.nama;
   $('#bBell').setAttribute('aria-label',T.berPengJudul);
-  fitJudul();
+  fitJudul();tema();
 }
 isi(null);
 addEventListener('resize',()=>{clearTimeout(bingkai.t);bingkai.t=setTimeout(()=>{bingkai();fitJudul()},120)});
@@ -419,7 +423,7 @@ addEventListener('resize',()=>{clearTimeout(bingkai.t);bingkai.t=setTimeout(()=>
 /* ===== LEMBAR (Informasi / Pengumuman) ===== */
 const SH={info:$('#sInfo'),peng:$('#sPeng')},back=$('#back');let aktif=null,fokusLama=null;
 function buka(k){if(aktif)tutup(true);aktif=k;fokusLama=document.activeElement;SH[k].classList.add('on');back.classList.add('on');
-  setTimeout(()=>SH[k].focus({preventScroll:true}),60);if(k==='peng')tandaiDibaca();hideNotif()}
+  setTimeout(()=>SH[k].focus({preventScroll:true}),60);if(k==='peng'&&!PREV)tandaiDibaca();hideNotif()}
 function tutup(cepat){if(!aktif)return;SH[aktif].classList.remove('on');back.classList.remove('on');aktif=null;if(!cepat&&fokusLama&&fokusLama.focus)fokusLama.focus()}
 document.addEventListener('click',e=>{const o=e.target.closest('[data-open]');if(o){buka(o.dataset.open);return}if(e.target.closest('[data-close]')||e.target===back)tutup()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(aktif)tutup();else hideNotif()}
@@ -443,30 +447,35 @@ function render(){
 grid.addEventListener('click',e=>{const b=e.target.closest('.mr');if(b){const d=document.getElementById(b.getAttribute('aria-controls')),open=d.hidden;d.hidden=!open;b.setAttribute('aria-expanded',open);b.textContent=open?'Tutup':'Baca selengkapnya';return}
   if(e.target.closest('#semuaPeng')){SEMUA=true;render()}if(e.target.closest('#ulangPeng'))muat()});
 /* ===== NOTIFIKASI: muncul otomatis bila ada pengumuman yang belum dibaca ===== */
-const notif=$('#notif'),bBadge=$('#bBadge'),bBell=$('#bBell');let dibaca=[],tampilId=new Set(),nt=0;
+const notif=$('#notif'),bBell=$('#bBell');let dibaca=[],tampilId=new Set(),nt=0;
 try{dibaca=JSON.parse(localStorage.getItem('ann_dibaca')||'[]')}catch(e){}
 const idP=p=>String(p.ID||p.Judul+'|'+p.Tanggal);
 const belum=()=>(DATA||[]).filter(p=>!dibaca.includes(idP(p)));
 function simpanDibaca(){try{localStorage.setItem('ann_dibaca',JSON.stringify(dibaca.slice(-80)))}catch(e){}}
 function tandaiDibaca(){(DATA||[]).forEach(p=>{if(!dibaca.includes(idP(p)))dibaca.push(idP(p))});simpanDibaca();lencana()}
-function lencana(){const n=belum().length;bBadge.hidden=!n;bBadge.textContent=n>9?'9+':n}
+function lencana(){const n=belum().length;document.querySelectorAll('.badge').forEach(b=>{b.hidden=!n;b.textContent=n>9?'9+':n})}
 function hideNotif(){notif.classList.remove('on');root.classList.remove('nf');clearTimeout(nt)}
 function showNotif(){const b=belum();if(!b.length||aktif)return;const baru=b.filter(p=>!tampilId.has(idP(p)));if(!baru.length)return;b.forEach(p=>tampilId.add(idP(p)));
   $('#nJudul').textContent=b.length+' '+TT.berPengJudul+' baru';$('#nIsi').textContent=b[0].Judul;
-  notif.classList.add('on');root.classList.add('nf');bBell.classList.remove('ring');void bBell.offsetWidth;bBell.classList.add('ring');nt=setTimeout(hideNotif,20000)}
+  if(TT.berNotif==='tidak')return;notif.classList.add('on');root.classList.add('nf');bBell.classList.remove('ring');void bBell.offsetWidth;bBell.classList.add('ring');nt=setTimeout(hideNotif,20000)}
 $('#nLihat').addEventListener('click',()=>buka('peng'));$('#nNanti').addEventListener('click',hideNotif);$('#nTutup').addEventListener('click',hideNotif);
 function sesudahMuat(){lencana();render();setTimeout(showNotif,1400)}
+/* Pratinjau dari Pengaturan Tampilan (Super Admin): nilai belum disimpan dikirim lewat pesan dan langsung digambar */
+addEventListener('message',e=>{const d=e.data;if(!PREV||e.origin!==location.origin||!d||d.lagusit!=='pratinjau')return;
+  const T=Object.assign({},d.tampilan||{});Object.keys(T).forEach(k=>{if(/^ber/.test(k)&&T[k]==='')delete T[k]});
+  PTEMA=d.tema||null;isi(T);if(d.buka==='info'||d.buka==='peng'){if(aktif!==d.buka)buka(d.buka)}else if(aktif)tutup(true)});
+if(PREV&&parent!==window)parent.postMessage({lagusit:'pratinjau-siap'},location.origin);
 function muat(){
   if(DATA===null||document.getElementById('ulangPeng'))grid.innerHTML='<div class="sk"></div><div class="sk"></div>';
   if(typeof GAS_URL==='undefined'||!GAS_URL||/GANTI/.test(GAS_URL)){if(DATA===null){DATA=[];render()}return}
   const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),30000);
   fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:'getBeranda',args:[]}),signal:ctl.signal})
    .then(r=>{if(!r.ok)throw new Error('http');return r.json()})
-   .then(r=>{if(!r||!r.success)throw new Error('gagal');isi(r.data.tampilan);DATA=r.data.pengumuman||[];sesudahMuat();try{localStorage.setItem('beranda_cache',JSON.stringify({t:r.data.tampilan,p:DATA}))}catch(e){}})
+   .then(r=>{if(!r||!r.success)throw new Error('gagal');if(!PREV)isi(r.data.tampilan);DATA=r.data.pengumuman||[];sesudahMuat();try{localStorage.setItem('beranda_cache',JSON.stringify({t:r.data.tampilan,p:DATA}))}catch(e){}})
    .catch(()=>{if(DATA===null)status('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/>','Pengumuman belum dapat dimuat','Periksa koneksi internet lalu coba lagi.','<button class="btn btn-line btn-sm" type="button" id="ulangPeng">Coba lagi</button>')})
    .finally(()=>clearTimeout(tm));
 }
-try{const c=JSON.parse(localStorage.getItem('beranda_cache')||'null');if(c){isi(c.t);DATA=Array.isArray(c.p)?c.p:null;lencana()}}catch(e){}
+try{const c=JSON.parse(localStorage.getItem('beranda_cache')||'null');if(c&&!PREV){isi(c.t);DATA=Array.isArray(c.p)?c.p:null;lencana()}}catch(e){}
 render();muat();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)muat()});
 setInterval(()=>{if(!document.hidden)muat()},300000);

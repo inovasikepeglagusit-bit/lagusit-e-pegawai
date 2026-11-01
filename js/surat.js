@@ -1,5 +1,5 @@
 // ── Nomor Surat: ambil nomor (PIN + keterangan wajib), register, dan pengaturan Super Admin ──
-Object.assign(TITLES, { surat: 'Nomor Surat' }); Object.assign(ICONS, { surat: 'bi-journal-bookmark' });
+Object.assign(TITLES, { surat: 'Register Nomor Surat' }); Object.assign(ICONS, { surat: 'bi-journal-bookmark' });
 const SN_TAB = [['register', 'Ambil & Register', 'bi-journal-text'], ['indeks', 'Indeks Surat', 'bi-list-ol'], ['setelan', 'Penomoran', 'bi-sliders2'], ['pengambil', 'Pengambil & PIN', 'bi-key'], ['libur', 'Tanggal Merah', 'bi-calendar-x']];
 const ROM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 const snContoh = (fmt, pad, no, kode, tgl, nama) => { const n = String(no); return fmt.replace(/\{NO\}/g, pad ? n.padStart(pad, '0') : n).replace(/\{(INDEKS|KODE)\}/g, kode).replace(/\{NAMA\}/g, nama || '').replace(/\{BLN\}/g, tgl.slice(5, 7)).replace(/\{BLR\}/g, ROM[+tgl.slice(5, 7)]).replace(/\{THN2\}/g, tgl.slice(2, 4)).replace(/\{THN\}/g, tgl.slice(0, 4)).replace(/\{TGL\}/g, tgl.slice(8, 10)); };
