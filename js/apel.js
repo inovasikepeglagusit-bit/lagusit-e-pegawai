@@ -102,6 +102,6 @@ function sesiRegu() { const sel = $('as'), ada = sel.value; sel.innerHTML = (REG
 /** Giliran jaga hari ini (dari jadwal giliran Rupam): Rupam mana yang berjaga tiap sesi dan petugas titipan (Blok Wanita) yang ikut. */
 function giliranKartu() {
   const d = S.glA, h = d && d.hari.find(x => x.Tanggal === today()); if (!h || !Object.keys(h.R).length) return '';
-  const sh = s => `<span class="sh sh-${s}">${s}</span>`, orang = d.orang.filter(o => h.O[o.PegawaiID] && h.O[o.PegawaiID].S !== 'Libur');
-  return `<div class="card-x mb-3"><h3 class="h6">Giliran jaga hari ini</h3><div class="d-flex flex-wrap gap-3">${Object.keys(h.R).map(n => `<span><b>${esc(n)}</b> ${sh(h.R[n].S)}</span>`).join('')}</div>${orang.length ? `<div class="mt-2 small"><b>Petugas titipan:</b> ${orang.map(o => `${esc(o.Nama)} ${sh(h.O[o.PegawaiID].S)}${h.O[o.PegawaiID].H ? ' → ' + esc(h.O[o.PegawaiID].H) : ''}`).join(' · ')}</div>` : ''}</div>`;
+  const sh = s => shChip(s), orang = d.orang.filter(o => h.O[o.PegawaiID] && h.O[o.PegawaiID].S !== 'Libur');
+  return `<div class="card-x mb-3"><h3 class="h6">Giliran jaga hari ini</h3><div class="d-flex flex-wrap gap-3">${Object.keys(h.R).map(n => `<span><b>${esc(n)}</b> ${sh(h.R[n].S)}</span>`).join('')}</div>${orang.length ? `<div class="mt-2 small"><b>Petugas titipan:</b> ${orang.map(o => `${esc(o.Nama)} ${sh(h.O[o.PegawaiID].S)}${h.O[o.PegawaiID].H ? ' → ' + esc(h.O[o.PegawaiID].H.replace(/Rupam /g, '')) : ''}`).join(' · ')}</div>` : ''}</div>`;
 }
