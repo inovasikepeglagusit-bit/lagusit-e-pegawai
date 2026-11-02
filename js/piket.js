@@ -30,7 +30,7 @@ const pkUrut = id => { const d = S.pk, p = d.pegawai.find(x => x.ID === id) || d
 function pkAnggota(jid) {
   const cur = S.pkd || pkPeta(), ids = []; const add = id => { if (id && !ids.includes(id)) ids.push(id); };
   (S.pkm && S.pkm[jid] || []).forEach(add); Object.keys(cur.sel).forEach(k => { if (k.split('|')[1] === jid) cur.sel[k].forEach(add); });
-  if (!(S.pkm && S.pkm[jid])) ids.sort((a, b) => pkUrut(a) - pkUrut(b) || pkNama(a).localeCompare(pkNama(b))); // menurut No. urut yang diatur Super Admin (sama dengan daftar pegawai), tanpa nomor di paling bawah
+  if (!(S.pkm && S.pkm[jid])) { const sv = (S.pk.urut || {})[jid] || [], rk = id => sv.includes(id) ? sv.indexOf(id) : 1e6 + pkUrut(id); ids.sort((a, b) => rk(a) - rk(b) || pkNama(a).localeCompare(pkNama(b))); } // urutan yang disimpan operator, lalu No. urut Super Admin // menurut No. urut yang diatur Super Admin (sama dengan daftar pegawai), tanpa nomor di paling bawah
   return ids;
 }
 function pkLepasHari(tgl, cur) { // pegawai yang Lepas Piket pada tanggal itu menurut draft/roster saat ini
@@ -66,7 +66,7 @@ function pkGambar() {
   ${pkTabel(kel)}${op ? '' : '<p class="muted small mt-2 mb-0">Roster diisi oleh operator jadwal yang ditunjuk Super Admin.</p>'}</section>`;
 }
 function geser_(s, n) { return new Date(Date.parse(s + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10); }
-function pkEdit() { S.pkd = JSON.parse(JSON.stringify(pkPeta())); S.pkm = {}; S.pk.jenis.forEach(j => S.pkm[j.ID] = pkAnggota(j.ID)); pkGambar(); }
+function pkEdit() { S.pkd = JSON.parse(JSON.stringify(pkPeta())); S.pkm = {}; S.pk.jenis.forEach(j => S.pkm[j.ID] = pkAnggota(j.ID)); S.pkm0 = JSON.stringify(S.pkm); pkGambar(); }
 function pkBatal() { S.pkd = null; S.pkm = null; pkGambar(); }
 function pkAnggotaTambah(jid, el) { if (!el.value) return; (S.pkm[jid] = S.pkm[jid] || []).push(el.value); pkGambar(); }
 function pkKeluar(jid, id) { Object.keys(S.pkd.sel).forEach(k => { if (k.split('|')[1] === jid) { S.pkd.sel[k] = S.pkd.sel[k].filter(x => x !== id); delete S.pkd.ses[k + '|' + id]; } }); S.pkm[jid] = (S.pkm[jid] || []).filter(x => x !== id); pkGambar(); }
@@ -93,8 +93,9 @@ function pkGilirGo(e) {
 async function pkSimpan() {
   const asal = pkPeta(), kunci = new Set(Object.keys(asal.sel).concat(Object.keys(S.pkd.sel))), baris = [];
   kunci.forEach(k => { const a = (asal.sel[k] || []).slice().sort().map(id => id + ':' + (asal.ses[k + '|' + id] || '')).join(), b = (S.pkd.sel[k] || []).slice().sort().map(id => id + ':' + (S.pkd.ses[k + '|' + id] || '')).join(); if (a !== b) { const [tgl, j] = k.split('|'), ids = S.pkd.sel[k] || [], sesi = {}; ids.forEach(id => { const v = S.pkd.ses[k + '|' + id]; if (v) sesi[id] = v; }); baris.push({ Tanggal: tgl, JenisID: j, PegawaiIDs: ids, Sesi: sesi }); } });
-  if (!baris.length) { toast('Tidak ada perubahan.', 'warning'); return; }
-  const r = await call('simpanJadwalPiket', { Bulan: S.pkb, Baris: baris }); if (r) { toast(r.message); pkMuat(S.pkb); muatNotif(); }
+  const urut = {}; S.pk.jenis.forEach(j => { urut[j.ID] = pkAnggota(j.ID); }); const urutBerubah = JSON.stringify(urut) !== S.pkm0;
+  if (!baris.length && !urutBerubah) { toast('Tidak ada perubahan.', 'warning'); return; }
+  const r = await call('simpanJadwalPiket', { Bulan: S.pkb, Baris: baris, Urut: urutBerubah ? urut : undefined }); if (r) { toast(r.message); pkMuat(S.pkb); muatNotif(); }
 }
 async function publikasi(jenis) {
   const bulan = jenis === 'piket' ? S.pkb : S.ptb, p = (jenis === 'piket' ? S.pk : S.pt).pub;
