@@ -365,3 +365,21 @@ Menu **Laporan** kini punya pilihan **Bentuk laporan** (bawaan: *Tabel tanggal*)
 **Keluaran**: tampil di layar, *Unduh Excel* (.xls dengan garis dan kelompok), *CSV*, dan *Cetak / simpan PDF* (lanskap F4, memuat kop surat). Nama dan jabatan penandatangan di bagian bawah diambil dari Master Data ▸ Layanan Surat. Rentang tanggal untuk bentuk tabel dibatasi 31 hari (satu bulan).
 
 Pemasangan: tempel ulang `Modul_Matriks.gs` (file baru), `Modul_Laporan.gs`, `Modul_RekapUangMakan.gs`, lalu Terapkan ▸ Kelola penerapan ▸ pensil ▸ Versi baru ▸ Terapkan. Frontend (zip) wajib di-push ke GitHub (`git add .`, `git commit -m "laporan tabel tanggal"`, `git push`).
+
+---
+
+## Singkatan keterangan, hapus pegawai nonaktif, hari libur piket
+
+**1. Keterangan apel + singkatan + warna (Master Data ▸ Kehadiran ▸ Atur keterangan)**
+- Setiap keterangan **terhitung sebagai** satu status. Contoh: *Lepas Piket*, *Piket Jaga* → **Hadir** (dihitung hadir); *Cuti*, *Izin* → Izin; *Sakit* → Sakit; *DL* → Dinas Luar; *Tanpa Keterangan* → Tidak Hadir. Saat operator memilih status Hadir, keterangan berstatus Hadir muncul sebagai pilihan. Aturan uang makan per keterangan tetap bisa diatur terpisah.
+- **Singkatan** (1–4 huruf, unik) dan **warna** per status (bawaan H, T, I, S, DL, TK) dan per keterangan (mis. Cuti = C). Dikosongkan = mengikuti singkatan statusnya. Singkatan *L* khusus Libur.
+- Laporan bentuk tabel tanggal memakai singkatan dan warna ini, lengkap dengan legenda; kolom HADIR/TIDAK HADIR mengikuti status tempat keterangan itu terhitung.
+
+**2. Hapus pegawai nonaktif (menu Pegawai)**
+- Pegawai yang sudah **nonaktif** punya tombol **Hapus permanen** (hanya Super Admin, wajib alasan). Data pegawai, keanggotaan regu, dan isian profilnya dihapus; jadwal piket mendatang dibatalkan; namanya hilang dari daftar dan Laporan Data Pegawai. Catatan apel dan uang makan lama tetap menyimpan nama saat itu. Akun masuk (email) tidak ikut dihapus: kelola di Persetujuan Akun.
+
+**3. Piket malam dan hari libur (Kalender ▸ Pengaturan Jadwal ▸ Jenis piket)**
+- Kelompok **Setiap malam** tidak mengenal hari libur: piket berjalan setiap tanggal, termasuk Minggu dan tanggal merah.
+- Kelompok **Hanya hari libur** hanya bisa diisi pada **hari libur mingguan** (bawaan Minggu; Super Admin dapat menambah mis. Sabtu) atau **tanggal merah** yang ditetapkan Super Admin di Kalender (jenis Libur). Perubahan langsung dipakai roster piket.
+
+Pemasangan: tempel ulang `Kode.gs`, `Modul_Absen.gs`, `Modul_Matriks.gs`, `Modul_Piket.gs`, lalu Terapkan ▸ Kelola penerapan ▸ pensil ▸ Versi baru ▸ Terapkan. Frontend (zip) wajib di-push ke GitHub.

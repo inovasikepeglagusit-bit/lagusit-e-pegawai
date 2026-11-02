@@ -475,3 +475,6 @@ button.kchip{cursor:pointer;font-family:inherit;color:inherit}button.kchip:hover
 .tgl-judul{text-align:center;font-size:15px;font-weight:700;text-transform:uppercase;margin:12px 0}.tgl-leg{margin-top:8px}
 .tgl-ttd{margin:18px 0 0 auto;width:max-content;text-align:center;font-size:13px}.tgl-ttd-sp{height:56px}
 @media print{.tgl{font-size:7px;width:100%;min-width:0}.tgl th,.tgl td{padding:1px 1px;border-color:#000!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tgl .tgl-wk,.tgl tr.tgl-g td,.tgl thead th{-webkit-print-color-adjust:exact;print-color-adjust:exact}.tgl-judul{font-size:13px}.tgl-ttd{font-size:11px}.tgl-card{padding:0!important}}
+
+.tgl-lg{display:inline-block;padding:1px 8px;border-radius:10px;margin:2px 4px 2px 0;font-size:11px;border:1px solid currentColor;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@media print{.tgl td{background:transparent!important}.tgl td[style]{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
