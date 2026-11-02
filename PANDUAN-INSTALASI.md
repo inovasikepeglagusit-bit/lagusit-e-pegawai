@@ -319,3 +319,30 @@ Master Data > Tampilan kini punya empat sub-tab:
 Di samping form ada **Pratinjau langsung** landing (ukuran Komputer/HP, pilihan tema). Pratinjau berubah saat Anda mengetik, sebelum disimpan, dan membuka lembar yang sesuai saat Anda memilih kolomnya. Bar bawah menandai "Ada perubahan yang belum disimpan".
 **Penting:** bagian Halaman depan hanya berfungsi bila server Apps Script sudah memakai `Kode.gs`, `Modul_Tampilan.gs`, dan `Modul_Kalender.gs` terbaru dan sudah **di-deploy sebagai versi baru** (Terapkan > Kelola deployment > ikon pensil > Versi baru > Terapkan). Bila belum, tab ini menampilkan peringatan dan mengunci kolom halaman depan; kolom kosong berarti server lama.
 Berkas berubah: backend `Kode.gs`, `Modul_Tampilan.gs`; frontend `landing.html`, `js/master.js`, `js/app.js`, `css/style.css`.
+
+---
+
+## Perbaikan — petugas Blok Wanita di apel Rupam & urutan daftar apel
+
+**Mengapa petugas Blok Wanita tidak muncul di apel Rupam?** Petugas titipan hanya ikut apel Rupam yang sedang jaga pada sesi giliran mereka. Agar muncul:
+
+1. Master Data ▸ **Giliran Jaga**: isi pola + posisi **Rupam A–D** dan pola + posisi **tiap petugas Blok Wanita**. Bila belum diisi, apel menampilkan peringatan "Giliran … belum diatur".
+2. Pastikan petugas terdaftar sebagai anggota regu Blok Wanita (Unit & Regu) dan tidak berstatus Detaser/BKO.
+3. Buka apel Rupam yang jaga pada sesi itu. Apel yang **sudah dibuka sebelum giliran diisi** harus ditekan **Sinkronkan** agar petugas titipan masuk dan jabatan/asal diperbarui.
+
+**Urutan daftar apel** kini: jabatan rupam (Karupam, Wakil Komandan, P2U, Anggota …) → No. urut regu → No. Urut DUK; petugas titipan di akhir. Apel berstatus Draf selalu tampil menurut pengaturan terbaru; saat disimpan, urutan itu dibekukan. Apel yang sudah Selesai tidak berubah.
+
+Pemasangan: tempel ulang `Modul_Apel.gs` dan `Modul_Giliran.gs`, lalu Terapkan ▸ Kelola penerapan ▸ pensil ▸ Versi baru ▸ Terapkan. Frontend tidak berubah.
+
+---
+
+## Kunci waktu apel Rupam
+
+Apel Rupam kini mengikuti jam sesi (WIB): **Pagi 07.30–13.30, Siang 13.30–19.30, Malam 19.30–07.30** (Malam berakhir keesokan harinya). Jam dapat diubah Super Admin di Master Data ▸ Giliran Jaga ▸ *Jam sesi apel Rupam*.
+
+- Operator hanya dapat membuka, mengisi, menyinkronkan, dan mengunggah foto apel **selama jam sesinya berjalan**.
+- Sebelum jam mulai, apel baru belum dapat dibuka. Setelah jam berakhir, apel tetap terlihat tetapi **terkunci** (termasuk yang masih Draf).
+- Hanya Super Admin yang dapat mengoreksi apel di luar jam sesi.
+- Berlaku untuk Apel Regu/Rupam; Apel Staf tidak berubah.
+
+Pemasangan: tempel ulang `Kode.gs`, `Modul_Apel.gs`, `Modul_Foto.gs`, lalu Versi baru; frontend (zip) wajib diunggah ke GitHub (`git add .`, `git commit -m "kunci waktu apel"`, `git push`).
