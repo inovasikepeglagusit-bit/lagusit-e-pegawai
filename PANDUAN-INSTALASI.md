@@ -346,3 +346,22 @@ Apel Rupam kini mengikuti jam sesi (WIB): **Pagi 07.30–13.30, Siang 13.30–19
 - Berlaku untuk Apel Regu/Rupam; Apel Staf tidak berubah.
 
 Pemasangan: tempel ulang `Kode.gs`, `Modul_Apel.gs`, `Modul_Foto.gs`, lalu Versi baru; frontend (zip) wajib diunggah ke GitHub (`git add .`, `git commit -m "kunci waktu apel"`, `git push`).
+
+---
+
+## Laporan bentuk tabel tanggal (format daftar hadir)
+
+Menu **Laporan** kini punya pilihan **Bentuk laporan** (bawaan: *Tabel tanggal*): No › Nama › Gol/NIP › Jabatan › tanggal 01–31 › HADIR › TIDAK HADIR, dikelompokkan seperti daftar hadir petugas pengamanan. Pilihan *Rekap ringkas (angka)* tetap ada. Berlaku untuk: **Rekap Uang Makan**, **Apel Staf**, **Kehadiran Gabungan**, **Ketidakhadiran**, dan **Piket**.
+
+**Uang makan (format petugas pengamanan)**
+- Kelompok mengikuti regu: Rupam A–D dan *Rupam Blok Wanita* (jaga wanita), lalu staf per unit kerja. Jabatan memakai jabatan rupam (Karupam, Wadan, P2U, …) dan urutannya sama dengan Master Data ▸ Unit & Regu.
+- Siklus Rupam dihitung **Siang, Pagi, Malam, Libur** (apel Malam dihitung pada hari berikutnya; pergeseran dapat diatur Super Admin). Petugas Blok Wanita dihitung menurut **hari dan sesi sesungguhnya** (mis. Pagi, Siang, Libur).
+- Sel: HADIR, TELAT, LIBUR (menurut Giliran Jaga), CUTI, SAKIT, IZIN, DL (dinas luar), ALPA; kosong = belum ada apel tercatat atau jadwal belum diatur.
+- Kolom HADIR = jumlah hari **dibayar** uang makan; TIDAK HADIR = hari tercatat yang tidak dibayar (aturan di Master Data ▸ Kehadiran).
+- LIBUR hanya muncul bila pola Giliran Jaga sudah diisi.
+
+**Format lain**: apel staf dan kehadiran gabungan memakai kolom NIP; kehadiran gabungan menambah SKOR (%) dengan bobot yang sama seperti penilaian kinerja.
+
+**Keluaran**: tampil di layar, *Unduh Excel* (.xls dengan garis dan kelompok), *CSV*, dan *Cetak / simpan PDF* (lanskap F4, memuat kop surat). Nama dan jabatan penandatangan di bagian bawah diambil dari Master Data ▸ Layanan Surat. Rentang tanggal untuk bentuk tabel dibatasi 31 hari (satu bulan).
+
+Pemasangan: tempel ulang `Modul_Matriks.gs` (file baru), `Modul_Laporan.gs`, `Modul_RekapUangMakan.gs`, lalu Terapkan ▸ Kelola penerapan ▸ pensil ▸ Versi baru ▸ Terapkan. Frontend (zip) wajib di-push ke GitHub (`git add .`, `git commit -m "laporan tabel tanggal"`, `git push`).

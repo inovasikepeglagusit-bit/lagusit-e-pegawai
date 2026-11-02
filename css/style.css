@@ -465,3 +465,13 @@ button.kchip{cursor:pointer;font-family:inherit;color:inherit}button.kchip:hover
 .sh{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent)}.sh-Pagi{--c:#D97706}.sh-Siang{--c:#2563EB}.sh-Malam{--c:#7C3AED}.sh-Libur{--c:#64748B}
 .gl-c{background:none;border:0;padding:4px;min-height:44px;min-width:56px;cursor:pointer;text-align:center}.gl-c:hover{background:var(--bg);border-radius:8px}.gl-tab td,.gl-tab th{text-align:center;vertical-align:middle}.gl-tab td:first-child,.gl-tab th:first-child{text-align:left}.gl-now td{background:color-mix(in srgb,var(--gold,#C8A24B) 12%,transparent)}
 .sh-Gabung{--c:#0D9488}
+
+/* Laporan tabel tanggal (matriks) */
+.tgl{border-collapse:collapse;font-size:11px;width:max-content;min-width:100%}
+.tgl th,.tgl td{border:1px solid var(--bs-border-color,#9ca3af);padding:2px 4px;text-align:center;white-space:nowrap}
+.tgl td.l{text-align:left}.tgl thead th{background:rgba(127,127,127,.12);font-weight:700}.tgl .tgl-sub{font-size:9px;font-weight:600}.tgl .tgl-wk{background:rgba(245,158,11,.25)}
+.tgl tr.tgl-g td{background:rgba(127,127,127,.15);font-weight:700;text-align:left}.tgl .tgl-t{font-weight:700}
+.tgl .tgl-HADIR{color:#047857;font-weight:600}.tgl .tgl-TELAT{color:#b45309;font-weight:600}.tgl .tgl-LIBUR{color:#6b7280}.tgl .tgl-SAKIT,.tgl .tgl-ALPA{color:#b91c1c;font-weight:600}.tgl .tgl-IZIN,.tgl .tgl-CUTI,.tgl .tgl-DL{color:#1d4ed8;font-weight:600}
+.tgl-judul{text-align:center;font-size:15px;font-weight:700;text-transform:uppercase;margin:12px 0}.tgl-leg{margin-top:8px}
+.tgl-ttd{margin:18px 0 0 auto;width:max-content;text-align:center;font-size:13px}.tgl-ttd-sp{height:56px}
+@media print{.tgl{font-size:7px;width:100%;min-width:0}.tgl th,.tgl td{padding:1px 1px;border-color:#000!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tgl .tgl-wk,.tgl tr.tgl-g td,.tgl thead th{-webkit-print-color-adjust:exact;print-color-adjust:exact}.tgl-judul{font-size:13px}.tgl-ttd{font-size:11px}.tgl-card{padding:0!important}}
