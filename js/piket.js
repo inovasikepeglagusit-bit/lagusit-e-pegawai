@@ -25,11 +25,12 @@ async function pkMuat(bulan) {
 }
 function pkPeta() { const sel = {}, ses = {}; S.pk.jadwal.forEach(x => { const k = x.Tanggal + '|' + x.JenisID; (sel[k] = sel[k] || []).push(x.PegawaiID); if (x.Sesi) ses[k + '|' + x.PegawaiID] = x.Sesi; }); return { sel, ses }; }
 const pkNama = id => { const d = S.pk; return ((d.pegawai.find(p => p.ID === id) || d.jadwal.find(x => x.PegawaiID === id) || {}).Nama) || '?'; };
+const pkUrut = id => { const d = S.pk, p = d.pegawai.find(x => x.ID === id) || d.jadwal.find(x => x.PegawaiID === id) || {}, n = Number(p.Urutan); return n >= 1 ? n : 1e9; };
 /** Anggota roster per jenis: yang punya tugas bulan ini (atau ada di draft) ditambah yang ditambahkan operator. */
 function pkAnggota(jid) {
   const cur = S.pkd || pkPeta(), ids = []; const add = id => { if (id && !ids.includes(id)) ids.push(id); };
   (S.pkm && S.pkm[jid] || []).forEach(add); Object.keys(cur.sel).forEach(k => { if (k.split('|')[1] === jid) cur.sel[k].forEach(add); });
-  if (!(S.pkm && S.pkm[jid])) ids.sort((a, b) => pkNama(a).localeCompare(pkNama(b)));
+  if (!(S.pkm && S.pkm[jid])) ids.sort((a, b) => pkUrut(a) - pkUrut(b) || pkNama(a).localeCompare(pkNama(b))); // menurut No. urut yang diatur Super Admin (sama dengan daftar pegawai), tanpa nomor di paling bawah
   return ids;
 }
 function pkLepasHari(tgl, cur) { // pegawai yang Lepas Piket pada tanggal itu menurut draft/roster saat ini
