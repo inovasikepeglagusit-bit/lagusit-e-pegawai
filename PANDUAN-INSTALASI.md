@@ -383,3 +383,31 @@ Pemasangan: tempel ulang `Modul_Matriks.gs` (file baru), `Modul_Laporan.gs`, `Mo
 - Kelompok **Hanya hari libur** hanya bisa diisi pada **hari libur mingguan** (bawaan Minggu; Super Admin dapat menambah mis. Sabtu) atau **tanggal merah** yang ditetapkan Super Admin di Kalender (jenis Libur). Perubahan langsung dipakai roster piket.
 
 Pemasangan: tempel ulang `Kode.gs`, `Modul_Absen.gs`, `Modul_Matriks.gs`, `Modul_Piket.gs`, lalu Terapkan ▸ Kelola penerapan ▸ pensil ▸ Versi baru ▸ Terapkan. Frontend (zip) wajib di-push ke GitHub.
+
+---
+
+## Pegawai Keluar dan Pegawai Masuk (Data Pegawai)
+
+Kolom **Penugasan** pada formulir pegawai kini memiliki dua kelompok:
+
+| Kelompok | Pilihan | Arti | Kegiatan harian |
+|---|---|---|---|
+| **Pegawai Keluar** (pegawai unit Anda ditugaskan ke unit lain) | Out, BKO Keluar, Didetasir | isi "Unit tujuan penugasan" | **Tidak dilibatkan**: tidak ikut apel staf/regu, regu, jadwal piket, dan petugas apel |
+| **Pegawai Masuk** (pegawai unit lain ditugaskan ke Lapas ini) | In, BKO Masuk, Titipan, DPB (Diperbantukan) | isi "Unit asal penugasan" | **Dilibatkan** bila diizinkan Super Admin |
+| Kosong | Pegawai induk | bertugas di Lapas | selalu dilibatkan |
+
+Data lama bernilai *Detaser* dibaca otomatis sebagai **Didetasir** dan *BKO* sebagai **BKO Keluar**; tidak perlu mengubah data satu per satu.
+
+**Mengatur keterlibatan Pegawai Masuk (Super Admin)**
+1. Menu **Pegawai** ▸ kartu **Penugasan antar unit** di atas daftar: tombol *Libatkan / Jangan libatkan Pegawai Masuk* mengatur **seluruh** Pegawai Masuk (bawaan: dilibatkan).
+2. Pengecualian per orang: **Ubah** pegawai ▸ *Keterlibatan kegiatan harian* ▸ *Ikut pengaturan umum / Dilibatkan / Tidak dilibatkan*. Pengaturan per orang mengalahkan pengaturan umum.
+3. Satu aturan yang sama dipakai oleh apel staf, apel regu, anggota regu, jadwal piket, dan petugas apel, sehingga tidak ada menu yang berbeda pendapat. Pegawai Masuk yang sudah dilibatkan dapat dimasukkan ke regu dan piket seperti pegawai induk; bila kemudian tidak dilibatkan, ia tidak lagi muncul pada daftar baru (catatan apel lama tetap utuh).
+
+**Daftar pegawai**: penyaring *Penugasan* kini memuat *Pegawai induk*, *Semua Pegawai Keluar*, *Semua Pegawai Masuk*, dan tiap jenis. Lencana di kolom Status menampilkan jenis penugasan, arah, dan apakah ikut kegiatan harian.
+
+**Rekap kehadiran tersendiri** (menu Laporan): laporan Data pegawai, Apel staf, Kehadiran gabungan, Uang makan (per pegawai dan rincian), Piket, Ketidakhadiran, Komposisi unit, dan Kelengkapan data memiliki pilihan **Kelompok pegawai**: *Semua*, *Pegawai induk saja*, atau *Pegawai Masuk saja*. Berlaku juga untuk bentuk tabel tanggal. Kelompok mengikuti status penugasan pegawai **saat laporan ditarik**. Judul laporan mencantumkan kelompoknya dan penarikan tercatat di Riwayat aktivitas.
+
+**Impor CSV (DUK)**: kolom *Penugasan* menerima salah satu: Out, BKO Keluar, Didetasir, In, BKO Masuk, Titipan, DPB (huruf besar/kecil bebas; Detaser dan BKO lama tetap diterima).
+
+Pemasangan: tempel ulang `Kode.gs`, `Modul_Master.gs`, `Modul_Piket.gs`, `Modul_Impor.gs`, `Modul_Laporan.gs`, `Modul_Matriks.gs`, `Modul_RekapUangMakan.gs`, lalu Terapkan ▸ Kelola penerapan ▸ pensil ▸ Versi baru ▸ Terapkan. Frontend (zip) wajib di-push ke GitHub:
+`git add .` · `git commit -m "Pegawai Keluar dan Masuk"` · `git push`

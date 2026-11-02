@@ -153,7 +153,7 @@ function unitAnggota(id, mode) {
 // ── Anggota regu (banyak sekaligus) dan pengaturan regu ──
 function reguAnggota(nama) {
   const aktif = {}; S.rg.anggota.filter(a => !a.Sampai).forEach(a => aktif[a.PegawaiID] = a.Regu);
-  const D = S.pgm.map(p => pmItem(p, p.Penugasan ? { Kunci: true, Info: p.Penugasan + ' (tidak dapat masuk regu)' } : aktif[p.ID] === nama ? { Kunci: true, Info: 'sudah anggota' } : aktif[p.ID] ? { Info: 'pindah dari ' + aktif[p.ID] } : {}));
+  const D = S.pgm.map(p => pmItem(p, p.Libat === false ? { Kunci: true, Info: p.Penugasan + ' (tidak dapat masuk regu)' } : aktif[p.ID] === nama ? { Kunci: true, Info: 'sudah anggota' } : aktif[p.ID] ? { Info: 'pindah dari ' + aktif[p.ID] } : {}));
   S.reguT = nama; pmMulai(D, ids => call('aturAnggotaMassal', { Regu: nama, PegawaiIDs: ids, Tanggal: $('pmt').value, Peran: $('pmp').value }));
   openModal('Tambah anggota ' + nama, `<p class="muted small">Centang pegawai yang akan masuk ke ${esc(nama)}. Yang masih berada di regu lain otomatis dipindahkan mulai tanggal berlaku.</p>${pmHtml(`<div class="row g-2 align-items-end mt-2"><div class="col-6 col-md-4"><label class="lbl" for="pmt">Berlaku mulai</label><input id="pmt" type="date" class="form-control" value="${today()}" required></div><div class="col-6 col-md-3"><label class="lbl" for="pmp">Jabatan</label><select id="pmp" class="form-select">${S.rg.peran.filter(p => p.Aktif).map(p => `<option ${p.Nama === S.rg.peranBawaan ? 'selected' : ''}>${esc(p.Nama)}</option>`).join('')}</select></div><div class="col-12 col-md-5 text-end"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button id="pmGo" class="btn-x" onclick="pmEksekusi(this)" disabled>Masukkan<b></b></button></div></div>`)}`);
   pmGambar();

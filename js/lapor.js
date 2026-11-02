@@ -7,6 +7,7 @@ RENDER.laporan = async () => {
 function ubahLap() {
   const j = S.lm.jenis.find(x => x.k === $('lj').value), t = today();
   $('lr').innerHTML = j.param === 'rentang' || j.param === 'makan' ? `<div><label class="lbl" for="l1">Dari tanggal</label><input id="l1" type="date" class="form-control" value="${t.slice(0, 8)}01" required></div><div><label class="lbl" for="l2">Sampai tanggal</label><input id="l2" type="date" class="form-control" value="${t}" required></div>` : j.param === 'periode' ? (S.lm.periode.length ? `<div><label class="lbl" for="lp">Periode penilaian</label><select id="lp" class="form-select">${S.lm.periode.map(p => `<option value="${p.ID}">${esc(p.Nama)}</option>`).join('')}</select></div>` : '<span class="muted align-self-end">Belum ada periode penilaian.</span>') : '';
+  if (j.kelompok) $('lr').insertAdjacentHTML('beforeend', `<div><label class="lbl" for="lkp">Kelompok pegawai</label><select id="lkp" class="form-select"><option value="">Semua pegawai</option><option value="induk">Pegawai induk saja</option><option value="masuk">Pegawai Masuk saja (In, BKO Masuk, Titipan, DPB)</option></select></div>`);
   if (j.matriks) $('lr').insertAdjacentHTML('beforeend', `<div><label class="lbl" for="lb">Bentuk laporan</label><select id="lb" class="form-select"><option value="matriks">Tabel tanggal (No, Nama, tanggal 1–31)</option><option value="ringkas">Rekap ringkas (angka)</option></select></div>`);
   if (j.param === 'makan') { $('lr').insertAdjacentHTML('beforeend', `<div><label class="lbl" for="lk">Lingkup</label><select id="lk" class="form-select" onchange="ubahLingkup()"><option value="semua">Seluruh pegawai (staf dan rupam)</option><option value="staf">Seluruh staf</option><option value="rupam">Seluruh rupam</option><option value="regu">Satu rupam</option><option value="orang">Per pegawai</option><option value="unit">Per unit kerja / bidang</option></select></div><div id="lk2"></div>`); ubahLingkup(); }
 }
@@ -17,7 +18,7 @@ function ubahLingkup() {
 async function tarikLaporan(e) {
   e.preventDefault(); const b = e.target.querySelector('[type=submit]'); busy(b, true);
   const j = $('lj').value, p = { Dari: $('l1') && $('l1').value, Sampai: $('l2') && $('l2').value, PeriodeID: $('lp') && $('lp').value };
-  if ($('lb') && $('lb').value === 'matriks') p.Bentuk = 'matriks';
+  if ($('lb') && $('lb').value === 'matriks') p.Bentuk = 'matriks'; if ($('lkp')) p.Kelompok = $('lkp').value;
   if ($('lk')) { p.Lingkup = $('lk').value; p.Regu = $('lg') && $('lg').value; p.PegawaiID = $('lo') && $('lo').value; p.Unit = $('lu') && $('lu').value; }
   const r = await call('getLaporan', j, p); busy(b, false); if (!r) return; const L = S.lap = r.data; await muatKop();
   const pg = $('pgMx'); if (pg) pg.remove(); if (L.matriks) { const st = document.createElement('style'); st.id = 'pgMx'; st.textContent = '@media print{@page{size:330mm 215mm;margin:8mm}}'; document.head.appendChild(st); } // tabel tanggal dicetak lanskap (F4)
