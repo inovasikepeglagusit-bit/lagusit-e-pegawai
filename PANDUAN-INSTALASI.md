@@ -423,7 +423,7 @@ Menu **Nomor Surat** kini memuat **Pustaka Klasifikasi Arsip**: 447 kode baku da
 **Super Admin**
 1. Tab **Pustaka Klasifikasi**: jelajah per masalah, cari kata kunci, centang beberapa kode lalu **Pasang sebagai indeks**. Kode terpasang muncul di pilihan pengambilan nomor dan di tab *Indeks Surat* dengan tanda **Baku** (kode yang tidak ada di pustaka bertanda **Kustom**).
 2. Tab **Penomoran** (baru):
-   - **Kode unit kerja**: diisi persis sesuai kode unit kantor Anda. Sistem **tidak menebak** kode ini karena lampiran Kepmen tidak memuat kode untuk UPT (hanya kode Kanwil, mis. `WP.2` = Kanwil Ditjenpas Sumatera Utara). Tanyakan ke Kanwil/bagian umum bila belum ada ketetapan.
+   - **Kode unit kerja** kini disusun dari tiga pilihan: **Kantor Wilayah** (WP.1–WP.34 menurut Kepmen, mis. WP.2 = Sumatera Utara), **Unit Utama** (PAS = Ditjen Pemasyarakatan, dst.), dan **Nomor/kode UPT** yang Anda isi sendiri sesuai ketetapan Kanwil (lampiran Kepmen tidak memuat kode UPT, jadi sistem tidak menebaknya). Hasilnya otomatis, mis. WP.2 + PAS + 11 menjadi `WP2.PAS.11` (penanda `{UNIT}`). Untuk bentuk `WP2.PAS.11-SA.04.01.123` pilih format `{UNIT}-{INDEKS}.{NO}` (tersedia sebagai contoh format).
    - **Hanya kode baku** (bawaan: aktif): indeks baru wajib ada di pustaka sehingga tidak ada salah ketik kode. Indeks kustom lama tidak dihapus dan tetap dapat dipakai.
    - **Pakai langsung dari pustaka** (bawaan: aktif): pengambil nomor boleh memilih kode pustaka tanpa menunggu Super Admin memasangnya.
    - Penanda format baru: `{UNIT}` kode unit, `{MASALAH}` (mis. UM), `{PRIMER}` (mis. UM.01), selain `{INDEKS}` (kode lengkap, mis. UM.01.01), `{NO}`, `{BLN}`, `{BLR}`, `{THN}`, `{THN2}`, `{TGL}`, `{NAMA}`.
