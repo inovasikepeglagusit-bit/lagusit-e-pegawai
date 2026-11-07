@@ -478,3 +478,5 @@ button.kchip{cursor:pointer;font-family:inherit;color:inherit}button.kchip:hover
 
 .tgl-lg{display:inline-block;padding:1px 8px;border-radius:10px;margin:2px 4px 2px 0;font-size:11px;border:1px solid currentColor;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 @media print{.tgl td{background:transparent!important}.tgl td[style]{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+.puh{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;margin-top:6px;overflow:hidden}.puh:empty{display:none}.pu-i{text-align:left;background:var(--card,var(--bg));border:0;border-bottom:1px solid var(--line);padding:8px 12px;font:inherit;color:inherit;cursor:pointer}.pu-i:last-child{border-bottom:0}.pu-i:hover,.pu-i:focus{background:color-mix(in srgb,var(--p,#2563eb) 8%,transparent);outline:0}

@@ -411,3 +411,25 @@ Data lama bernilai *Detaser* dibaca otomatis sebagai **Didetasir** dan *BKO* seb
 
 Pemasangan: tempel ulang `Kode.gs`, `Modul_Master.gs`, `Modul_Piket.gs`, `Modul_Impor.gs`, `Modul_Laporan.gs`, `Modul_Matriks.gs`, `Modul_RekapUangMakan.gs`, lalu Terapkan ▸ Kelola penerapan ▸ pensil ▸ Versi baru ▸ Terapkan. Frontend (zip) wajib di-push ke GitHub:
 `git add .` · `git commit -m "Pegawai Keluar dan Masuk"` · `git push`
+
+---
+
+## Nomor Surat memakai Pustaka Klasifikasi Arsip (Kepmen M.IP-06.OT.01.01 Tahun 2024)
+
+Menu **Nomor Surat** kini memuat **Pustaka Klasifikasi Arsip**: 447 kode baku dari lampiran Kepmen Imigrasi dan Pemasyarakatan Nomor M.IP-06.OT.01.01 Tahun 2024 (berlaku 18 Desember 2024; Surat Sekjen SEK-UM.01.01-6), terdiri dari 13 kode masalah (PR, KU, OT, SA, PB, HK, UM, PW, TI, PK, GR, SM, LT), kode primer (mis. `UM.01`), dan kode sekunder (mis. `UM.01.01`). Data pustaka baku dan tidak dapat diubah dari aplikasi; yang diatur Super Admin hanyalah kode mana yang dipakai kantor.
+
+**Mengambil nomor (pengambil nomor)**: pada form *Ambil nomor surat* ada kotak **Cari kode klasifikasi dengan kata kunci**. Ketik kata kunci (mis. `kenaikan pangkat`, `cuti`, `rapat`, `registrasi narapidana`) atau kodenya (`UM.01.01`, `um 01 01`, `um0101`, `PK.01`), pilih hasilnya, isi perihal, lalu ambil nomor. Kode yang belum pernah dipakai otomatis terdaftar sebagai indeks (bila Super Admin mengizinkan). Hanya kode **sekunder** (atau primer yang tidak punya sekunder) yang dapat dipakai pada surat; kode masalah dan primer induk ditolak sistem.
+
+**Super Admin**
+1. Tab **Pustaka Klasifikasi**: jelajah per masalah, cari kata kunci, centang beberapa kode lalu **Pasang sebagai indeks**. Kode terpasang muncul di pilihan pengambilan nomor dan di tab *Indeks Surat* dengan tanda **Baku** (kode yang tidak ada di pustaka bertanda **Kustom**).
+2. Tab **Penomoran** (baru):
+   - **Kode unit kerja**: diisi persis sesuai kode unit kantor Anda. Sistem **tidak menebak** kode ini karena lampiran Kepmen tidak memuat kode untuk UPT (hanya kode Kanwil, mis. `WP.2` = Kanwil Ditjenpas Sumatera Utara). Tanyakan ke Kanwil/bagian umum bila belum ada ketetapan.
+   - **Hanya kode baku** (bawaan: aktif): indeks baru wajib ada di pustaka sehingga tidak ada salah ketik kode. Indeks kustom lama tidak dihapus dan tetap dapat dipakai.
+   - **Pakai langsung dari pustaka** (bawaan: aktif): pengambil nomor boleh memilih kode pustaka tanpa menunggu Super Admin memasangnya.
+   - Penanda format baru: `{UNIT}` kode unit, `{MASALAH}` (mis. UM), `{PRIMER}` (mis. UM.01), selain `{INDEKS}` (kode lengkap, mis. UM.01.01), `{NO}`, `{BLN}`, `{BLR}`, `{THN}`, `{THN2}`, `{TGL}`, `{NAMA}`.
+   - Contoh format sesuai pola surat Sekjen (`SEK-UM.01.01-6`): `{UNIT}-{INDEKS}-{NO}`. Format yang sedang berjalan **tidak berubah** sampai Anda menyimpannya.
+3. Sistem menolak: format tanpa `{NO}`, penanda tak dikenal, `{UNIT}` bila kode unit kosong, kode unit bertanda baca terlarang, dan kode yang tidak ada di pustaka (saat mode kode baku aktif).
+
+Catatan dokumen sumber: kode `GR.01.02` tercetak dua kali (Dokumen Perjalanan RI dan Blangko Paspor); sistem hanya menyediakan yang pertama agar nomor tidak rancu. Kode `PW.06.04` memang tidak ada di dokumen. Kesalahan ketik jelas pada nama (mis. "Registasi") diperbaiki agar pencarian tepat; kodenya tidak diubah.
+
+Pemasangan: tempel ulang `Kode.gs`, `Modul_Surat.gs`, dan file baru **`Modul_Klasifikasi.gs`** (buat file baru di Apps Script), lalu Terapkan ▸ Kelola penerapan ▸ pensil ▸ Versi baru ▸ Terapkan. Frontend: `git add .` · `git commit -m "Pustaka klasifikasi arsip"` · `git push`.
