@@ -65,7 +65,7 @@ function dkEditor() {
 function dkKumpul() {
   const d = S.dk, I = d.isi, v = id => ($(id) ? $(id).value : ''), nota = d.jenis === 'Nota Dinas';
   d.judul = v('dkt').trim(); d.tanggal = v('dkg') || d.tanggal; if (!d.nomor) d.indeks = v('dki'); d.agenda = nota ? v('dka') : '';
-  if (d.jenis === 'Surat') { I.html = S.dkr ? S.dkr.get() : ''; Object.assign(I, { kop: $('dskop').checked, kertas: v('dskw'), margin: v('dsmg'), font: v('dsfn'), ukuran: Number(v('dsuk')) }); return; }
+  if (d.jenis === 'Surat') { I.html = S.dkr ? S.dkr.get() : ''; Object.assign(I, { kop: $('dskop').checked, kopHtml: $('dskc').checked && S.dkk ? S.dkk.get() : '', kertas: v('dskw'), margin: v('dsmg'), font: v('dsfn'), ukuran: Number(v('dsuk')) }); return; }
   I.tembusan = dkBaris(v('dkm'));
   if (nota) { I.kepada = dkBaris(v('dkk')); I.dari = v('dkd').trim(); I.hal = v('dkh').trim(); I.isiHtml = S.dkr ? S.dkr.get() : (I.isiHtml || ''); I.paragraf = []; I.penutup = ''; I.judulLampiran = v('dkjl').trim(); }
   else { I.tentang = v('dkta').trim(); I.menimbang = dkBaris(v('dkmb')); I.mengingat = dkBaris(v('dkmg')); I.menetapkan = v('dkme').trim(); I.tempat = v('dktm').trim(); I.tanggalSK = v('dktk'); }
@@ -200,15 +200,23 @@ const DK_TOKEN_SURAT = ['nomor', 'tanggal', 'tahun'];
 function dkMountNota() { const I = S.dk.isi; const awal = I.isiHtml || ((I.paragraf || []).map(p => '<p style="text-align:justify;text-indent:28px">' + esc(p).replace(/\n/g, '<br>') + '</p>').join('') + (I.penutup ? '<p style="text-align:justify;text-indent:28px">' + esc(I.penutup) + '</p>' : '')); S.dkr = RTE.mount('dkrte', { html: awal, minTinggi: '300px', tinggi: '70vh' }); }
 function dkFormSurat() {
   const I = S.dk.isi, sel = (id, L, v) => `<select id="${id}" class="form-select">${L.map(o => `<option ${String(v) === String(o) ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
-  return `<div class="col-12"><div class="card-x" style="padding:10px"><div class="row g-2 align-items-end"><div class="col-6 col-md-2"><label class="lbl small" for="dskw">Kertas</label>${sel('dskw', ['A4', 'F4'], I.kertas)}</div><div class="col-6 col-md-2"><label class="lbl small" for="dsmg">Margin</label><select id="dsmg" class="form-select">${[['normal', 'Normal'], ['sempit', 'Sempit'], ['lebar', 'Lebar']].map(o => `<option value="${o[0]}" ${I.margin === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></div><div class="col-6 col-md-3"><label class="lbl small" for="dsfn">Font dasar</label>${sel('dsfn', ['Times New Roman', 'Arial', 'Calibri', 'Cambria', 'Courier New', 'Bookman Old Style'], I.font)}</div><div class="col-6 col-md-2"><label class="lbl small" for="dsuk">Ukuran (pt)</label>${sel('dsuk', [10, 11, 12, 13, 14], I.ukuran)}</div><div class="col-12 col-md-3"><label class="chk"><input type="checkbox" id="dskop" ${I.kop !== false ? 'checked' : ''}> Cetak dengan kop surat</label></div></div></div></div>
+  return `<div class="col-12"><div class="card-x" style="padding:10px"><div class="row g-2 align-items-end"><div class="col-6 col-md-2"><label class="lbl small" for="dskw">Kertas</label>${sel('dskw', ['A4', 'F4'], I.kertas)}</div><div class="col-6 col-md-2"><label class="lbl small" for="dsmg">Margin</label><select id="dsmg" class="form-select">${[['normal', 'Normal'], ['sempit', 'Sempit'], ['lebar', 'Lebar']].map(o => `<option value="${o[0]}" ${I.margin === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></div><div class="col-6 col-md-3"><label class="lbl small" for="dsfn">Font dasar</label>${sel('dsfn', ['Times New Roman', 'Arial', 'Calibri', 'Cambria', 'Courier New', 'Bookman Old Style'], I.font)}</div><div class="col-6 col-md-2"><label class="lbl small" for="dsuk">Ukuran (pt)</label>${sel('dsuk', [10, 11, 12, 13, 14], I.ukuran)}</div><div class="col-12 col-md-3"><label class="chk"><input type="checkbox" id="dskop" ${I.kop !== false ? 'checked' : ''}> Cetak dengan kop surat resmi</label></div></div>
+  <div class="mt-2"><label class="chk"><input type="checkbox" id="dskc" ${I.kopHtml ? 'checked' : ''} onchange="dkKopToggle()"> Pakai kop buatan sendiri untuk surat ini (menggantikan kop resmi)</label></div>
+  <div id="dkkw" style="display:${I.kopHtml ? 'block' : 'none'}" class="mt-2"><div class="d-flex flex-wrap gap-2 mb-1"><button type="button" class="btn btn-sm btn-outline-secondary" onclick="dkKopIsi()"><i class="bi bi-card-heading"></i> Isi dari kop resmi</button><span class="muted small align-self-center">Logo tidak dapat disisipkan di sini; gunakan teks dan garis pemisah.</span></div><div id="dkrk"></div></div></div></div>
   <div class="col-12"><div class="lbl">Isi surat (editor seperti Word) — penanda <code>{nomor}</code>, <code>{tanggal}</code>, <code>{tahun}</code> terisi saat dicetak; tanda tangan/QR otomatis di akhir surat</div><div id="dkrte"></div></div>`;
 }
-function dkMountSurat() { S.dkr = RTE.mount('dkrte', { html: S.dk.isi.html || '', token: DK_TOKEN_SURAT, minTinggi: '420px', tinggi: '75vh' }); }
+function dkMountSurat() { S.dkr = RTE.mount('dkrte', { html: S.dk.isi.html || '', token: DK_TOKEN_SURAT, minTinggi: '420px', tinggi: '75vh' }); S.dkk = RTE.mount('dkrk', { html: S.dk.isi.kopHtml || '', minTinggi: '110px', tinggi: '30vh' }); }
+function dkKopToggle() { $('dkkw').style.display = $('dskc').checked ? 'block' : 'none'; if ($('dskc').checked && S.dkk && !S.dkk.get().replace(/<[^>]*>|&nbsp;|\s/g, '')) dkKopIsi(); }
+async function dkKopIsi() {
+  const k = await muatKop(); if (!k || !k.cfg) return; const c = k.cfg;
+  const h = (c.baris || []).filter(b => b.teks).map(b => `<p style="text-align:center;line-height:1.2"><span style="font-size:${Math.min(Math.max(Math.round(b.ukuran || 12), 8), 24)}pt">${b.tebal ? '<b>' : ''}${esc(b.teks)}${b.tebal ? '</b>' : ''}</span></p>`).join('') + '<hr>';
+  S.dkk.set(h);
+}
 const DK_KERTAS = { A4: '210mm 297mm', F4: '215mm 330mm' }, DK_MARGIN = { normal: '18mm 20mm', sempit: '12mm 15mm', lebar: '25mm 30mm' };
 function dkSurat(x, c) {
   const I = x.Isi, tgl = dkTgl(x.Tanggal), thn = (x.Tanggal || today()).slice(0, 4), no = x.Nomor || '…………………………';
   const h = RTE.bersih(I.html).replace(/\{(nomor|tanggal|tahun)\}/g, (m, k) => esc(k === 'nomor' ? no : k === 'tanggal' ? tgl : thn));
-  return `<style>@page{size:${DK_KERTAS[I.kertas] || DK_KERTAS.A4};margin:${DK_MARGIN[I.margin] || DK_MARGIN.normal}}${I.kop === false ? '.kopx{display:none}' : ''}.rt{font-family:'${I.font || 'Times New Roman'}',serif;font-size:${I.ukuran || 12}pt}</style>${RT_CSS}<div class="rt">${h}</div>${c.ttd}`;
+  return `<style>@page{size:${DK_KERTAS[I.kertas] || DK_KERTAS.A4};margin:${DK_MARGIN[I.margin] || DK_MARGIN.normal}}${I.kop === false || I.kopHtml ? '.kopx{display:none}' : ''}.rt{font-family:'${I.font || 'Times New Roman'}',serif;font-size:${I.ukuran || 12}pt}</style>${RT_CSS}${I.kopHtml ? `<div class="rt" style="margin-bottom:10px">${RTE.bersih(I.kopHtml)}</div>` : ''}<div class="rt">${h}</div>${c.ttd}`;
 }
 // ── Template: dipakai ulang, dibagikan, atau dihapus ──
 function dkBarTpl() {
