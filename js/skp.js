@@ -61,7 +61,7 @@ function skpUraianForm(id, jabatan) {
   <div class="col-12"><div class="lbl">A. Kinerja utama</div><div id="uut"></div><button type="button" class="btn-o sm mt-1" onclick="skpUBaris('utama')"><i class="bi bi-plus"></i> Baris</button></div>
   <div class="col-12"><div class="lbl">B. Kinerja tambahan</div><div id="uta"></div><button type="button" class="btn-o sm mt-1" onclick="skpUBaris('tambahan')"><i class="bi bi-plus"></i> Baris</button></div>
   ${[['uek', 'Ekspektasi khusus pimpinan (perilaku kerja)', 'ekspektasi'], ['udu', 'Dukungan sumber daya', 'dukungan'], ['usk', 'Skema pertanggungjawaban', 'skema'], ['uko', 'Konsekuensi', 'konsekuensi']].map(x => `<div class="col-md-6"><label class="lbl" for="${x[0]}">${x[1]}</label><textarea id="${x[0]}" class="form-control" rows="3">${esc(S.sue.isi[x[2]] || '')}</textarea></div>`).join('')}
-  <div class="col-12"><button class="btn-x" id="usb"><i class="bi bi-save"></i> Simpan uraian</button></div></div></form>`;
+  <div class="col-12 d-flex gap-2"><button class="btn-x" id="usb"><i class="bi bi-save"></i> Simpan uraian</button><button type="button" class="btn-o" onclick="skpPraUraian()"><i class="bi bi-eye"></i> Pratinjau SKP</button></div></div></form>`;
   skpURender();
 }
 function skpURender() { ['utama', 'tambahan'].forEach(k => { $(k === 'utama' ? 'uut' : 'uta').innerHTML = S.sue.isi[k].map((r, i) => `<div class="card-x mb-2"><div class="row g-2">${skpKol.map(c => `<div class="${c[0] === 'target' || c[0] === 'aspek' ? 'col-md-6' : 'col-12'}"><label class="lbl small">${c[1]}</label><textarea class="form-control form-control-sm" rows="${c[0] === 'aspek' || c[0] === 'target' ? 1 : 2}" maxlength="600" oninput="S.sue.isi['${k}'][${i}]['${c[0]}']=this.value">${esc(r[c[0]] || '')}</textarea></div>`).join('')}</div><button type="button" class="btn-o sm mt-2" onclick="skpUHapus('${k}',${i})"><i class="bi bi-x"></i> Hapus baris</button></div>`).join('') || '<div class="muted small">Belum ada baris.</div>'; }); }
@@ -82,7 +82,7 @@ async function skpBuka(id) {
   if (x.bolehHasil) btn.push('<button class="btn-x" onclick="skpVerifikasi()"><i class="bi bi-check2-square"></i> Verifikasi</button>');
   if (x.bolehKembalikan) btn.push('<button class="btn-o" onclick="skpKembalikan()"><i class="bi bi-arrow-counterclockwise"></i> Kembalikan</button>');
   if (x.bolehTte) btn.push('<button class="btn-x" onclick="skpTte()"><i class="bi bi-patch-check"></i> Ajukan pengesahan elektronik</button>');
-  btn.push('<button class="btn-o" onclick="skpCetak()"><i class="bi bi-printer"></i> Cetak</button>'); if (x.TteStatus === 'Disahkan' || x.Status === 'Disahkan') btn.push(`<button class="btn-o" onclick="tteCetak('${x.TteID}')"><i class="bi bi-patch-check"></i> Cetak versi sah</button>`);
+  btn.push('<button class="btn-o" onclick="skpPratinjau()"><i class="bi bi-eye"></i> Pratinjau</button>'); btn.push('<button class="btn-o" onclick="skpCetak()"><i class="bi bi-printer"></i> Cetak</button>'); if (x.TteStatus === 'Disahkan' || x.Status === 'Disahkan') btn.push(`<button class="btn-o" onclick="tteCetak('${x.TteID}')"><i class="bi bi-patch-check"></i> Cetak versi sah</button>`);
   if (x.bolehHapus) btn.push('<button class="btn-o" onclick="skpHapus()"><i class="bi bi-trash"></i> Hapus</button>');
   $('app-container').innerHTML = `${skpTab()}<section class="card-x mb-3"><div class="d-flex flex-wrap gap-2 align-items-center"><div class="grow"><h3 class="jd mb-1">SKP Triwulan ${x.Triwulan} · ${x.Tahun}</h3><div class="small"><b>${esc(x.Pegawai.Nama)}</b> · ${esc(x.Pegawai.Jabatan)} <span class="badge-x ${SKP_BADGE[x.Status] || 'wait'}">${esc(x.Status)}</span></div><div class="muted small">Pejabat Penilai: ${esc(x.PenilaiNama)}</div></div><button class="btn-o" onclick="skpHalaman()"><i class="bi bi-arrow-left"></i> Kembali</button></div>
   ${I.dikembalikan && x.Dasar === 'Draf' ? `<div class="alert alert-warning mt-3 mb-0 small"><b>Dikembalikan oleh ${esc(I.dikembalikan.oleh)}:</b> ${esc(I.dikembalikan.catatan)}</div>` : ''}</section>
@@ -119,6 +119,12 @@ function skpDokumen(x, c) {
   ${I.umpanBalik ? `<p style="margin-top:6px"><b>Umpan balik:</b><br>${skpH(I.umpanBalik)}</p>` : ''}
   ${H.predikat ? `<h2 style="margin-top:14px">HASIL EVALUASI KINERJA</h2><table><tbody>${[['Rating hasil kerja', H.ratingHasil], ['Rating perilaku kerja', H.ratingPerilaku], ['Predikat kinerja', H.predikat], ['Capaian kinerja organisasi', H.capaianOrganisasi], ['Pola distribusi', H.pola], ['Catatan / rekomendasi', H.catatan]].filter(r => r[1]).map(r => `<tr><td ${L} style="width:34%"><b>${r[0]}</b></td><td ${L}>${skpH(r[1])}</td></tr>`).join('')}</tbody></table>` : ''}
   ${c.ttd}`;
+}
+function skpPratinjau() { const x = JSON.parse(JSON.stringify(S.sk)); document.querySelectorAll('.skr').forEach(t => { x.Isi[t.dataset.k][Number(t.dataset.i)].realisasi = t.value; }); if ($('skub')) x.Isi.umpanBalik = $('skub').value; pratinjauDok('SKP ' + x.Pegawai.Nama + ' TW' + x.Triwulan + ' ' + x.Tahun, skpDokumen(x, { ttd: PRA_TTD }), false); }
+function skpPraUraian() {
+  skpUKumpul(); const I = S.sue.isi, ph = '(diisi saat penarikan)';
+  const x = { Triwulan: '…', Tahun: '…', Pegawai: { Nama: '(nama pegawai)', NIP: '(NIP)', Pangkat: '(pangkat/golongan)', Jabatan: S.sue.jabatan || '(jabatan)', Unit: '' }, PenilaiData: { Nama: '(Pejabat Penilai)', NIP: '(NIP)', Pangkat: '', Jabatan: '' }, perilaku: S.sku.perilaku, Isi: { utama: I.utama.map(r => Object.assign({}, r, { realisasi: ph })), tambahan: I.tambahan.map(r => Object.assign({}, r, { realisasi: ph })), ekspektasi: I.ekspektasi, dukungan: I.dukungan, skema: I.skema, konsekuensi: I.konsekuensi, umpanBalik: '', hasil: {} } };
+  pratinjauDok('Contoh SKP jabatan ' + (S.sue.jabatan || ''), skpDokumen(x, { ttd: PRA_TTD }), false);
 }
 function skpCetak() { cetakForm('SKP', 'skpCetakGo'); }
 async function skpCetakGo(e) {

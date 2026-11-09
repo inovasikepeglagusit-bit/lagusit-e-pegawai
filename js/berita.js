@@ -30,6 +30,7 @@ function brPra(k) {
   Object.assign(S.bf, { dari: P[0], sampai: P[1] }); RENDER.berita();
 }
 function brForm(i) {
+  if (i === undefined) return brFormBanyak();
   const x = i === undefined ? {} : S.bd.daftar[i], d = S.bd;
   openModal(x.ID ? 'Ubah tautan' : 'Tambah tautan', `<form onsubmit="brSimpan(event,'${x.ID || ''}')"><div class="row g-3">
   <div class="col-md-4"><label class="lbl" for="bft">Tanggal publikasi *</label><input id="bft" type="date" class="form-control" required value="${esc(x.Tanggal || today())}"></div>
@@ -40,6 +41,36 @@ function brForm(i) {
   <div class="col-md-6"><label class="lbl" for="bfk">Kegiatan (opsional)</label><input id="bfk" class="form-control" list="bfkl" maxlength="120" value="${esc(x.Kegiatan || '')}" placeholder="Dipakai untuk mengelompokkan laporan"><datalist id="bfkl">${d.kegiatan.map(k => `<option value="${esc(k)}">`).join('')}</datalist></div>
   <div class="col-md-6"><label class="lbl" for="bfc">Catatan (opsional)</label><input id="bfc" class="form-control" maxlength="300" value="${esc(x.Catatan || '')}"></div></div>
   <div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan</button></div></form>`); brDeteksi();
+}
+// ── Tambah banyak tautan sekaligus (beberapa berita / platform dalam satu kali simpan) ──
+function brFormBanyak() {
+  const d = S.bd;
+  openModal('Tambah tautan (bisa banyak sekaligus)', `<form onsubmit="brSimpanBanyak(event)"><div class="row g-3">
+  <div class="col-md-4"><label class="lbl" for="bmt">Tanggal publikasi *</label><input id="bmt" type="date" class="form-control" required value="${esc(today())}"></div>
+  <div class="col-md-8"><label class="lbl" for="bmk">Kegiatan (berlaku untuk semua baris, opsional)</label><input id="bmk" class="form-control" list="bmkl" maxlength="120" placeholder="Dipakai untuk mengelompokkan laporan"><datalist id="bmkl">${d.kegiatan.map(k => `<option value="${esc(k)}">`).join('')}</datalist></div>
+  <div class="col-12"><label class="lbl" for="bmp">Tempel banyak tautan sekaligus (satu per baris)</label><div class="d-flex gap-2"><textarea id="bmp" class="form-control" rows="2" placeholder="https://www.instagram.com/p/...&#10;https://www.facebook.com/...&#10;https://youtu.be/..."></textarea><button type="button" class="btn-o align-self-start" onclick="brTempel()"><i class="bi bi-plus-circle"></i> Jadikan baris</button></div><div class="muted small mt-1">Platform dikenali otomatis dari tiap tautan. Judul diisi per baris.</div></div>
+  <div class="col-12"><div id="bmr"></div><div class="d-flex flex-wrap gap-2 mt-2"><button type="button" class="btn-o sm" onclick="brBaris()"><i class="bi bi-plus"></i> Tambah baris tautan</button><span class="muted small align-self-center" id="bmc"></span></div></div>
+  <div class="col-12"><label class="lbl" for="bmc2">Catatan (berlaku untuk semua baris, opsional)</label><input id="bmc2" class="form-control" maxlength="300"></div></div>
+  <div class="text-end mt-3"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button class="btn-x" type="submit">Simpan semua</button></div></form>`); brBaris(); brBaris();
+}
+function brBaris(url) {
+  const d = document.createElement('div'); d.className = 'brb card-x mb-2'; d.style.padding = '10px';
+  d.innerHTML = `<div class="row g-2"><div class="col-md-7"><input class="form-control brbu" type="url" maxlength="500" placeholder="Tautan https://..." aria-label="Tautan" value="${esc(url || '')}" oninput="brDetBaris(this)"></div><div class="col-md-3"><select class="form-select brbp" aria-label="Platform"><option value="">Otomatis</option>${S.bd.platform.map(p => `<option>${p}</option>`).join('')}</select></div><div class="col-md-2 d-flex gap-1 align-items-center"><span class="small brbd grow"></span><button type="button" class="btn-o sm" aria-label="Hapus baris" onclick="this.closest('.brb').remove();brHitung()"><i class="bi bi-x"></i></button></div>
+  <div class="col-md-8"><input class="form-control brbj" maxlength="200" placeholder="Judul / keterangan singkat *" aria-label="Judul"></div><div class="col-md-4"><input class="form-control brba" maxlength="100" placeholder="Akun / sumber (opsional)" aria-label="Akun"></div></div>`;
+  $('bmr').appendChild(d); brDetBaris(d.querySelector('.brbu')); brHitung(); return d;
+}
+function brDetBaris(inp) { const p = brPlatform(inp.value.trim()), e = inp.closest('.brb').querySelector('.brbd'); e.innerHTML = p ? `<i class="bi ${BR_IKON[p]}"></i> ${p}` : ''; }
+function brHitung() { const n = document.querySelectorAll('.brb').length; if ($('bmc')) $('bmc').textContent = n + ' baris'; }
+function brTempel() {
+  const L = $('bmp').value.split(/\s+/).map(x => x.trim()).filter(Boolean); if (!L.length) return toast('Tempel tautan terlebih dahulu.', 'warning');
+  const kosong = [...document.querySelectorAll('.brb')].filter(b => !b.querySelector('.brbu').value.trim() && !b.querySelector('.brbj').value.trim());
+  L.forEach((u, i) => { if (kosong[i]) { kosong[i].querySelector('.brbu').value = u; brDetBaris(kosong[i].querySelector('.brbu')); } else brBaris(u); }); $('bmp').value = '';
+}
+async function brSimpanBanyak(e) {
+  e.preventDefault(); const b = e.submitter, items = [...document.querySelectorAll('.brb')].map(x => ({ URL: x.querySelector('.brbu').value.trim(), Judul: x.querySelector('.brbj').value.trim(), Platform: x.querySelector('.brbp').value, Akun: x.querySelector('.brba').value.trim() })).filter(x => x.URL || x.Judul);
+  if (!items.length) return toast('Isi sedikitnya satu tautan.', 'warning'); busy(b, true);
+  const r = await call('simpanBeritaBanyak', { Tanggal: $('bmt').value, Kegiatan: $('bmk').value.trim(), Catatan: $('bmc2').value.trim(), Items: items }); busy(b, false);
+  if (r) { closeModal(); toast(r.message); RENDER.berita(); }
 }
 function brDeteksi() { const e = $('bfd'); if (!e) return; const p = brPlatform($('bfu').value.trim()); e.innerHTML = p ? `Terdeteksi: <b><i class="bi ${BR_IKON[p]}"></i> ${p}</b>` : ''; }
 async function brSimpan(e, id) {
