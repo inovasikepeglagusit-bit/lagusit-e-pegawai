@@ -40,10 +40,11 @@ async function tteMuatPenandatangan() {
   e.innerHTML = r.data.length ? '<option value="">Pilih pejabat penandatangan...</option>' + r.data.map(p => `<option value="${esc(p.Email)}" ${p.Email === ing ? 'selected' : ''}>${esc(p.Nama)}${p.Jabatan ? ' — ' + esc(p.Jabatan) : ''}</option>`).join('') : '<option value="">Belum ada akun pejabat (Pimpinan/Atasan)</option>'; e.dataset.ok = '1';
 }
 /** Cetak biasa (kolom tanda tangan manual) atau ajukan pengesahan elektronik: dokumen dibekukan lalu menunggu pejabat di menu Pengesahan. */
-async function cetakAtauTte(c, judul, jenis, potret, isi) {
+async function cetakAtauTte(c, judul, jenis, potret, isi, opsi) {
   if (!c.tte) return cetakBuka(judul, isi, potret);
-  const r = await call('ajukanTte', { Jenis: jenis, Judul: judul, Penandatangan: c.tte, Html: isi, Potret: !!potret });
-  if (r) { toast(r.message); if (S.menu.includes('pengesahan')) { S.tf = { arah: 'keluar', status: '', cari: '' }; delete PC.pengesahan; navigateTo('pengesahan'); } }
+  opsi = opsi || {};
+  const r = await call('ajukanTte', { Jenis: jenis, Judul: judul, Penandatangan: c.tte, Html: isi, Potret: !!potret, Nomor: opsi.Nomor || '', Ref: opsi.Ref || '' });
+  if (r) { if (opsi.sesudah) await opsi.sesudah(r.data); toast(r.message); if (S.menu.includes('pengesahan')) { S.tf = { arah: 'keluar', status: '', cari: '' }; delete PC.pengesahan; navigateTo('pengesahan'); } }
 }
 
 // ── Menu Pengesahan ──
