@@ -65,7 +65,7 @@ function dkEditor() {
 function dkKumpul() {
   const d = S.dk, I = d.isi, v = id => ($(id) ? $(id).value : ''), nota = d.jenis === 'Nota Dinas';
   d.judul = v('dkt').trim(); d.tanggal = v('dkg') || d.tanggal; if (!d.nomor) d.indeks = v('dki'); d.agenda = nota ? v('dka') : '';
-  if (d.jenis === 'Surat') { I.html = S.dkr ? S.dkr.get() : ''; Object.assign(I, { kop: $('dskop').checked, kopHtml: $('dskc').checked && S.dkk ? S.dkk.get() : '', kertas: v('dskw'), margin: v('dsmg'), font: v('dsfn'), ukuran: Number(v('dsuk')) }); return; }
+  if (d.jenis === 'Surat') { I.html = S.dkr ? S.dkr.get() : ''; Object.assign(I, { kop: $('dskop').checked, kopId: $('dskid').value, kopHtml: dkKopTeks(), kertas: v('dskw'), margin: v('dsmg'), font: v('dsfn'), ukuran: Number(v('dsuk')) }); return; }
   I.tembusan = dkBaris(v('dkm'));
   if (nota) { I.kepada = dkBaris(v('dkk')); I.dari = v('dkd').trim(); I.hal = v('dkh').trim(); I.isiHtml = S.dkr ? S.dkr.get() : (I.isiHtml || ''); I.paragraf = []; I.penutup = ''; I.judulLampiran = v('dkjl').trim(); }
   else { I.tentang = v('dkta').trim(); I.menimbang = dkBaris(v('dkmb')); I.mengingat = dkBaris(v('dkmg')); I.menetapkan = v('dkme').trim(); I.tempat = v('dktm').trim(); I.tanggalSK = v('dktk'); }
@@ -137,15 +137,15 @@ async function dkPetugasSimpan(e) { e.preventDefault(); const b = $('dkpb'); bus
 const PRA_TTD = '<div class="ttd" style="border:1px dashed #888;padding:6px;margin:14px 0 0 auto;width:260px;text-align:center;font-size:10px;color:#555">[ Tempat tanda tangan / blok pengesahan elektronik ber-QR ]</div>';
 /** Menampilkan isi dokumen dalam bingkai kertas A4 (iframe tanpa skrip) lengkap dengan kop surat. */
 async function pratinjauDok(judul, isi, potret) {
-  const kop = await muatKop(); const w = potret ? 794 : 1123;
+  await muatKop(); const kopStr = kopTerpilihHtml(); const w = potret ? 794 : 1123;
   const css = `body{margin:0;background:#e5e7eb;font-family:'Times New Roman',serif;color:#000}.kertas{box-sizing:border-box;width:${w}px;max-width:100%;margin:12px auto;background:#fff;padding:${potret ? '18mm 20mm' : '12mm'};box-shadow:0 1px 6px rgba(0,0,0,.25);font-size:11px;min-height:${potret ? 1000 : 700}px}h2{text-align:center;font-size:13px;margin:6px 0 10px;line-height:1.35}table{border-collapse:collapse;width:100%}th,td{border:1px solid #000;padding:3px 4px;text-align:center;vertical-align:middle}td.l,th.l{text-align:left}th{background:#eee}.g{background:#ddd;font-weight:bold;text-align:left}.ttd{margin:14px 0 0 auto;width:260px;text-align:center}.sp{height:58px}.cat{margin-top:8px}`;
-  openModal('Pratinjau: ' + judul, `<div class="alert alert-info small py-2 mb-2"><i class="bi bi-eye"></i> Pratinjau tampilan cetak. Isinya belum bernomor resmi/disahkan bila belum diproses. Pemisah halaman tampil sebagai garis tebal.</div><iframe title="Pratinjau dokumen" sandbox style="width:100%;height:68vh;border:1px solid #ccc;border-radius:6px;background:#e5e7eb" srcdoc="${esc(`<!doctype html><html lang="id"><head><meta charset="utf-8"><style>${css}</style></head><body><div class="kertas">${kopHtml(kop)}${String(isi).replace(/<div style="page-break-before:always[^>]*>/g, m => '<hr style="border:0;border-top:4px solid #999;margin:24px -20mm">' + m)}</div></body></html>`)}"></iframe><div class="text-end mt-2"><button class="btn-o" data-bs-dismiss="modal">Tutup</button></div>`);
+  openModal('Pratinjau: ' + judul, `<div class="alert alert-info small py-2 mb-2"><i class="bi bi-eye"></i> Pratinjau tampilan cetak. Isinya belum bernomor resmi/disahkan bila belum diproses. Pemisah halaman tampil sebagai garis tebal.</div><iframe title="Pratinjau dokumen" sandbox style="width:100%;height:68vh;border:1px solid #ccc;border-radius:6px;background:#e5e7eb" srcdoc="${esc(`<!doctype html><html lang="id"><head><meta charset="utf-8"><style>${css}</style></head><body><div class="kertas">${kopStr}${String(isi).replace(/<div style="page-break-before:always[^>]*>/g, m => '<hr style="border:0;border-top:4px solid #999;margin:24px -20mm">' + m)}</div></body></html>`)}"></iframe><div class="text-end mt-2"><button class="btn-o" data-bs-dismiss="modal">Tutup</button></div>`);
   const dlg = document.querySelector('#mdl .modal-dialog'); if (dlg) { dlg.classList.add('modal-xl'); $('mdl').addEventListener('hidden.bs.modal', () => dlg.classList.remove('modal-xl'), { once: true }); }
 }
 function dkIsiDokumen(x) { return dkBangun(x, { ttd: PRA_TTD }); }
 const dkBangun = (x, c) => x.Jenis === 'SK' ? dkSK(x, c) : x.Jenis === 'Surat' ? dkSurat(x, c) : dkNota(x, c);
-function dkPratinjau() { dkKumpul(); const d = S.dk; pratinjauDok(d.jenis + (d.judul ? ' — ' + d.judul : ''), dkIsiDokumen({ Jenis: d.jenis, Isi: d.isi, Nomor: d.nomor, Tanggal: d.tanggal }), true); }
-async function dkPra(id) { const r = await call('getDokumenRinci', id); if (r) pratinjauDok(r.data.Judul, dkIsiDokumen(r.data), true); }
+function dkPratinjau() { dkKumpul(); const d = S.dk; if (d.jenis === 'Surat') { window.__kop = { pakai: d.isi.kop !== false, id: d.isi.kopId || '' }; window.__kopS = d.isi.kopHtml || ''; } pratinjauDok(d.jenis + (d.judul ? ' — ' + d.judul : ''), dkIsiDokumen({ Jenis: d.jenis, Isi: d.isi, Nomor: d.nomor, Tanggal: d.tanggal }), true); }
+async function dkPra(id) { const r = await call('getDokumenRinci', id); if (r) { dkKopSet(r.data); } if (r) pratinjauDok(r.data.Judul, dkIsiDokumen(r.data), true); }
 
 // ── Cetak / pengesahan ──
 const dkAda = (a) => Array.isArray(a) && a.length;
@@ -181,15 +181,18 @@ function dkSK(x, c) {
   });
   return h;
 }
-function dkCetak(id) {
-  const x = S.dkd.daftar.find(y => y.ID === id); if (!x) return;
-  S.dkc = id; cetakForm(x.Jenis === 'SK' ? 'SK' : x.Jenis === 'Surat' ? 'surat' : 'Nota Dinas', 'dkCetakGo');
+/** Mengatur pilihan kop sekali-pakai dari setelan surat bebas (nota dan SK memakai pilihan terakhir operator). */
+function dkKopSet(x) { window.__kopS = x.Isi.kopHtml || ''; if (x.Jenis === 'Surat') window.__kop = { pakai: x.Isi.kop !== false, id: x.Isi.kopId || '' }; }
+async function dkCetak(id) {
+  const x = S.dkd.daftar.find(y => y.ID === id); if (!x) return; let opsi;
+  if (x.Jenis === 'Surat') { const r = await call('getDokumenRinci', id); if (!r) return; const I = r.data.Isi; opsi = { pakai: I.kop !== false, id: I.kopId || '', sendiri: !!I.kopHtml }; }
+  S.dkc = id; cetakForm(x.Jenis === 'SK' ? 'SK' : x.Jenis === 'Surat' ? 'surat' : 'Nota Dinas', 'dkCetakGo', opsi);
 }
 async function dkCetakGo(e) {
   e.preventDefault(); const id = S.dkc; const c = cetakAmbil(); if (!c) return; const r = await call('getDokumenRinci', id); if (!r) return; const x = r.data;
   if (c.tte && !x.Nomor) return toast('Ambil nomor surat terlebih dahulu sebelum diajukan untuk disahkan.', 'warning');
   if (c.tte && x.Terkunci) return toast('Dokumen ini sudah diajukan atau disahkan.', 'warning');
-  closeModal(); const isi = dkBangun(x, c);
+  window.__kopS = x.Isi.kopHtml || ''; closeModal(); const isi = dkBangun(x, c);
   await cetakAtauTte(c, x.Judul, x.Jenis === 'SK' ? 'Surat Keputusan' : x.Jenis === 'Surat' ? 'Surat' : 'Nota Dinas', true, isi, { Nomor: x.Nomor, Ref: 'dok:' + id, sesudah: async t => { await call('kaitkanTteDokumen', id, t.ID); } });
 }
 
@@ -200,13 +203,15 @@ const DK_TOKEN_SURAT = ['nomor', 'tanggal', 'tahun'];
 function dkMountNota() { const I = S.dk.isi; const awal = I.isiHtml || ((I.paragraf || []).map(p => '<p style="text-align:justify;text-indent:28px">' + esc(p).replace(/\n/g, '<br>') + '</p>').join('') + (I.penutup ? '<p style="text-align:justify;text-indent:28px">' + esc(I.penutup) + '</p>' : '')); S.dkr = RTE.mount('dkrte', { html: awal, minTinggi: '300px', tinggi: '70vh' }); }
 function dkFormSurat() {
   const I = S.dk.isi, sel = (id, L, v) => `<select id="${id}" class="form-select">${L.map(o => `<option ${String(v) === String(o) ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
-  return `<div class="col-12"><div class="card-x" style="padding:10px"><div class="row g-2 align-items-end"><div class="col-6 col-md-2"><label class="lbl small" for="dskw">Kertas</label>${sel('dskw', ['A4', 'F4'], I.kertas)}</div><div class="col-6 col-md-2"><label class="lbl small" for="dsmg">Margin</label><select id="dsmg" class="form-select">${[['normal', 'Normal'], ['sempit', 'Sempit'], ['lebar', 'Lebar']].map(o => `<option value="${o[0]}" ${I.margin === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></div><div class="col-6 col-md-3"><label class="lbl small" for="dsfn">Font dasar</label>${sel('dsfn', ['Times New Roman', 'Arial', 'Calibri', 'Cambria', 'Courier New', 'Bookman Old Style'], I.font)}</div><div class="col-6 col-md-2"><label class="lbl small" for="dsuk">Ukuran (pt)</label>${sel('dsuk', [10, 11, 12, 13, 14], I.ukuran)}</div><div class="col-12 col-md-3"><label class="chk"><input type="checkbox" id="dskop" ${I.kop !== false ? 'checked' : ''}> Cetak dengan kop surat resmi</label></div></div>
-  <div class="mt-2"><label class="chk"><input type="checkbox" id="dskc" ${I.kopHtml ? 'checked' : ''} onchange="dkKopToggle()"> Pakai kop buatan sendiri untuk surat ini (menggantikan kop resmi)</label></div>
-  <div id="dkkw" style="display:${I.kopHtml ? 'block' : 'none'}" class="mt-2"><div class="d-flex flex-wrap gap-2 mb-1"><button type="button" class="btn btn-sm btn-outline-secondary" onclick="dkKopIsi()"><i class="bi bi-card-heading"></i> Isi dari kop resmi</button><span class="muted small align-self-center">Logo tidak dapat disisipkan di sini; gunakan teks dan garis pemisah.</span></div><div id="dkrk"></div></div></div></div>
+  return `<div class="col-12"><div class="card-x" style="padding:10px"><div class="row g-2 align-items-end"><div class="col-6 col-md-2"><label class="lbl small" for="dskw">Kertas</label>${sel('dskw', ['A4', 'F4'], I.kertas)}</div><div class="col-6 col-md-2"><label class="lbl small" for="dsmg">Margin</label><select id="dsmg" class="form-select">${[['normal', 'Normal'], ['sempit', 'Sempit'], ['lebar', 'Lebar']].map(o => `<option value="${o[0]}" ${I.margin === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></div><div class="col-6 col-md-3"><label class="lbl small" for="dsfn">Font dasar</label>${sel('dsfn', ['Times New Roman', 'Arial', 'Calibri', 'Cambria', 'Courier New', 'Bookman Old Style'], I.font)}</div><div class="col-6 col-md-2"><label class="lbl small" for="dsuk">Ukuran (pt)</label>${sel('dsuk', [10, 11, 12, 13, 14], I.ukuran)}</div><div class="col-12 col-md-3"><label class="chk"><input type="checkbox" id="dskop" ${I.kop !== false ? 'checked' : ''} onchange="dkKopToggle()"> Cetak dengan kop surat</label></div></div>
+  <div class="row g-2 mt-1"><div class="col-12 col-md-6"><label class="lbl small" for="dskid">Kop yang dipakai</label><select id="dskid" class="form-select" onchange="dkKopToggle()"><option value="" ${!I.kopId ? 'selected' : ''}>Kop utama</option>${((S.kop && S.kop.template) || []).map(t => `<option value="${esc(t.ID)}" ${I.kopId === t.ID ? 'selected' : ''}>${esc(t.Nama)}</option>`).join('')}<option value="__sendiri" ${I.kopId === '__sendiri' ? 'selected' : ''}>Kop buatan sendiri (edit seperti Word)</option></select></div></div>
+  <div id="dkkw" style="display:${I.kop !== false && I.kopId === '__sendiri' ? 'block' : 'none'}" class="mt-2"><div class="d-flex flex-wrap gap-2 mb-1"><button type="button" class="btn btn-sm btn-outline-secondary" onclick="dkKopIsi()"><i class="bi bi-card-heading"></i> Isi dari kop utama</button><span class="muted small align-self-center">Logo tidak dapat disisipkan di sini; gunakan teks dan garis pemisah. Untuk kop berlogo, buat template kop di Master Data ▸ Kop Surat.</span></div><div id="dkrk"></div></div></div></div></div>
   <div class="col-12"><div class="lbl">Isi surat (editor seperti Word) — penanda <code>{nomor}</code>, <code>{tanggal}</code>, <code>{tahun}</code> terisi saat dicetak; tanda tangan/QR otomatis di akhir surat</div><div id="dkrte"></div></div>`;
 }
 function dkMountSurat() { S.dkr = RTE.mount('dkrte', { html: S.dk.isi.html || '', token: DK_TOKEN_SURAT, minTinggi: '420px', tinggi: '75vh' }); S.dkk = RTE.mount('dkrk', { html: S.dk.isi.kopHtml || '', minTinggi: '110px', tinggi: '30vh' }); }
-function dkKopToggle() { $('dkkw').style.display = $('dskc').checked ? 'block' : 'none'; if ($('dskc').checked && S.dkk && !S.dkk.get().replace(/<[^>]*>|&nbsp;|\s/g, '')) dkKopIsi(); }
+function dkKopToggle() { const on = $('dskop').checked; $('dskid').disabled = !on; $('dkkw').style.display = on && $('dskid').value === '__sendiri' ? 'block' : 'none'; if (on && $('dskid').value === '__sendiri' && S.dkk && !dkKopTeks()) dkKopIsi(); }
+/** Isi kop buatan sendiri; kosong bila tidak ada teks sama sekali. */
+function dkKopTeks() { const h = S.dkk ? S.dkk.get() : ''; return h.replace(/<[^>]*>|&nbsp;|\s/g, '') ? h : ''; }
 async function dkKopIsi() {
   const k = await muatKop(); if (!k || !k.cfg) return; const c = k.cfg;
   const h = (c.baris || []).filter(b => b.teks).map(b => `<p style="text-align:center;line-height:1.2"><span style="font-size:${Math.min(Math.max(Math.round(b.ukuran || 12), 8), 24)}pt">${b.tebal ? '<b>' : ''}${esc(b.teks)}${b.tebal ? '</b>' : ''}</span></p>`).join('') + '<hr>';
@@ -216,7 +221,7 @@ const DK_KERTAS = { A4: '210mm 297mm', F4: '215mm 330mm' }, DK_MARGIN = { normal
 function dkSurat(x, c) {
   const I = x.Isi, tgl = dkTgl(x.Tanggal), thn = (x.Tanggal || today()).slice(0, 4), no = x.Nomor || '…………………………';
   const h = RTE.bersih(I.html).replace(/\{(nomor|tanggal|tahun)\}/g, (m, k) => esc(k === 'nomor' ? no : k === 'tanggal' ? tgl : thn));
-  return `<style>@page{size:${DK_KERTAS[I.kertas] || DK_KERTAS.A4};margin:${DK_MARGIN[I.margin] || DK_MARGIN.normal}}${I.kop === false || I.kopHtml ? '.kopx{display:none}' : ''}.rt{font-family:'${I.font || 'Times New Roman'}',serif;font-size:${I.ukuran || 12}pt}</style>${RT_CSS}${I.kopHtml ? `<div class="rt" style="margin-bottom:10px">${RTE.bersih(I.kopHtml)}</div>` : ''}<div class="rt">${h}</div>${c.ttd}`;
+  return `<style>@page{size:${DK_KERTAS[I.kertas] || DK_KERTAS.A4};margin:${DK_MARGIN[I.margin] || DK_MARGIN.normal}}font-family:'${I.font || 'Times New Roman'}',serif;font-size:${I.ukuran || 12}pt}</style>${RT_CSS}<div class="rt">${h}</div>${c.ttd}`;
 }
 // ── Template: dipakai ulang, dibagikan, atau dihapus ──
 function dkBarTpl() {

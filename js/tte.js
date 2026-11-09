@@ -26,7 +26,7 @@ async function tteCetak(id) {
   const r = await call('lihatTte', id); if (!r) return; const d = r.data;
   if (d.Status !== 'Disahkan') return toast('Hanya dokumen yang sudah disahkan yang dapat dicetak dengan QR.', 'warning');
   if (!d.Utuh) return toast('Pencetakan dihentikan: ' + d.Sebab, 'danger');
-  await cetakBuka(d.Judul + (d.Nomor ? ' ' + d.Nomor : ''), tteBersih(tteDekode(d.Isi)) + tteBlok(d), d.Potret);
+  const isi = tteBersih(tteDekode(d.Isi)); await cetakBuka(d.Judul + (d.Nomor ? ' ' + d.Nomor : ''), isi + tteBlok(d), d.Potret, { tanpaKop: /class="kopset"/.test(isi) });
 }
 
 // ── Integrasi pada formulir cetak (jadwal apel, roster piket, dst.) ──
@@ -43,7 +43,8 @@ async function tteMuatPenandatangan() {
 async function cetakAtauTte(c, judul, jenis, potret, isi, opsi) {
   if (!c.tte) return cetakBuka(judul, isi, potret);
   opsi = opsi || {};
-  const r = await call('ajukanTte', { Jenis: jenis, Judul: judul, Penandatangan: c.tte, Html: isi, Potret: !!potret, Nomor: opsi.Nomor || '', Ref: opsi.Ref || '' });
+  await muatKop(); const kopBeku = '<div class="kopset"></div>' + kopTerpilihHtml();
+  const r = await call('ajukanTte', { Jenis: jenis, Judul: judul, Penandatangan: c.tte, Html: kopBeku + isi, Potret: !!potret, Nomor: opsi.Nomor || '', Ref: opsi.Ref || '' });
   if (r) { if (opsi.sesudah) await opsi.sesudah(r.data); toast(r.message); if (S.menu.includes('pengesahan')) { S.tf = { arah: 'keluar', status: '', cari: '' }; delete PC.pengesahan; navigateTo('pengesahan'); } }
 }
 

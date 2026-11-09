@@ -72,7 +72,15 @@ async function lyTolak(id) {
   const r = await call('putuskanLayanan', id, { Aksi: 'tolak', Alasan: $('lyAl').value }); if (r) { closeModal(); toast(r.message); RENDER.layanan(); muatNotif(); }
 }
 async function lyCetak(id) {
-  const r = await call('bukaCetakLayanan', id); if (!r) return; const x = r.data;
+  await muatKop(); window.__kop = null;
+  openModal('Cetak surat', `${kopPilihUi()}<p class="muted small">Pratinjau tidak menambah hitungan cetak. Hitungan bertambah saat tombol Cetak ditekan.</p><div class="text-end"><button type="button" class="btn-o" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn-o" onclick="lyPra('${id}')"><i class="bi bi-eye"></i> Pratinjau</button> <button type="button" class="btn-x" onclick="lyCetakGo('${id}')"><i class="bi bi-printer"></i> Cetak</button></div>`);
+}
+async function lyPra(id) {
+  kopPilihBaca(); const r = await call('pratinjauCetakLayanan', id); if (!r) return; const x = r.data;
+  await new Promise(q => setTimeout(q, 450)); pratinjauDok(x.judul + ' ' + x.nomor, `<style>${LS_CSS}</style>${suratRender(x.isi, x.nilai)}`, true);
+}
+async function lyCetakGo(id) {
+  kopPilihBaca(); const r = await call('bukaCetakLayanan', id); if (!r) return; const x = r.data; closeModal();
   await cetakBuka(x.judul + ' ' + x.nomor, `<style>${LS_CSS}</style>${suratRender(x.isi, x.nilai)}`, true); RENDER.layanan();
 }
 async function lySelesai(id) { const r = await call('selesaikanLayanan', id); if (r) { toast(r.message); RENDER.layanan(); } }
