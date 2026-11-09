@@ -433,3 +433,30 @@ Menu **Nomor Surat** kini memuat **Pustaka Klasifikasi Arsip**: 447 kode baku da
 Catatan dokumen sumber: kode `GR.01.02` tercetak dua kali (Dokumen Perjalanan RI dan Blangko Paspor); sistem hanya menyediakan yang pertama agar nomor tidak rancu. Kode `PW.06.04` memang tidak ada di dokumen. Kesalahan ketik jelas pada nama (mis. "Registasi") diperbaiki agar pencarian tepat; kodenya tidak diubah.
 
 Pemasangan: tempel ulang `Kode.gs`, `Modul_Surat.gs`, dan file baru **`Modul_Klasifikasi.gs`** (buat file baru di Apps Script), lalu Terapkan ▸ Kelola penerapan ▸ pensil ▸ Versi baru ▸ Terapkan. Frontend: `git add .` · `git commit -m "Pustaka klasifikasi arsip"` · `git push`.
+
+
+## Paket 1 — Pengesahan elektronik (TTE ber-QR), cetak jadwal, dan Link Berita
+
+### Pemasangan
+Backend: tempel ulang **`Kode.gs`**, **`Modul_Kgb.gs`**, dan buat dua file baru **`Modul_Tte.gs`** dan **`Modul_Berita.gs`** di Apps Script, lalu Terapkan ▸ Kelola penerapan ▸ pensil ▸ Versi baru ▸ Terapkan. Sheet baru (`Tte_Dokumen`, `Berita_Link`) dibuat otomatis. Pertama kali ada pengajuan, sistem membuat folder **Dokumen Pengesahan** di Drive aplikasi dan sebuah rahasia server untuk segel (tidak ditampilkan).
+Frontend: ekstrak zip ke folder repo (ada berkas baru `js/qr.js`, `js/tte.js`, `js/berita.js`), lalu `git add .`, `git commit -m "Paket 1: TTE, cetak jadwal, link berita"`, `git push`.
+
+### Pengesahan elektronik (menu **Pengesahan**)
+1. Pada **Cetak jadwal petugas apel** dan **Cetak roster piket** (dan **Cetak laporan Link Berita**) kini ada pilihan: *tanda tangan manual* (seperti dulu) atau **Ajukan pengesahan elektronik**. Untuk pengesahan elektronik, pilih pejabat penandatangan (akun berperan Pimpinan, Atasan, atau Super Admin).
+2. Dokumen **dibekukan** (disimpan sebagai berkas di Drive dan dihitung sidik SHA-256-nya), lalu muncul di menu **Pengesahan** milik pejabat dengan notifikasi.
+3. Pejabat membuka dokumen, memeriksa pratinjau, lalu **Sahkan** dengan memasukkan ulang kata sandi akunnya (5 kali salah = terkunci 15 menit), atau **Tolak** dengan alasan.
+4. Setelah disahkan, **Cetak ber-QR** menghasilkan dokumen yang sama persis dengan yang disahkan, dilengkapi blok *Disahkan secara elektronik* (nama, jabatan, NIP, waktu, kode 10 karakter, dan QR).
+5. QR membuka halaman **cek keaslian publik** (`alamat-situs/?v=KODE`, tanpa login): menampilkan **DOKUMEN SAH**, **PENGESAHAN DICABUT**, atau **TIDAK VALID**, beserta jenis, judul, penandatangan, waktu, dan sidik. NIP disamarkan. Dokumen dinyatakan TIDAK VALID bila berkas beku atau segelnya tidak cocok lagi.
+6. Pejabat atau Super Admin dapat **Mencabut** pengesahan (alasan wajib); pemohon dapat **Membatalkan** pengajuan yang masih menunggu. Semua tindakan tercatat di Riwayat Aktivitas.
+
+**Penting:** ini pengesahan elektronik *internal* aplikasi (kode + sidik + segel server), **bukan** tanda tangan elektronik tersertifikasi (BSrE/PSrE). Untuk dokumen yang wajib bersertifikat, tetap gunakan TTE resmi instansi; QR ini berfungsi sebagai bukti keaslian dan penelusuran di dalam sistem LAGUSIT.
+
+### Link Berita (menu **Link Berita**)
+- **Super Admin** menunjuk petugas (akun Operator/Atasan/Pimpinan) lewat tombol **Petugas**. Pimpinan hanya melihat dan mencetak. Petugas hanya dapat mengubah/menghapus tautan yang ia catat sendiri; Super Admin dapat semuanya.
+- Tambah tautan: tanggal, URL, judul; **platform dikenali otomatis** (Instagram, Facebook, X, TikTok, YouTube; alamat lain dianggap Berita Eksternal, bisa diganti ke Website/Lainnya). Tautan ganda (setelah parameter pelacak seperti `utm_` dibuang) ditolak.
+- Rekap per platform (kartu yang bisa diklik), penyaring periode/kegiatan/kata kunci, tombol cepat Bulan ini/Bulan lalu/Triwulan ini/Tahun ini/Semua.
+- **Cetak laporan** (kop surat, rekap per platform, daftar tautan; bisa memakai pengesahan elektronik) dan **Unduh CSV** (aman terhadap rumus Excel).
+
+### Catatan teknis
+- QR dibuat oleh `js/qr.js` (mandiri, tanpa internet; sudah diuji terbaca pemindai pada berbagai ukuran).
+- Isi dokumen yang diajukan ditolak server bila memuat skrip, bingkai, formulir, atau atribut `onclick` dan sejenisnya; pratinjau memakai iframe ber-sandbox.

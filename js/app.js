@@ -300,7 +300,7 @@ RENDER.audit = async () => { const r = await call('getAudit'); if (r) $('app-con
 
 document.addEventListener('DOMContentLoaded', () => {
   let t = 'light'; try { t = localStorage.getItem('theme') || 'light'; } catch (e) {}
-  muatTampilan(); setTheme(t); $('boot').remove(); renderLogin(); tampilGerbang();
+  muatTampilan(); setTheme(t); $('boot').remove(); if (window.tteCekAwal && tteCekAwal()) return; renderLogin(); tampilGerbang();
 });
 
 // ── Pilihan pangkat dan golongan: golongan dibatasi menurut status; memilih golongan PNS mengisi pangkat yang sesuai ──
